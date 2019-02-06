@@ -133,14 +133,18 @@ public class LatkNetwork : MonoBehaviour {
     }
 
     public void sendStrokeData(List<Vector3> data) {
-		StartCoroutine(doSendStrokeData(data));
+		if (!blockSendStroke) StartCoroutine(doSendStrokeData(data));
 	}
 
+    private bool blockSendStroke = false;
+
 	private IEnumerator doSendStrokeData(List<Vector3> data) {
+        blockSendStroke = true;
 		string s = setJsonFromPoints(data);
 		socketManager.Socket.Emit("clientStrokeToServer", s);
 		Debug.Log(s);
-		yield return null;
+		yield return new WaitForSeconds(latk.frameInterval);
+        blockSendStroke = false;
 	}
 
     private void OnApplicationQuit() {
