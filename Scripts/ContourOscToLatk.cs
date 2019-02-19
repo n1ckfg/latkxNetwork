@@ -204,7 +204,7 @@ public class ContourOscToLatk : MonoBehaviour
 		int len = (int)(bytes.Length / 12);
 		for (int i = 0; i < len; i++) {
 			Vector3 v = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()) / 500f;
-			returns.Add(new Vector3(v.x, -v.y, v.z));
+			returns.Add(new Vector3(v.x, v.y, v.z));
 		}
 		return returns;
 	}
