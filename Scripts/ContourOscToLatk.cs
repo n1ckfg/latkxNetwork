@@ -30,7 +30,9 @@ using UnityOSC;
 
 public class ContourOscToLatk : MonoBehaviour
 {
-	public LightningArtist latk;
+    public SteamVR_NewController mainCtl;
+    public SteamVR_NewController altCtl;
+    public LightningArtist latk;
 	public float scaler = 10f;
 	public enum OscMode { SEND, RECEIVE, SEND_RECEIVE };
 	public OscMode oscMode = OscMode.RECEIVE;
@@ -43,10 +45,13 @@ public class ContourOscToLatk : MonoBehaviour
 
 	private OSCServer myServer;
 	private int bufferSize = 100; // Buffer size of the application (stores 100 messages from different servers)
-	private int sleepMs = 10;
+    private int sleepMs = 10;
+    private bool blockCapture = false;
+    private float captureInterval = 0.083f;
+    private int numCaptures = 100;
 
-	// Script initialization
-	void Start()
+    // Script initialization
+    void Start()
 	{
 		// init OSC
 		OSCHandler.Instance.Init();
@@ -114,30 +119,16 @@ public class ContourOscToLatk : MonoBehaviour
 				break;
 		}
 
-		StartCoroutine(doInstantiateStroke(color, points));
-
-		//latk.target.position = new Vector3(pos.x * scaler, pos.y * scaler, 0f);
-		//latk.clicked = pos.z > 0.5f;
-		//Debug.Log(pos);
-
-		/*
-        // Origin
-        int serverPort = pckt.server.ServerPort;
-
-        // Address
-        string address = pckt.Address.Substring(1);
-
-        // Data at index 0
-        string data0 = pckt.Data.Count != 0 ? pckt.Data[0].ToString() : "null";
-
-        // Print out messages
-        Debug.Log("Input port: " + serverPort.ToString() + "\nAddress: " + address + "\nData [0]: " + data0);
-		*/
+		if (!blockCapture && mainCtl.menuPressed && altCtl.padPressed) StartCoroutine(doInstantiateStroke(color, points));
 	}
 
 	private IEnumerator doInstantiateStroke(Color color, List<Vector3> points) {
-		latk.inputInstantiateStroke(color, points);
-		yield return null;
+        blockCapture = true;
+        for (int i = 0; i < numCaptures; i++) {
+            latk.inputInstantiateStroke(color, points);
+        }
+        yield return new WaitForSeconds(captureInterval);
+        blockCapture = false;
 	}
 
 	Color asColor(byte[] bytes) {
