@@ -46,9 +46,8 @@ public class ContourOscToLatk : MonoBehaviour
 	private OSCServer myServer;
 	private int bufferSize = 100; // Buffer size of the application (stores 100 messages from different servers)
     private int sleepMs = 10;
-    private bool blockCapture = false;
-    private float captureInterval = 0.083f;
-    private int numCaptures = 100;
+    private List<string> oldIds = new List<string>();
+    private int maxIds = 1000;
 
     // Script initialization
     void Start()
@@ -100,35 +99,49 @@ public class ContourOscToLatk : MonoBehaviour
 			return;
 		}
 
-		// format: string hostname, int index, byte[] color, byte[] points
+		// format: string hostname, string id, int index, byte[] color, byte[] points
 		int index = 0;
+        string id = "";
 		Color color = new Color(0f, 0f, 0f);
 		List<Vector3> points = new List<Vector3>();
 
 		switch (msgMode) {
 			case (MsgMode.P5):
-				index = (int)pckt.Data[1];
-				color = bytesToColor((byte[])pckt.Data[2]);
-				points = bytesToVec3s((byte[])pckt.Data[3]);
+                id = (string)pckt.Data[1];
+				index = (int)pckt.Data[2];
+				color = bytesToColor((byte[])pckt.Data[3]);
+				points = bytesToVec3s((byte[])pckt.Data[4]);
 				break;
 			case (MsgMode.OF):
 				OSCMessage msg = pckt.Data[0] as UnityOSC.OSCMessage;
-				index = (int)msg.Data[1];
-				color = bytesToColor((byte[])msg.Data[2]);
-				points = bytesToVec3s((byte[])msg.Data[3]);
+                id = (string)msg.Data[1];
+                index = (int)msg.Data[2];
+				color = bytesToColor((byte[])msg.Data[3]);
+				points = bytesToVec3s((byte[])msg.Data[4]);
 				break;
 		}
 
-		if (!blockCapture && mainCtl.menuPressed && altCtl.padPressed) StartCoroutine(doInstantiateStroke(color, points));
+        Debug.Log(id);
+
+		if (mainCtl.menuPressed && altCtl.padPressed) StartCoroutine(doInstantiateStroke(id, color, points));
 	}
 
-	private IEnumerator doInstantiateStroke(Color color, List<Vector3> points) {
-        blockCapture = true;
-        for (int i = 0; i < numCaptures; i++) {
-            latk.inputInstantiateStroke(color, points);
+	private IEnumerator doInstantiateStroke(string id, Color color, List<Vector3> points) {
+        bool newStroke = true;
+        for (int i = 0; i<oldIds.Count; i++) {
+            if (id == oldIds[i]) {
+                newStroke = false;
+                break;
+            }
         }
-        yield return new WaitForSeconds(captureInterval);
-        blockCapture = false;
+
+        if (newStroke) {
+            latk.inputInstantiateStroke(color, points);
+            oldIds.Add(id);
+            if (oldIds.Count > maxIds) oldIds.RemoveAt(0);
+        }
+
+        yield return null;
 	}
 
 	Color asColor(byte[] bytes) {
