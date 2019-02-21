@@ -30,8 +30,7 @@ using UnityOSC;
 
 public class ContourOscToLatk : MonoBehaviour
 {
-    public SteamVR_NewController mainCtl;
-    public SteamVR_NewController altCtl;
+
     public LightningArtist latk;
 	public float scaler = 10f;
 	public enum OscMode { SEND, RECEIVE, SEND_RECEIVE };
@@ -43,6 +42,8 @@ public class ContourOscToLatk : MonoBehaviour
 	public int inPort = 9998;
 	public int rxBufferSize = 1024000;//1024;
 
+    [HideInInspector] public bool armReceiver = false;
+
 	private OSCServer myServer;
 	private int bufferSize = 100; // Buffer size of the application (stores 100 messages from different servers)
     private int sleepMs = 10;
@@ -50,8 +51,7 @@ public class ContourOscToLatk : MonoBehaviour
     private int maxIds = 10;
 
     // Script initialization
-    void Start()
-	{
+    void Start() {
 		// init OSC
 		OSCHandler.Instance.Init();
 
@@ -71,8 +71,7 @@ public class ContourOscToLatk : MonoBehaviour
 	}
 
 	// Reads all the messages received between the previous update and this one
-	void Update()
-	{
+	void Update() {
 		if (oscMode == OscMode.RECEIVE || oscMode == OscMode.SEND_RECEIVE) {
 			// Read received messages
 			for (var i = 0; i < OSCHandler.Instance.packets.Count; i++) {
@@ -92,8 +91,7 @@ public class ContourOscToLatk : MonoBehaviour
 	}
 
 	// Process OSC message
-	private void receivedOSC(OSCPacket pckt)
-	{
+	private void receivedOSC(OSCPacket pckt) {
 		if (pckt == null) {
 			Debug.Log("Empty packet");
 			return;
@@ -119,12 +117,14 @@ public class ContourOscToLatk : MonoBehaviour
 				break;
 		}
 
-        //Debug.Log(id);
-
-		if (mainCtl.menuPressed && altCtl.padPressed) StartCoroutine(doInstantiateStroke(index, color, points));
-
-        if (altCtl.triggerDown || altCtl.padDown) oldIds = new List<int>();
+        if (armReceiver) {
+            StartCoroutine(doInstantiateStroke(index, color, points));
+        }
 	}
+
+    public void clearList() {
+        oldIds = new List<int>();
+    }
 
 	private IEnumerator doInstantiateStroke(int index, Color color, List<Vector3> points) {
         bool newStroke = true;
