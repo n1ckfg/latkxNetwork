@@ -23,6 +23,8 @@ public class LatkNetwork : MonoBehaviour {
 
     public LightningArtist latk;
     public LatkDrawing latkd;
+    public enum ProtocolMode { HTTP, HTTPS };
+    public ProtocolMode protocolMode = ProtocolMode.HTTP;
     public string serverAddress = "vr.fox-gieg.com";
     public int serverPort = 8080;
     public bool doDebug = true;
@@ -39,7 +41,12 @@ public class LatkNetwork : MonoBehaviour {
     }
 
 	private void Start() {
-        socketAddress = "http://" + serverAddress + ":" + serverPort + "/socket.io/:8443";
+        if (protocolMode == ProtocolMode.HTTPS) {
+            socketAddress = "https://";
+        } else {
+            socketAddress = "http://";
+        }
+        socketAddress += serverAddress + ":" + serverPort + "/socket.io/:8443";
         initSocketManager(socketAddress);
     }
 
