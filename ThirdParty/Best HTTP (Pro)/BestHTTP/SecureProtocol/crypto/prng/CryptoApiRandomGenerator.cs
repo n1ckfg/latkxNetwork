@@ -1,40 +1,29 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
-#if !(NETCF_1_0 || PORTABLE)
+#pragma warning disable
+#if !(NETCF_1_0 || PORTABLE || NETFX_CORE)
 
 using System;
+using System.Security.Cryptography;
 
-#if NETFX_CORE
-    using Windows.Security.Cryptography;
-#else
-    using System.Security.Cryptography;
-#endif
-
-namespace Org.BouncyCastle.Crypto.Prng
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Prng
 {
     /// <summary>
-    /// Uses Microsoft's RNGCryptoServiceProvider
+    /// Uses RandomNumberGenerator.Create() to get randomness generator
     /// </summary>
     public class CryptoApiRandomGenerator
         : IRandomGenerator
     {
-#if !NETFX_CORE
         private readonly RandomNumberGenerator rndProv;
-#endif
 
         public CryptoApiRandomGenerator()
-#if !NETFX_CORE
-            : this(new RNGCryptoServiceProvider())
-#endif
+            : this(RandomNumberGenerator.Create())
         {
         }
 
-#if !NETFX_CORE
         public CryptoApiRandomGenerator(RandomNumberGenerator rng)
         {
             this.rndProv = rng;
         }
-#endif
 
         #region IRandomGenerator Members
 
@@ -50,14 +39,7 @@ namespace Org.BouncyCastle.Crypto.Prng
 
         public virtual void NextBytes(byte[] bytes)
         {
-#if NETFX_CORE
-            var buffer = CryptographicBuffer.GenerateRandom((uint)bytes.Length);
-            byte[] finalBytes = null;
-            CryptographicBuffer.CopyToByteArray(buffer, out finalBytes);
-            finalBytes.CopyTo(bytes, 0);
-#else
             rndProv.GetBytes(bytes);
-#endif
         }
 
         public virtual void NextBytes(byte[] bytes, int start, int len)
@@ -73,14 +55,8 @@ namespace Org.BouncyCastle.Crypto.Prng
             }
             else 
             {
-#if NETFX_CORE
-                byte[] tmpBuf = null;
-                var buffer = CryptographicBuffer.GenerateRandom((uint)bytes.Length);
-                CryptographicBuffer.CopyToByteArray(buffer, out tmpBuf);
-#else
                 byte[] tmpBuf = new byte[len];
                 NextBytes(tmpBuf);
-#endif
                 Array.Copy(tmpBuf, 0, bytes, start, len);
             }
         }
@@ -90,5 +66,5 @@ namespace Org.BouncyCastle.Crypto.Prng
 }
 
 #endif
-
+#pragma warning restore
 #endif

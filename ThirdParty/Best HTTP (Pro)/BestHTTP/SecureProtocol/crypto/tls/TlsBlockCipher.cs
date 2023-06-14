@@ -1,13 +1,13 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.IO;
 
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     /// <summary>
     /// A generic TLS 1.0-1.2 / SSLv3 block cipher. This can be used for AES or 3DES for example.
@@ -146,7 +146,7 @@ namespace Org.BouncyCastle.Crypto.Tls
 
             return plaintextLimit;
         }
-
+        byte[] explicitIV = null;
         public virtual byte[] EncodePlaintext(long seqNo, byte type, byte[] plaintext, int offset, int len)
         {
             int blockSize = encryptCipher.GetBlockSize();
@@ -162,13 +162,22 @@ namespace Org.BouncyCastle.Crypto.Tls
 
             int padding_length = blockSize - 1 - (enc_input_length % blockSize);
 
-            // TODO[DTLS] Consider supporting in DTLS (without exceeding send limit though)
-            if (!version.IsDtls && !version.IsSsl)
+            /*
+             * Don't use variable-length padding with truncated MACs.
+             * 
+             * See "Tag Size Does Matter: Attacks and Proofs for the TLS Record Protocol", Paterson,
+             * Ristenpart, Shrimpton.
+             */
+            if (encryptThenMac || !context.SecurityParameters.truncatedHMac)
             {
-                // Add a random number of extra blocks worth of padding
-                int maxExtraPadBlocks = (255 - padding_length) / blockSize;
-                int actualExtraPadBlocks = ChooseExtraPadBlocks(context.SecureRandom, maxExtraPadBlocks);
-                padding_length += actualExtraPadBlocks * blockSize;
+                // TODO[DTLS] Consider supporting in DTLS (without exceeding send limit though)
+                if (!version.IsDtls && !version.IsSsl)
+                {
+                    // Add a random number of extra blocks worth of padding
+                    int maxExtraPadBlocks = (255 - padding_length) / blockSize;
+                    int actualExtraPadBlocks = ChooseExtraPadBlocks(context.SecureRandom, maxExtraPadBlocks);
+                    padding_length += actualExtraPadBlocks * blockSize;
+                }
             }
 
             int totalSize = len + macSize + padding_length + 1;
@@ -182,7 +191,7 @@ namespace Org.BouncyCastle.Crypto.Tls
 
             if (useExplicitIV)
             {
-                byte[] explicitIV = new byte[blockSize];
+                if (explicitIV == null || explicitIV.Length != blockSize) Array.Resize(ref explicitIV, blockSize);
                 context.NonceRandomGenerator.NextBytes(explicitIV);
 
                 encryptCipher.Init(true, new ParametersWithIV(null, explicitIV));
@@ -386,5 +395,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         }
     }
 }
-
+#pragma warning restore
 #endif

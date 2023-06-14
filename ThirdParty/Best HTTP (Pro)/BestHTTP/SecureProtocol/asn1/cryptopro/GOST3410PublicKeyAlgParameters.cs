@@ -1,9 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Asn1.CryptoPro
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.CryptoPro
 {
     public class Gost3410PublicKeyAlgParameters
         : Asn1Encodable
@@ -23,16 +24,9 @@ namespace Org.BouncyCastle.Asn1.CryptoPro
             object obj)
         {
             if (obj == null || obj is Gost3410PublicKeyAlgParameters)
-            {
-                return (Gost3410PublicKeyAlgParameters) obj;
-            }
+                return (Gost3410PublicKeyAlgParameters)obj;
 
-			if (obj is Asn1Sequence)
-            {
-                return new Gost3410PublicKeyAlgParameters((Asn1Sequence) obj);
-            }
-
-            throw new ArgumentException("Invalid GOST3410Parameter: " + Org.BouncyCastle.Utilities.Platform.GetTypeName(obj));
+            return new Gost3410PublicKeyAlgParameters(Asn1Sequence.GetInstance((obj)));
         }
 
 		public Gost3410PublicKeyAlgParameters(
@@ -86,17 +80,11 @@ namespace Org.BouncyCastle.Asn1.CryptoPro
 
 		public override Asn1Object ToAsn1Object()
         {
-            Asn1EncodableVector v = new Asn1EncodableVector(
-				publicKeyParamSet, digestParamSet);
-
-			if (encryptionParamSet != null)
-            {
-                v.Add(encryptionParamSet);
-            }
-
+            Asn1EncodableVector v = new Asn1EncodableVector(publicKeyParamSet, digestParamSet);
+            v.AddOptional(encryptionParamSet);
 			return new DerSequence(v);
         }
     }
 }
-
+#pragma warning restore
 #endif

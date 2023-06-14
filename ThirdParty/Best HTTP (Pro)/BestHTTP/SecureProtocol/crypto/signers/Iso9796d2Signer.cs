@@ -1,14 +1,14 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Digests;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Digests;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Signers
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Signers
 {
     /// <summary> ISO9796-2 - mechanism using a hash function with recovery (scheme 1)</summary>
     public class Iso9796d2Signer : ISignerWithRecovery
@@ -362,6 +362,8 @@ namespace Org.BouncyCastle.Crypto.Signers
 
             byte[] b = cipher.ProcessBlock(block, 0, block.Length);
 
+            messageLength = 0;
+
             ClearBlock(mBuf);
             ClearBlock(block);
 
@@ -528,11 +530,15 @@ namespace Org.BouncyCastle.Crypto.Signers
             ClearBlock(mBuf);
             ClearBlock(block);
 
+            messageLength = 0;
+
             return true;
         }
 
         private bool ReturnFalse(byte[] block)
         {
+            messageLength = 0;
+
             ClearBlock(mBuf);
             ClearBlock(block);
 
@@ -550,5 +556,5 @@ namespace Org.BouncyCastle.Crypto.Signers
         }
     }
 }
-
+#pragma warning restore
 #endif

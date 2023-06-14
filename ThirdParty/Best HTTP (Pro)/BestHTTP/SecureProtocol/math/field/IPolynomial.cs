@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Math.Field
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.Field
 {
     public interface IPolynomial
     {
@@ -15,5 +15,5 @@ namespace Org.BouncyCastle.Math.Field
         //Term[] GetNonZeroTerms();
     }
 }
-
+#pragma warning restore
 #endif

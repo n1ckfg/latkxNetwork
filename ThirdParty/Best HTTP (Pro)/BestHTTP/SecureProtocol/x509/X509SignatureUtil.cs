@@ -1,18 +1,18 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Asn1.CryptoPro;
-using Org.BouncyCastle.Asn1.Nist;
-using Org.BouncyCastle.Asn1.Oiw;
-using Org.BouncyCastle.Asn1.Pkcs;
-using Org.BouncyCastle.Asn1.TeleTrust;
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Asn1.X9;
-using Org.BouncyCastle.Crypto;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.CryptoPro;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Nist;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Oiw;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Pkcs;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.TeleTrust;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X9;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto;
 
-namespace Org.BouncyCastle.X509
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.X509
 {
 	internal class X509SignatureUtilities
 	{
@@ -36,7 +36,7 @@ namespace Org.BouncyCastle.X509
 //					throw new SignatureException("IOException decoding parameters: " + e.Message);
 //				}
 //
-//				if (Org.BouncyCastle.Utilities.Platform.EndsWith(signature.getAlgorithm(), "MGF1"))
+//				if (BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.EndsWith(signature.getAlgorithm(), "MGF1"))
 //				{
 //					try
 //					{
@@ -128,5 +128,5 @@ namespace Org.BouncyCastle.X509
 		}
 	}
 }
-
+#pragma warning restore
 #endif

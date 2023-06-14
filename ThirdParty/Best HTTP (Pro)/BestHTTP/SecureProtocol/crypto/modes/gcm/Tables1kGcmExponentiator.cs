@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Modes.Gcm
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Modes.Gcm
 {
     public class Tables1kGcmExponentiator
         : IGcmExponentiator
@@ -20,7 +20,7 @@ namespace Org.BouncyCastle.Crypto.Modes.Gcm
             if (lookupPowX2 != null && Arrays.AreEqual(y, (uint[])lookupPowX2[0]))
                 return;
 
-            lookupPowX2 = Org.BouncyCastle.Utilities.Platform.CreateArrayList(8);
+            lookupPowX2 = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList(8);
             lookupPowX2.Add(y);
         }
 
@@ -59,5 +59,5 @@ namespace Org.BouncyCastle.Crypto.Modes.Gcm
         }
     }
 }
-
+#pragma warning restore
 #endif

@@ -1,14 +1,14 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 using System.IO;
 
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     /**
      * Parsing and encoding of a <i>CertificateRequest</i> struct from RFC 4346.
@@ -95,7 +95,7 @@ namespace Org.BouncyCastle.Crypto.Tls
             }
             else
             {
-                IList derEncodings = Org.BouncyCastle.Utilities.Platform.CreateArrayList(mCertificateAuthorities.Count);
+                IList derEncodings = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList(mCertificateAuthorities.Count);
 
                 int totalLength = 0;
                 foreach (Asn1Encodable certificateAuthority in mCertificateAuthorities)
@@ -141,7 +141,7 @@ namespace Org.BouncyCastle.Crypto.Tls
                 supportedSignatureAlgorithms = TlsUtilities.ParseSupportedSignatureAlgorithms(false, input);
             }
 
-            IList certificateAuthorities = Org.BouncyCastle.Utilities.Platform.CreateArrayList();
+            IList certificateAuthorities = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList();
             byte[] certAuthData = TlsUtilities.ReadOpaque16(input);
             MemoryStream bis = new MemoryStream(certAuthData, false);
             while (bis.Position < bis.Length)
@@ -156,5 +156,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         }
     }
 }
-
+#pragma warning restore
 #endif

@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Text;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Math.EC
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC
 {
     internal class LongArray
     {
@@ -372,6 +372,11 @@ namespace Org.BouncyCastle.Math.EC
                 }
                 m_ints[iarrJ] = temp;
             }
+        }
+
+        internal void CopyTo(long[] z, int zOff)
+        {
+            Array.Copy(m_ints, 0, z, zOff, m_ints.Length);
         }
 
         public bool IsOne()
@@ -2201,5 +2206,5 @@ namespace Org.BouncyCastle.Math.EC
         }
     }
 }
-
+#pragma warning restore
 #endif

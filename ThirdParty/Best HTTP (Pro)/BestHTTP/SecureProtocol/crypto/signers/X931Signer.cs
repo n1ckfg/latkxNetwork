@@ -1,13 +1,13 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Signers
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Signers
 {
     /**
      * X9.31-1998 - signing using a hash.
@@ -147,7 +147,8 @@ namespace Org.BouncyCastle.Crypto.Signers
 
             t = t.Min(kParam.Modulus.Subtract(t));
 
-            return BigIntegers.AsUnsignedByteArray((kParam.Modulus.BitLength + 7) / 8, t);
+            int size = BigIntegers.GetUnsignedByteLength(kParam.Modulus);
+            return BigIntegers.AsUnsignedByteArray(size, t);
         }
 
         private void CreateSignatureBlock()
@@ -225,5 +226,5 @@ namespace Org.BouncyCastle.Crypto.Signers
         }
     }
 }
-
+#pragma warning restore
 #endif

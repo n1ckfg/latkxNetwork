@@ -1,7 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Asn1
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1
 {
 	/**
 	 * A Null object.
@@ -40,5 +41,5 @@ namespace Org.BouncyCastle.Asn1
 		}
 	}
 }
-
+#pragma warning restore
 #endif

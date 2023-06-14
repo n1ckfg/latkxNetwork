@@ -1,9 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
-using Org.BouncyCastle.Crypto.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Engines
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Utilities;
+
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Engines
 {
 	/// <summary>
 	/// Implementation of Daniel J. Bernstein's ChaCha stream cipher.
@@ -156,6 +157,5 @@ namespace Org.BouncyCastle.Crypto.Engines
 		}
 	}
 }
-
-
+#pragma warning restore
 #endif

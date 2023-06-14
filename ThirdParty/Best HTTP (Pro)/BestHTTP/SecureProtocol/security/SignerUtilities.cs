@@ -1,24 +1,29 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 using System.IO;
 
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Asn1.CryptoPro;
-using Org.BouncyCastle.Asn1.Nist;
-using Org.BouncyCastle.Asn1.Pkcs;
-using Org.BouncyCastle.Asn1.TeleTrust;
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Asn1.X9;
-using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Crypto.Digests;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Engines;
-using Org.BouncyCastle.Crypto.Signers;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Bsi;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.CryptoPro;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Eac;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.EdEC;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.GM;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Nist;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Oiw;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Pkcs;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.TeleTrust;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X9;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Digests;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Engines;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Signers;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Security
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Security
 {
     /// <summary>
     ///  Signer Utility class contains methods that can not be specifically grouped into other classes.
@@ -29,8 +34,8 @@ namespace Org.BouncyCastle.Security
         {
         }
 
-        internal static readonly IDictionary algorithms = Org.BouncyCastle.Utilities.Platform.CreateHashtable();
-        internal static readonly IDictionary oids = Org.BouncyCastle.Utilities.Platform.CreateHashtable();
+        internal static readonly IDictionary algorithms = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateHashtable();
+        internal static readonly IDictionary oids = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateHashtable();
 
         static SignerUtilities()
         {
@@ -41,15 +46,19 @@ namespace Org.BouncyCastle.Security
             algorithms["MD4WITHRSA"] = "MD4withRSA";
             algorithms["MD4WITHRSAENCRYPTION"] = "MD4withRSA";
             algorithms[PkcsObjectIdentifiers.MD4WithRsaEncryption.Id] = "MD4withRSA";
+            algorithms[OiwObjectIdentifiers.MD4WithRsa.Id] = "MD4withRSA";
+			algorithms[OiwObjectIdentifiers.MD4WithRsaEncryption.Id] = "MD4withRSA";
 
-            algorithms["MD5WITHRSA"] = "MD5withRSA";
+			algorithms["MD5WITHRSA"] = "MD5withRSA";
             algorithms["MD5WITHRSAENCRYPTION"] = "MD5withRSA";
             algorithms[PkcsObjectIdentifiers.MD5WithRsaEncryption.Id] = "MD5withRSA";
+            algorithms[OiwObjectIdentifiers.MD5WithRsa.Id] = "MD5withRSA";
 
             algorithms["SHA1WITHRSA"] = "SHA-1withRSA";
             algorithms["SHA1WITHRSAENCRYPTION"] = "SHA-1withRSA";
-            algorithms[PkcsObjectIdentifiers.Sha1WithRsaEncryption.Id] = "SHA-1withRSA";
             algorithms["SHA-1WITHRSA"] = "SHA-1withRSA";
+            algorithms[PkcsObjectIdentifiers.Sha1WithRsaEncryption.Id] = "SHA-1withRSA";
+            algorithms[OiwObjectIdentifiers.Sha1WithRsa.Id] = "SHA-1withRSA";
 
             algorithms["SHA224WITHRSA"] = "SHA-224withRSA";
             algorithms["SHA224WITHRSAENCRYPTION"] = "SHA-224withRSA";
@@ -134,6 +143,7 @@ namespace Org.BouncyCastle.Security
             algorithms["SHA1WITHDSA"] = "SHA-1withDSA";
             algorithms["SHA-1WITHDSA"] = "SHA-1withDSA";
             algorithms[X9ObjectIdentifiers.IdDsaWithSha1.Id] = "SHA-1withDSA";
+            algorithms[OiwObjectIdentifiers.DsaWithSha1.Id] = "SHA-1withDSA";
 
             algorithms["DSAWITHSHA224"] = "SHA-224withDSA";
             algorithms["DSAWITHSHA-224"] = "SHA-224withDSA";
@@ -217,6 +227,108 @@ namespace Org.BouncyCastle.Security
             algorithms["RIPEMD160WITHECDSA"] = "RIPEMD160withECDSA";
             algorithms[TeleTrusTObjectIdentifiers.ECSignWithRipeMD160.Id] = "RIPEMD160withECDSA";
 
+            algorithms["NONEWITHCVC-ECDSA"] = "NONEwithCVC-ECDSA";
+            algorithms["CVC-ECDSAWITHNONE"] = "NONEwithCVC-ECDSA";
+
+            algorithms["SHA1/CVC-ECDSA"] = "SHA-1withCVC-ECDSA";
+            algorithms["SHA-1/CVC-ECDSA"] = "SHA-1withCVC-ECDSA";
+            algorithms["CVC-ECDSAWITHSHA1"] = "SHA-1withCVC-ECDSA";
+            algorithms["CVC-ECDSAWITHSHA-1"] = "SHA-1withCVC-ECDSA";
+            algorithms["SHA1WITHCVC-ECDSA"] = "SHA-1withCVC-ECDSA";
+            algorithms["SHA-1WITHCVC-ECDSA"] = "SHA-1withCVC-ECDSA";
+            algorithms[EacObjectIdentifiers.id_TA_ECDSA_SHA_1.Id] = "SHA-1withCVC-ECDSA";
+
+            algorithms["SHA224/CVC-ECDSA"] = "SHA-224withCVC-ECDSA";
+            algorithms["SHA-224/CVC-ECDSA"] = "SHA-224withCVC-ECDSA";
+            algorithms["CVC-ECDSAWITHSHA224"] = "SHA-224withCVC-ECDSA";
+            algorithms["CVC-ECDSAWITHSHA-224"] = "SHA-224withCVC-ECDSA";
+            algorithms["SHA224WITHCVC-ECDSA"] = "SHA-224withCVC-ECDSA";
+            algorithms["SHA-224WITHCVC-ECDSA"] = "SHA-224withCVC-ECDSA";
+            algorithms[EacObjectIdentifiers.id_TA_ECDSA_SHA_224.Id] = "SHA-224withCVC-ECDSA";
+
+            algorithms["SHA256/CVC-ECDSA"] = "SHA-256withCVC-ECDSA";
+            algorithms["SHA-256/CVC-ECDSA"] = "SHA-256withCVC-ECDSA";
+            algorithms["CVC-ECDSAWITHSHA256"] = "SHA-256withCVC-ECDSA";
+            algorithms["CVC-ECDSAWITHSHA-256"] = "SHA-256withCVC-ECDSA";
+            algorithms["SHA256WITHCVC-ECDSA"] = "SHA-256withCVC-ECDSA";
+            algorithms["SHA-256WITHCVC-ECDSA"] = "SHA-256withCVC-ECDSA";
+            algorithms[EacObjectIdentifiers.id_TA_ECDSA_SHA_256.Id] = "SHA-256withCVC-ECDSA";
+
+            algorithms["SHA384/CVC-ECDSA"] = "SHA-384withCVC-ECDSA";
+            algorithms["SHA-384/CVC-ECDSA"] = "SHA-384withCVC-ECDSA";
+            algorithms["CVC-ECDSAWITHSHA384"] = "SHA-384withCVC-ECDSA";
+            algorithms["CVC-ECDSAWITHSHA-384"] = "SHA-384withCVC-ECDSA";
+            algorithms["SHA384WITHCVC-ECDSA"] = "SHA-384withCVC-ECDSA";
+            algorithms["SHA-384WITHCVC-ECDSA"] = "SHA-384withCVC-ECDSA";
+            algorithms[EacObjectIdentifiers.id_TA_ECDSA_SHA_384.Id] = "SHA-384withCVC-ECDSA";
+
+            algorithms["SHA512/CVC-ECDSA"] = "SHA-512withCVC-ECDSA";
+            algorithms["SHA-512/CVC-ECDSA"] = "SHA-512withCVC-ECDSA";
+            algorithms["CVC-ECDSAWITHSHA512"] = "SHA-512withCVC-ECDSA";
+            algorithms["CVC-ECDSAWITHSHA-512"] = "SHA-512withCVC-ECDSA";
+            algorithms["SHA512WITHCVC-ECDSA"] = "SHA-512withCVC-ECDSA";
+            algorithms["SHA-512WITHCVC-ECDSA"] = "SHA-512withCVC-ECDSA";
+            algorithms[EacObjectIdentifiers.id_TA_ECDSA_SHA_512.Id] = "SHA-512withCVC-ECDSA";
+
+            algorithms["NONEWITHPLAIN-ECDSA"] = "NONEwithPLAIN-ECDSA";
+            algorithms["PLAIN-ECDSAWITHNONE"] = "NONEwithPLAIN-ECDSA";
+
+            algorithms["SHA1/PLAIN-ECDSA"] = "SHA-1withPLAIN-ECDSA";
+            algorithms["SHA-1/PLAIN-ECDSA"] = "SHA-1withPLAIN-ECDSA";
+            algorithms["PLAIN-ECDSAWITHSHA1"] = "SHA-1withPLAIN-ECDSA";
+            algorithms["PLAIN-ECDSAWITHSHA-1"] = "SHA-1withPLAIN-ECDSA";
+            algorithms["SHA1WITHPLAIN-ECDSA"] = "SHA-1withPLAIN-ECDSA";
+            algorithms["SHA-1WITHPLAIN-ECDSA"] = "SHA-1withPLAIN-ECDSA";
+            algorithms[BsiObjectIdentifiers.ecdsa_plain_SHA1.Id] = "SHA-1withPLAIN-ECDSA";
+
+            algorithms["SHA224/PLAIN-ECDSA"] = "SHA-224withPLAIN-ECDSA";
+            algorithms["SHA-224/PLAIN-ECDSA"] = "SHA-224withPLAIN-ECDSA";
+            algorithms["PLAIN-ECDSAWITHSHA224"] = "SHA-224withPLAIN-ECDSA";
+            algorithms["PLAIN-ECDSAWITHSHA-224"] = "SHA-224withPLAIN-ECDSA";
+            algorithms["SHA224WITHPLAIN-ECDSA"] = "SHA-224withPLAIN-ECDSA";
+            algorithms["SHA-224WITHPLAIN-ECDSA"] = "SHA-224withPLAIN-ECDSA";
+            algorithms[BsiObjectIdentifiers.ecdsa_plain_SHA224.Id] = "SHA-224withPLAIN-ECDSA";
+
+            algorithms["SHA256/PLAIN-ECDSA"] = "SHA-256withPLAIN-ECDSA";
+            algorithms["SHA-256/PLAIN-ECDSA"] = "SHA-256withPLAIN-ECDSA";
+            algorithms["PLAIN-ECDSAWITHSHA256"] = "SHA-256withPLAIN-ECDSA";
+            algorithms["PLAIN-ECDSAWITHSHA-256"] = "SHA-256withPLAIN-ECDSA";
+            algorithms["SHA256WITHPLAIN-ECDSA"] = "SHA-256withPLAIN-ECDSA";
+            algorithms["SHA-256WITHPLAIN-ECDSA"] = "SHA-256withPLAIN-ECDSA";
+            algorithms[BsiObjectIdentifiers.ecdsa_plain_SHA256.Id] = "SHA-256withPLAIN-ECDSA";
+
+            algorithms["SHA384/PLAIN-ECDSA"] = "SHA-384withPLAIN-ECDSA";
+            algorithms["SHA-384/PLAIN-ECDSA"] = "SHA-384withPLAIN-ECDSA";
+            algorithms["PLAIN-ECDSAWITHSHA384"] = "SHA-384withPLAIN-ECDSA";
+            algorithms["PLAIN-ECDSAWITHSHA-384"] = "SHA-384withPLAIN-ECDSA";
+            algorithms["SHA384WITHPLAIN-ECDSA"] = "SHA-384withPLAIN-ECDSA";
+            algorithms["SHA-384WITHPLAIN-ECDSA"] = "SHA-384withPLAIN-ECDSA";
+            algorithms[BsiObjectIdentifiers.ecdsa_plain_SHA384.Id] = "SHA-384withPLAIN-ECDSA";
+
+            algorithms["SHA512/PLAIN-ECDSA"] = "SHA-512withPLAIN-ECDSA";
+            algorithms["SHA-512/PLAIN-ECDSA"] = "SHA-512withPLAIN-ECDSA";
+            algorithms["PLAIN-ECDSAWITHSHA512"] = "SHA-512withPLAIN-ECDSA";
+            algorithms["PLAIN-ECDSAWITHSHA-512"] = "SHA-512withPLAIN-ECDSA";
+            algorithms["SHA512WITHPLAIN-ECDSA"] = "SHA-512withPLAIN-ECDSA";
+            algorithms["SHA-512WITHPLAIN-ECDSA"] = "SHA-512withPLAIN-ECDSA";
+            algorithms[BsiObjectIdentifiers.ecdsa_plain_SHA512.Id] = "SHA-512withPLAIN-ECDSA";
+
+            algorithms["RIPEMD160/PLAIN-ECDSA"] = "RIPEMD160withPLAIN-ECDSA";
+            algorithms["PLAIN-ECDSAWITHRIPEMD160"] = "RIPEMD160withPLAIN-ECDSA";
+            algorithms["RIPEMD160WITHPLAIN-ECDSA"] = "RIPEMD160withPLAIN-ECDSA";
+            algorithms[BsiObjectIdentifiers.ecdsa_plain_RIPEMD160.Id] = "RIPEMD160withPLAIN-ECDSA";
+
+            algorithms["SHA1WITHECNR"] = "SHA-1withECNR";
+            algorithms["SHA-1WITHECNR"] = "SHA-1withECNR";
+            algorithms["SHA224WITHECNR"] = "SHA-224withECNR";
+            algorithms["SHA-224WITHECNR"] = "SHA-224withECNR";
+            algorithms["SHA256WITHECNR"] = "SHA-256withECNR";
+            algorithms["SHA-256WITHECNR"] = "SHA-256withECNR";
+            algorithms["SHA384WITHECNR"] = "SHA-384withECNR";
+            algorithms["SHA-384WITHECNR"] = "SHA-384withECNR";
+            algorithms["SHA512WITHECNR"] = "SHA-512withECNR";
+            algorithms["SHA-512WITHECNR"] = "SHA-512withECNR";
+
             algorithms["GOST-3410"] = "GOST3410";
             algorithms["GOST-3410-94"] = "GOST3410";
             algorithms["GOST3411WITHGOST3410"] = "GOST3410";
@@ -227,7 +339,18 @@ namespace Org.BouncyCastle.Security
             algorithms["GOST3411WITHECGOST3410"] = "ECGOST3410";
             algorithms[CryptoProObjectIdentifiers.GostR3411x94WithGostR3410x2001.Id] = "ECGOST3410";
 
+            algorithms["ED25519"] = "Ed25519";
+            algorithms[EdECObjectIdentifiers.id_Ed25519.Id] = "Ed25519";
+            algorithms["ED25519CTX"] = "Ed25519ctx";
+            algorithms["ED25519PH"] = "Ed25519ph";
+            algorithms["ED448"] = "Ed448";
+            algorithms[EdECObjectIdentifiers.id_Ed448.Id] = "Ed448";
+            algorithms["ED448PH"] = "Ed448ph";
 
+            algorithms["SHA256WITHSM2"] = "SHA256withSM2";
+            algorithms[GMObjectIdentifiers.sm2sign_with_sha256.Id] = "SHA256withSM2";
+            algorithms["SM3WITHSM2"] = "SM3withSM2";
+            algorithms[GMObjectIdentifiers.sm2sign_with_sm3.Id] = "SM3withSM2";
 
             oids["MD2withRSA"] = PkcsObjectIdentifiers.MD2WithRsaEncryption;
             oids["MD4withRSA"] = PkcsObjectIdentifiers.MD4WithRsaEncryption;
@@ -257,9 +380,29 @@ namespace Org.BouncyCastle.Security
             oids["SHA-256withECDSA"] = X9ObjectIdentifiers.ECDsaWithSha256;
             oids["SHA-384withECDSA"] = X9ObjectIdentifiers.ECDsaWithSha384;
             oids["SHA-512withECDSA"] = X9ObjectIdentifiers.ECDsaWithSha512;
+            oids["RIPEMD160withECDSA"] = TeleTrusTObjectIdentifiers.ECSignWithRipeMD160;
+
+            oids["SHA-1withCVC-ECDSA"] = EacObjectIdentifiers.id_TA_ECDSA_SHA_1;
+            oids["SHA-224withCVC-ECDSA"] = EacObjectIdentifiers.id_TA_ECDSA_SHA_224;
+            oids["SHA-256withCVC-ECDSA"] = EacObjectIdentifiers.id_TA_ECDSA_SHA_256;
+            oids["SHA-384withCVC-ECDSA"] = EacObjectIdentifiers.id_TA_ECDSA_SHA_384;
+            oids["SHA-512withCVC-ECDSA"] = EacObjectIdentifiers.id_TA_ECDSA_SHA_512;
+
+            oids["SHA-1withPLAIN-ECDSA"] = BsiObjectIdentifiers.ecdsa_plain_SHA1;
+            oids["SHA-224withPLAIN-ECDSA"] = BsiObjectIdentifiers.ecdsa_plain_SHA224;
+            oids["SHA-256withPLAIN-ECDSA"] = BsiObjectIdentifiers.ecdsa_plain_SHA256;
+            oids["SHA-384withPLAIN-ECDSA"] = BsiObjectIdentifiers.ecdsa_plain_SHA384;
+            oids["SHA-512withPLAIN-ECDSA"] = BsiObjectIdentifiers.ecdsa_plain_SHA512;
+            oids["RIPEMD160withPLAIN-ECDSA"] = BsiObjectIdentifiers.ecdsa_plain_RIPEMD160;
 
             oids["GOST3410"] = CryptoProObjectIdentifiers.GostR3411x94WithGostR3410x94;
             oids["ECGOST3410"] = CryptoProObjectIdentifiers.GostR3411x94WithGostR3410x2001;
+
+            oids["Ed25519"] = EdECObjectIdentifiers.id_Ed25519;
+            oids["Ed448"] = EdECObjectIdentifiers.id_Ed448;
+
+            oids["SHA256withSM2"] = GMObjectIdentifiers.sm2sign_with_sha256;
+            oids["SM3withSM2"] = GMObjectIdentifiers.sm2sign_with_sm3;
         }
 
         /// <summary>
@@ -274,7 +417,7 @@ namespace Org.BouncyCastle.Security
             if (mechanism == null)
                 throw new ArgumentNullException("mechanism");
 
-            mechanism = Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(mechanism);
+            mechanism = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(mechanism);
             string aliased = (string) algorithms[mechanism];
 
             if (aliased != null)
@@ -300,7 +443,7 @@ namespace Org.BouncyCastle.Security
             if (algorithm == null)
                 throw new ArgumentNullException("algorithm");
 
-            algorithm = Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(algorithm);
+            algorithm = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(algorithm);
 
             string mechanism = (string) algorithms[algorithm];
 
@@ -314,7 +457,7 @@ namespace Org.BouncyCastle.Security
                 return GetPssX509Parameters("SHA-1");
             }
 
-            if (Org.BouncyCastle.Utilities.Platform.EndsWith(mechanism, "withRSAandMGF1"))
+            if (BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.EndsWith(mechanism, "withRSAandMGF1"))
             {
                 string digestName = mechanism.Substring(0, mechanism.Length - "withRSAandMGF1".Length);
                 return GetPssX509Parameters(digestName);
@@ -350,62 +493,41 @@ namespace Org.BouncyCastle.Security
             if (algorithm == null)
                 throw new ArgumentNullException("algorithm");
 
-            algorithm = Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(algorithm);
+            algorithm = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(algorithm);
 
             string mechanism = (string) algorithms[algorithm];
 
             if (mechanism == null)
                 mechanism = algorithm;
 
+            if (BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.StartsWith(mechanism, "Ed"))
+            {
+                if (mechanism.Equals("Ed25519"))
+                {
+                    return new Ed25519Signer();
+                }
+                if (mechanism.Equals("Ed25519ctx"))
+                {
+                    return new Ed25519ctxSigner(Arrays.EmptyBytes);
+                }
+                if (mechanism.Equals("Ed25519ph"))
+                {
+                    return new Ed25519phSigner(Arrays.EmptyBytes);
+                }
+                if (mechanism.Equals("Ed448"))
+                {
+                    return new Ed448Signer(Arrays.EmptyBytes);
+                }
+                if (mechanism.Equals("Ed448ph"))
+                {
+                    return new Ed448phSigner(Arrays.EmptyBytes);
+                }
+            }
+
             if (mechanism.Equals("RSA"))
             {
                 return (new RsaDigestSigner(new NullDigest(), (AlgorithmIdentifier)null));
             }
-            if (mechanism.Equals("MD2withRSA"))
-            {
-                return (new RsaDigestSigner(new MD2Digest()));
-            }
-            if (mechanism.Equals("MD4withRSA"))
-            {
-                return (new RsaDigestSigner(new MD4Digest()));
-            }
-            if (mechanism.Equals("MD5withRSA"))
-            {
-                return (new RsaDigestSigner(new MD5Digest()));
-            }
-            if (mechanism.Equals("SHA-1withRSA"))
-            {
-                return (new RsaDigestSigner(new Sha1Digest()));
-            }
-            if (mechanism.Equals("SHA-224withRSA"))
-            {
-                return (new RsaDigestSigner(new Sha224Digest()));
-            }
-            if (mechanism.Equals("SHA-256withRSA"))
-            {
-                return (new RsaDigestSigner(new Sha256Digest()));
-            }
-            if (mechanism.Equals("SHA-384withRSA"))
-            {
-                return (new RsaDigestSigner(new Sha384Digest()));
-            }
-            if (mechanism.Equals("SHA-512withRSA"))
-            {
-                return (new RsaDigestSigner(new Sha512Digest()));
-            }
-            if (mechanism.Equals("RIPEMD128withRSA"))
-            {
-                return (new RsaDigestSigner(new RipeMD128Digest()));
-            }
-            if (mechanism.Equals("RIPEMD160withRSA"))
-            {
-                return (new RsaDigestSigner(new RipeMD160Digest()));
-            }
-            if (mechanism.Equals("RIPEMD256withRSA"))
-            {
-                return (new RsaDigestSigner(new RipeMD256Digest()));
-            }
-
             if (mechanism.Equals("RAWRSASSA-PSS"))
             {
                 // TODO Add support for other parameter settings
@@ -417,101 +539,53 @@ namespace Org.BouncyCastle.Security
                 // to be used can be overridden by subsequent parameter settings.
                 return (new PssSigner(new RsaBlindedEngine(), new Sha1Digest()));
             }
-            if (mechanism.Equals("SHA-1withRSAandMGF1"))
+            if (BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.EndsWith(mechanism, "withRSA"))
             {
-                return (new PssSigner(new RsaBlindedEngine(), new Sha1Digest()));
+                string digestName = mechanism.Substring(0, mechanism.LastIndexOf("with"));
+                IDigest digest = DigestUtilities.GetDigest(digestName);
+                return new RsaDigestSigner(digest);
             }
-            if (mechanism.Equals("SHA-224withRSAandMGF1"))
+            if (BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.EndsWith(mechanism, "withRSAandMGF1"))
             {
-                return (new PssSigner(new RsaBlindedEngine(), new Sha224Digest()));
-            }
-            if (mechanism.Equals("SHA-256withRSAandMGF1"))
-            {
-                return (new PssSigner(new RsaBlindedEngine(), new Sha256Digest()));
-            }
-            if (mechanism.Equals("SHA-384withRSAandMGF1"))
-            {
-                return (new PssSigner(new RsaBlindedEngine(), new Sha384Digest()));
-            }
-            if (mechanism.Equals("SHA-512withRSAandMGF1"))
-            {
-                return (new PssSigner(new RsaBlindedEngine(), new Sha512Digest()));
+                string digestName = mechanism.Substring(0, mechanism.LastIndexOf("with"));
+                IDigest digest = DigestUtilities.GetDigest(digestName);
+                return new PssSigner(new RsaBlindedEngine(), digest);
             }
 
-            if (mechanism.Equals("NONEwithDSA"))
+            if (BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.EndsWith(mechanism, "withDSA"))
             {
-                return (new DsaDigestSigner(new DsaSigner(), new NullDigest()));
-            }
-            if (mechanism.Equals("SHA-1withDSA"))
-            {
-                return (new DsaDigestSigner(new DsaSigner(), new Sha1Digest()));
-            }
-            if (mechanism.Equals("SHA-224withDSA"))
-            {
-                return (new DsaDigestSigner(new DsaSigner(), new Sha224Digest()));
-            }
-            if (mechanism.Equals("SHA-256withDSA"))
-            {
-                return (new DsaDigestSigner(new DsaSigner(), new Sha256Digest()));
-            }
-            if (mechanism.Equals("SHA-384withDSA"))
-            {
-                return (new DsaDigestSigner(new DsaSigner(), new Sha384Digest()));
-            }
-            if (mechanism.Equals("SHA-512withDSA"))
-            {
-                return (new DsaDigestSigner(new DsaSigner(), new Sha512Digest()));
+                string digestName = mechanism.Substring(0, mechanism.LastIndexOf("with"));
+                IDigest digest = DigestUtilities.GetDigest(digestName);
+                return new DsaDigestSigner(new DsaSigner(), digest);
             }
 
-            if (mechanism.Equals("NONEwithECDSA"))
+            if (BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.EndsWith(mechanism, "withECDSA"))
             {
-                return (new DsaDigestSigner(new ECDsaSigner(), new NullDigest()));
-            }
-            if (mechanism.Equals("SHA-1withECDSA"))
-            {
-                return (new DsaDigestSigner(new ECDsaSigner(), new Sha1Digest()));
-            }
-            if (mechanism.Equals("SHA-224withECDSA"))
-            {
-                return (new DsaDigestSigner(new ECDsaSigner(), new Sha224Digest()));
-            }
-            if (mechanism.Equals("SHA-256withECDSA"))
-            {
-                return (new DsaDigestSigner(new ECDsaSigner(), new Sha256Digest()));
-            }
-            if (mechanism.Equals("SHA-384withECDSA"))
-            {
-                return (new DsaDigestSigner(new ECDsaSigner(), new Sha384Digest()));
-            }
-            if (mechanism.Equals("SHA-512withECDSA"))
-            {
-                return (new DsaDigestSigner(new ECDsaSigner(), new Sha512Digest()));
+                string digestName = mechanism.Substring(0, mechanism.LastIndexOf("with"));
+                IDigest digest = DigestUtilities.GetDigest(digestName);
+                return new DsaDigestSigner(new ECDsaSigner(), digest);
             }
 
-            if (mechanism.Equals("RIPEMD160withECDSA"))
+            if (BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.EndsWith(mechanism, "withCVC-ECDSA")
+                || BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.EndsWith(mechanism, "withPLAIN-ECDSA"))
             {
-                return (new DsaDigestSigner(new ECDsaSigner(), new RipeMD160Digest()));
+                string digestName = mechanism.Substring(0, mechanism.LastIndexOf("with"));
+                IDigest digest = DigestUtilities.GetDigest(digestName);
+                return new DsaDigestSigner(new ECDsaSigner(), digest, PlainDsaEncoding.Instance);
             }
 
-            if (mechanism.Equals("SHA1WITHECNR"))
+            if (BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.EndsWith(mechanism, "withECNR"))
             {
-                return (new DsaDigestSigner(new ECNRSigner(), new Sha1Digest()));
+                string digestName = mechanism.Substring(0, mechanism.LastIndexOf("with"));
+                IDigest digest = DigestUtilities.GetDigest(digestName);
+                return new DsaDigestSigner(new ECNRSigner(), digest);
             }
-            if (mechanism.Equals("SHA224WITHECNR"))
+
+            if (BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.EndsWith(mechanism, "withSM2"))
             {
-                return (new DsaDigestSigner(new ECNRSigner(), new Sha224Digest()));
-            }
-            if (mechanism.Equals("SHA256WITHECNR"))
-            {
-                return (new DsaDigestSigner(new ECNRSigner(), new Sha256Digest()));
-            }
-            if (mechanism.Equals("SHA384WITHECNR"))
-            {
-                return (new DsaDigestSigner(new ECNRSigner(), new Sha384Digest()));
-            }
-            if (mechanism.Equals("SHA512WITHECNR"))
-            {
-                return (new DsaDigestSigner(new ECNRSigner(), new Sha512Digest()));
+                string digestName = mechanism.Substring(0, mechanism.LastIndexOf("with"));
+                IDigest digest = DigestUtilities.GetDigest(digestName);
+                return new SM2Signer(digest);
             }
 
             if (mechanism.Equals("GOST3410"))
@@ -536,10 +610,10 @@ namespace Org.BouncyCastle.Security
                 return new Iso9796d2Signer(new RsaBlindedEngine(), new RipeMD160Digest(), true);
             }
 
-            if (Org.BouncyCastle.Utilities.Platform.EndsWith(mechanism, "/X9.31"))
+            if (BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.EndsWith(mechanism, "/X9.31"))
             {
                 string x931 = mechanism.Substring(0, mechanism.Length - "/X9.31".Length);
-                int withPos = Org.BouncyCastle.Utilities.Platform.IndexOf(x931, "WITH");
+                int withPos = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.IndexOf(x931, "WITH");
                 if (withPos > 0)
                 {
                     int endPos = withPos + "WITH".Length;
@@ -564,7 +638,19 @@ namespace Org.BouncyCastle.Security
         {
             return (string) algorithms[oid.Id];
         }
+
+        public static ISigner InitSigner(DerObjectIdentifier algorithmOid, bool forSigning, AsymmetricKeyParameter privateKey, SecureRandom random)
+        {
+            return InitSigner(algorithmOid.Id, forSigning, privateKey, random);
+        }
+
+        public static ISigner InitSigner(string algorithm, bool forSigning, AsymmetricKeyParameter privateKey, SecureRandom random)
+        {
+            ISigner signer = SignerUtilities.GetSigner(algorithm);
+            signer.Init(forSigning, ParameterUtilities.WithRandom(privateKey, random));
+            return signer;
+        }
     }
 }
-
+#pragma warning restore
 #endif

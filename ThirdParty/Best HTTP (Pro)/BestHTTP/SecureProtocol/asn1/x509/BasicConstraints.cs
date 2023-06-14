@@ -1,10 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Asn1.X509
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509
 {
     public class BasicConstraints
         : Asn1Encodable
@@ -37,7 +38,7 @@ namespace Org.BouncyCastle.Asn1.X509
 				return GetInstance(X509Extension.ConvertValueToObject((X509Extension) obj));
 			}
 
-            throw new ArgumentException("unknown object in factory: " + Org.BouncyCastle.Utilities.Platform.GetTypeName(obj), "obj");
+            throw new ArgumentException("unknown object in factory: " + BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.GetTypeName(obj), "obj");
 		}
 
 		private BasicConstraints(
@@ -107,18 +108,9 @@ namespace Org.BouncyCastle.Asn1.X509
         public override Asn1Object ToAsn1Object()
         {
             Asn1EncodableVector v = new Asn1EncodableVector();
-
-			if (cA != null)
-			{
-				v.Add(cA);
-			}
-
-            if (pathLenConstraint != null)  // yes some people actually do this when cA is false...
-            {
-                v.Add(pathLenConstraint);
-            }
-
-			return new DerSequence(v);
+            v.AddOptional(cA,
+                pathLenConstraint); // yes some people actually do this when cA is false...
+            return new DerSequence(v);
         }
 
 		public override string ToString()
@@ -132,5 +124,5 @@ namespace Org.BouncyCastle.Asn1.X509
         }
     }
 }
-
+#pragma warning restore
 #endif

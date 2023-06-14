@@ -1,12 +1,12 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Modes
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Modes
 {
     /**
      * An implementation of <a href="http://tools.ietf.org/html/rfc7253">RFC 7253 on The OCB
@@ -163,7 +163,7 @@ namespace Org.BouncyCastle.Crypto.Modes
 
             this.L_Dollar = OCB_double(L_Asterisk);
 
-            this.L = Org.BouncyCastle.Utilities.Platform.CreateArrayList();
+            this.L = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList();
             this.L.Add(OCB_double(L_Dollar));
 
             /*
@@ -239,7 +239,9 @@ namespace Org.BouncyCastle.Crypto.Modes
 
         public virtual byte[] GetMac()
         {
-            return Arrays.Clone(macBlock);
+            return macBlock == null
+                ? new byte[macSize]
+                : Arrays.Clone(macBlock);
         }
 
         public virtual int GetOutputSize(int len)
@@ -563,5 +565,5 @@ namespace Org.BouncyCastle.Crypto.Modes
         }
     }
 }
-
+#pragma warning restore
 #endif

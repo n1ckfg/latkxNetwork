@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.IO;
 
-namespace Org.BouncyCastle.Utilities.IO
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.IO
 {
-#if !(NETCF_1_0 || NETCF_2_0 || SILVERLIGHT || NETFX_CORE)
+#if !(NETCF_1_0 || NETCF_2_0 || SILVERLIGHT || PORTABLE || NETFX_CORE)
     [Serializable]
 #endif
     public class StreamOverflowException
@@ -30,5 +30,5 @@ namespace Org.BouncyCastle.Utilities.IO
 		}
 	}
 }
-
+#pragma warning restore
 #endif

@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Crypto.Parameters
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters
 {
 	public class Gost3410ValidationParameters
 	{
@@ -51,5 +51,5 @@ namespace Org.BouncyCastle.Crypto.Parameters
 
 	}
 }
-
+#pragma warning restore
 #endif

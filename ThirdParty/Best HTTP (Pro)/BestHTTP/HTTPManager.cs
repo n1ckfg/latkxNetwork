@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
     using BestHTTP.Caching;
 #endif
 
@@ -19,12 +19,12 @@ namespace BestHTTP
         // Static constructor. Setup default values
         static HTTPManager()
         {
-            MaxConnectionPerServer = 4;
+            MaxConnectionPerServer = 6;
             KeepAliveDefaultValue = true;
             MaxPathLength = 255;
             MaxConnectionIdleTime = TimeSpan.FromSeconds(20);
 
-#if !BESTHTTP_DISABLE_COOKIES //&& (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_COOKIES
 #if UNITY_WEBGL
             // Under webgl when IsCookiesEnabled is true, it will set the withCredentials flag for the XmlHTTPRequest
             //  and that's different from the default behavior.
@@ -47,6 +47,15 @@ namespace BestHTTP
             DefaultCertificateVerifyer = null;
             UseAlternateSSLDefaultValue = true;
 #endif
+
+#if NETFX_CORE
+            IOService = new PlatformSupport.FileSystem.NETFXCOREIOService();
+#elif UNITY_WEBGL && !UNITY_EDITOR
+            IOService = new PlatformSupport.FileSystem.WebGLIOService();
+#else
+            IOService = new PlatformSupport.FileSystem.DefaultIOService();
+#endif
+
         }
 
         #region Global Options
@@ -71,7 +80,7 @@ namespace BestHTTP
         /// </summary>
         public static bool KeepAliveDefaultValue { get; set; }
 
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
         /// <summary>
         /// Set to true, if caching is prohibited.
         /// </summary>
@@ -83,7 +92,7 @@ namespace BestHTTP
         /// </summary>
         public static TimeSpan MaxConnectionIdleTime { get; set; }
 
-#if !BESTHTTP_DISABLE_COOKIES //&& (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_COOKIES
         /// <summary>
         /// Set to false to disable all Cookie. It's default value is true.
         /// </summary>
@@ -110,7 +119,7 @@ namespace BestHTTP
         /// </summary>
         public static TimeSpan RequestTimeout { get; set; }
 
-#if !((BESTHTTP_DISABLE_CACHING && BESTHTTP_DISABLE_COOKIES) || (UNITY_WEBGL && !UNITY_EDITOR))
+#if !(BESTHTTP_DISABLE_CACHING && BESTHTTP_DISABLE_COOKIES)
         /// <summary>
         /// By default the plugin will save all cache and cookie data under the path returned by Application.persistentDataPath.
         /// You can assign a function to this delegate to return a custom root path to define a new path.
@@ -178,23 +187,33 @@ namespace BestHTTP
         public static bool UseAlternateSSLDefaultValue { get; set; }
 #endif
 
-#if !NETFX_CORE && !UNITY_WP8
+#if !NETFX_CORE
         public static Func<HTTPRequest, System.Security.Cryptography.X509Certificates.X509Certificate, System.Security.Cryptography.X509Certificates.X509Chain, bool> DefaultCertificationValidator { get; set; }
 #endif
 
         /// <summary>
         /// Setting this option to true, the processing connection will set the TCP NoDelay option to send out data as soon as it can.
         /// </summary>
-        public static bool TryToMinimizeTCPLatency = false;
+        public static bool TryToMinimizeTCPLatency = true;
 
         public static int SendBufferSize = 65 * 1024;
         public static int ReceiveBufferSize = 65 * 1024;
+
+        /// <summary>
+        /// An IIOService implementation to handle filesystem operations.
+        /// </summary>
+        public static PlatformSupport.FileSystem.IIOService IOService;
 
         /// <summary>
         /// On most systems the maximum length of a path is around 255 character. If a cache entity's path is longer than this value it doesn't get cached. There no platform independent API to query the exact value on the current system, but it's
         /// exposed here and can be overridden. It's default value is 255.
         /// </summary>
         internal static int MaxPathLength { get; set; }
+
+        /// <summary>
+        /// User-agent string that will be sent with each requests.
+        /// </summary>
+        public static string UserAgent = "BestHTTP 1.12.3";
 
         #endregion
 
@@ -238,11 +257,11 @@ namespace BestHTTP
         {
             HTTPUpdateDelegator.CheckInstance();
 
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
             HTTPCacheService.CheckSetup();
 #endif
 
-#if !BESTHTTP_DISABLE_COOKIES //&& (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_COOKIES
             Cookies.CookieJar.SetupFolder();
 #endif
         }
@@ -315,7 +334,7 @@ namespace BestHTTP
                 stat.RequestsInQueue = RequestQueue.Count;
             }
 
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
             if ((queryFlags & StatisticsQueryFlags.Cache) != 0)
             {
                 stat.CacheEntityCount = HTTPCacheService.GetCacheEntityCount();
@@ -323,7 +342,7 @@ namespace BestHTTP
             }
 #endif
 
-#if !BESTHTTP_DISABLE_COOKIES //&& (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_COOKIES
             if ((queryFlags & StatisticsQueryFlags.Cookies) != 0)
             {
                 List<Cookies.Cookie> cookies = Cookies.CookieJar.GetAll();
@@ -500,7 +519,7 @@ namespace BestHTTP
             return RequestQueue.Remove(request);
         }
 
-#if !((BESTHTTP_DISABLE_CACHING && BESTHTTP_DISABLE_COOKIES) || (UNITY_WEBGL && !UNITY_EDITOR))
+#if !(BESTHTTP_DISABLE_CACHING && BESTHTTP_DISABLE_COOKIES)
         /// <summary>
         /// Will return where the various caches should be saved.
         /// </summary>
@@ -643,7 +662,14 @@ namespace BestHTTP
                                             }
                                         }
                                     }
-                                    break;
+
+                                    if (conn.CurrentRequest != null)
+                                    {
+                                        // Still process any callbacks.
+                                        goto case HTTPConnectionStates.Processing;
+                                    }
+                                    else
+                                        break;
 
                                 case HTTPConnectionStates.Closed:
                                     // If it's a streamed request, it's finished now
@@ -737,6 +763,8 @@ namespace BestHTTP
 
             if (heartbeats != null)
                 heartbeats.Update();
+
+            VariableSizedBufferPool.Maintain();
         }
 
         public static void OnQuit()
@@ -745,11 +773,11 @@ namespace BestHTTP
             {
                 IsQuitting = true;
 
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
                 Caching.HTTPCacheService.SaveLibrary();
 #endif
 
-#if !BESTHTTP_DISABLE_COOKIES //&& (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_COOKIES
                 Cookies.CookieJar.Persist();
 #endif
 

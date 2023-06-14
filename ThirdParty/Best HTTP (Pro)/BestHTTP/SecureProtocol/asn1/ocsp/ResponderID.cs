@@ -1,10 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Asn1.X509;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509;
 
-namespace Org.BouncyCastle.Asn1.Ocsp
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Ocsp
 {
     public class ResponderID
         : Asn1Encodable, IAsn1Choice
@@ -106,5 +107,5 @@ namespace Org.BouncyCastle.Asn1.Ocsp
         }
     }
 }
-
+#pragma warning restore
 #endif

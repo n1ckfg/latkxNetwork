@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Crypto
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto
 {
     /**
      * this exception is thrown if a buffer that is meant to have output
@@ -10,7 +10,7 @@ namespace Org.BouncyCastle.Crypto
      * insufficient input. In general this exception will Get thrown rather
      * than an ArrayOutOfBounds exception.
      */
-#if !(NETCF_1_0 || NETCF_2_0 || SILVERLIGHT || NETFX_CORE || PORTABLE)
+#if !(NETCF_1_0 || NETCF_2_0 || SILVERLIGHT || PORTABLE || NETFX_CORE)
     [Serializable]
 #endif
     public class DataLengthException
@@ -42,5 +42,5 @@ namespace Org.BouncyCastle.Crypto
         }
 	}
 }
-
+#pragma warning restore
 #endif

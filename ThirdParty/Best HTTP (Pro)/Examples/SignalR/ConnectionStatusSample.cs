@@ -5,49 +5,50 @@ using System;
 using UnityEngine;
 using BestHTTP.SignalR;
 using BestHTTP.SignalR.Hubs;
-using BestHTTP.Examples;
 
-sealed class ConnectionStatusSample : MonoBehaviour
+namespace BestHTTP.Examples
 {
-    readonly Uri URI = new Uri("https://besthttpsignalr.azurewebsites.net/signalr");
-
-    /// <summary>
-    /// Reference to the SignalR Connection
-    /// </summary>
-    Connection signalRConnection;
-
-    GUIMessageList messages = new GUIMessageList();
-
-    #region Unity Events
-
-    void Start()
+    public sealed class ConnectionStatusSample : MonoBehaviour
     {
-        // Connect to the StatusHub hub
-        signalRConnection = new Connection(URI, "StatusHub");
+        readonly Uri URI = new Uri(GUIHelper.BaseURL + "/signalr");
 
-        // General events
-        signalRConnection.OnNonHubMessage += signalRConnection_OnNonHubMessage;
-        signalRConnection.OnError += signalRConnection_OnError;
-        signalRConnection.OnStateChanged += signalRConnection_OnStateChanged;
+        /// <summary>
+        /// Reference to the SignalR Connection
+        /// </summary>
+        Connection signalRConnection;
 
-        // Set up a callback for Hub events
-        signalRConnection["StatusHub"].OnMethodCall += statusHub_OnMethodCall;
+        GUIMessageList messages = new GUIMessageList();
 
-        // Connect to the server
-        signalRConnection.Open();
-    }
+        #region Unity Events
 
-    void OnDestroy()
-    {
-        // Close the connection when we are closing the sample
-        signalRConnection.Close();
-    }
-
-    void OnGUI()
-    {
-        GUIHelper.DrawArea(GUIHelper.ClientArea, true, () =>
+        void Start()
         {
-            GUILayout.BeginHorizontal();
+            // Connect to the StatusHub hub
+            signalRConnection = new Connection(URI, "StatusHub");
+
+            // General events
+            signalRConnection.OnNonHubMessage += signalRConnection_OnNonHubMessage;
+            signalRConnection.OnError += signalRConnection_OnError;
+            signalRConnection.OnStateChanged += signalRConnection_OnStateChanged;
+
+            // Set up a callback for Hub events
+            signalRConnection["StatusHub"].OnMethodCall += statusHub_OnMethodCall;
+
+            // Connect to the server
+            signalRConnection.Open();
+        }
+
+        void OnDestroy()
+        {
+            // Close the connection when we are closing the sample
+            signalRConnection.Close();
+        }
+
+        void OnGUI()
+        {
+            GUIHelper.DrawArea(GUIHelper.ClientArea, true, () =>
+            {
+                GUILayout.BeginHorizontal();
 
                 if (GUILayout.Button("START") && signalRConnection.State != ConnectionStates.Connected)
                     signalRConnection.Open();
@@ -60,80 +61,81 @@ sealed class ConnectionStatusSample : MonoBehaviour
 
                 if (GUILayout.Button("PING") && signalRConnection.State == ConnectionStates.Connected)
                 {
-                    // Call a Hub-method on the server.
-                    signalRConnection["StatusHub"].Call("Ping");
+                // Call a Hub-method on the server.
+                signalRConnection["StatusHub"].Call("Ping");
                 }
 
-            GUILayout.EndHorizontal();
+                GUILayout.EndHorizontal();
 
-            GUILayout.Space(20);
+                GUILayout.Space(20);
 
-            GUILayout.Label("Connection Status Messages");
+                GUILayout.Label("Connection Status Messages");
 
-            GUILayout.BeginHorizontal();
+                GUILayout.BeginHorizontal();
                 GUILayout.Space(20);
                 messages.Draw(Screen.width - 20, 0);
-            GUILayout.EndHorizontal();
-        });
-    }
-
-    #endregion
-
-    #region SignalR Events
-
-    /// <summary>
-    /// Called on server-sent non-hub messages.
-    /// </summary>
-    void signalRConnection_OnNonHubMessage(Connection manager, object data)
-    {
-        messages.Add("[Server Message] " + data.ToString());
-    }
-
-    /// <summary>
-    /// Called when the SignalR Connection's state changes.
-    /// </summary>
-    void signalRConnection_OnStateChanged(Connection manager, ConnectionStates oldState, ConnectionStates newState)
-    {
-        messages.Add(string.Format("[State Change] {0} => {1}", oldState, newState));
-    }
-
-    /// <summary>
-    /// Called when an error occures. The plugin may close the connection after this event.
-    /// </summary>
-    void signalRConnection_OnError(Connection manager, string error)
-    {
-        messages.Add("[Error] " + error);
-    }
-
-    /// <summary>
-    /// Called when the "StatusHub" hub wants to call a method on this client.
-    /// </summary>
-    void statusHub_OnMethodCall(Hub hub, string method, params object[] args)
-    {
-        string id = args.Length > 0 ? args[0] as string : string.Empty;
-        string when = args.Length > 1 ? args[1].ToString() : string.Empty;
-
-        switch (method)
-        {
-            case "joined":
-                messages.Add(string.Format("[{0}] {1} joined at {2}", hub.Name, id, when));
-                break;
-
-            case "rejoined":
-                messages.Add(string.Format("[{0}] {1} reconnected at {2}", hub.Name, id, when));
-                break;
-
-            case "leave":
-                messages.Add(string.Format("[{0}] {1} leaved at {2}", hub.Name, id, when));
-                break;
-
-            default: // pong
-                messages.Add(string.Format("[{0}] {1}", hub.Name, method));
-                break;
+                GUILayout.EndHorizontal();
+            });
         }
-    }
 
-    #endregion
+        #endregion
+
+        #region SignalR Events
+
+        /// <summary>
+        /// Called on server-sent non-hub messages.
+        /// </summary>
+        void signalRConnection_OnNonHubMessage(Connection manager, object data)
+        {
+            messages.Add("[Server Message] " + data.ToString());
+        }
+
+        /// <summary>
+        /// Called when the SignalR Connection's state changes.
+        /// </summary>
+        void signalRConnection_OnStateChanged(Connection manager, ConnectionStates oldState, ConnectionStates newState)
+        {
+            messages.Add(string.Format("[State Change] {0} => {1}", oldState, newState));
+        }
+
+        /// <summary>
+        /// Called when an error occures. The plugin may close the connection after this event.
+        /// </summary>
+        void signalRConnection_OnError(Connection manager, string error)
+        {
+            messages.Add("[Error] " + error);
+        }
+
+        /// <summary>
+        /// Called when the "StatusHub" hub wants to call a method on this client.
+        /// </summary>
+        void statusHub_OnMethodCall(Hub hub, string method, params object[] args)
+        {
+            string id = args.Length > 0 ? args[0] as string : string.Empty;
+            string when = args.Length > 1 ? args[1].ToString() : string.Empty;
+
+            switch (method)
+            {
+                case "joined":
+                    messages.Add(string.Format("[{0}] {1} joined at {2}", hub.Name, id, when));
+                    break;
+
+                case "rejoined":
+                    messages.Add(string.Format("[{0}] {1} reconnected at {2}", hub.Name, id, when));
+                    break;
+
+                case "leave":
+                    messages.Add(string.Format("[{0}] {1} leaved at {2}", hub.Name, id, when));
+                    break;
+
+                default: // pong
+                    messages.Add(string.Format("[{0}] {1}", hub.Name, method));
+                    break;
+            }
+        }
+
+        #endregion
+    }
 }
 
 #endif

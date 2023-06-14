@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Crypto
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto
 {
     /**
      * The base interface for implementations of message authentication codes (MACs).
@@ -69,5 +69,5 @@ namespace Org.BouncyCastle.Crypto
         void Reset();
     }
 }
-
+#pragma warning restore
 #endif

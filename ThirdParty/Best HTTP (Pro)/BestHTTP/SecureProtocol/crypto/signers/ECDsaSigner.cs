@@ -1,21 +1,21 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Crypto.Digests;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Math.EC;
-using Org.BouncyCastle.Math.EC.Multiplier;
-using Org.BouncyCastle.Security;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Digests;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC.Multiplier;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security;
 
-namespace Org.BouncyCastle.Crypto.Signers
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Signers
 {
     /**
      * EC-DSA as described in X9.62
      */
     public class ECDsaSigner
-        : IDsa
+        : IDsaExt
     {
         private static readonly BigInteger Eight = BigInteger.ValueOf(8);
 
@@ -75,6 +75,11 @@ namespace Org.BouncyCastle.Crypto.Signers
             }
 
             this.random = InitSecureRandom(forSigning && !kCalculator.IsDeterministic, providedRandom);
+        }
+
+        public virtual BigInteger Order
+        {
+            get { return key.Parameters.N; }
         }
 
         // 5.3 pg 28
@@ -240,5 +245,5 @@ namespace Org.BouncyCastle.Crypto.Signers
         }
     }
 }
-
+#pragma warning restore
 #endif

@@ -1,14 +1,14 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Crypto
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto
 {
 	/// <summary>
 	/// This exception is thrown whenever a cipher requires a change of key, iv
 	/// or similar after x amount of bytes enciphered
-    /// </summary>
-#if !(NETCF_1_0 || NETCF_2_0 || SILVERLIGHT || NETFX_CORE || PORTABLE)
+	/// </summary>
+#if !(NETCF_1_0 || NETCF_2_0 || SILVERLIGHT || PORTABLE || NETFX_CORE)
     [Serializable]
 #endif
     public class MaxBytesExceededException
@@ -32,5 +32,5 @@ namespace Org.BouncyCastle.Crypto
 		}
 	}
 }
-
+#pragma warning restore
 #endif

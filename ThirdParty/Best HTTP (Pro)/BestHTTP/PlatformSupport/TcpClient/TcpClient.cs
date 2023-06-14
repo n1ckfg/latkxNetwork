@@ -1,4 +1,4 @@
-﻿#if (!NETFX_CORE && !UNITY_WP8) || UNITY_EDITOR
+﻿#if !NETFX_CORE || UNITY_EDITOR
 
 // TcpClient.cs
 //

@@ -1,10 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.Collections;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Asn1
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1
 {
 	/**
 	 * BER TaggedObject - in ASN.1 notation this is any object preceded by
@@ -83,7 +84,7 @@ namespace Org.BouncyCastle.Asn1
 						}
 						else
 						{
-							throw Org.BouncyCastle.Utilities.Platform.CreateNotImplementedException(Org.BouncyCastle.Utilities.Platform.GetTypeName(obj));
+							throw BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateNotImplementedException(BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.GetTypeName(obj));
 						}
 
 						foreach (Asn1Encodable o in eObj)
@@ -107,5 +108,5 @@ namespace Org.BouncyCastle.Asn1
 		}
 	}
 }
-
+#pragma warning restore
 #endif

@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
 
-using Org.BouncyCastle.Crypto.Parameters;
-
-namespace Org.BouncyCastle.Crypto.Modes
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Modes
 {
 	/// <summary>
 	/// A block cipher mode that includes authenticated encryption with a streaming mode
@@ -105,5 +105,5 @@ namespace Org.BouncyCastle.Crypto.Modes
 		void Reset();
 	}
 }
-
+#pragma warning restore
 #endif

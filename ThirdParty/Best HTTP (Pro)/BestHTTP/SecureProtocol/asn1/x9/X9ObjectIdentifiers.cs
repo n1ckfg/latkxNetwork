@@ -1,7 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Asn1.X9
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X9
 {
     public abstract class X9ObjectIdentifiers
     {
@@ -136,5 +137,5 @@ namespace Org.BouncyCastle.Asn1.X9
         public static readonly DerObjectIdentifier Mqv1 = X9x42Schemes.Branch("8");
     }
 }
-
+#pragma warning restore
 #endif

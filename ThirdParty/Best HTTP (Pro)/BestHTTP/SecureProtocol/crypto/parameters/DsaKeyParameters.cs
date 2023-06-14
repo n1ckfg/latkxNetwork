@@ -1,10 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Parameters
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters
 {
     public abstract class DsaKeyParameters
 		: AsymmetricKeyParameter
@@ -42,7 +42,7 @@ namespace Org.BouncyCastle.Crypto.Parameters
 		protected bool Equals(
 			DsaKeyParameters other)
 		{
-			return Org.BouncyCastle.Utilities.Platform.Equals(parameters, other.parameters)
+			return BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.Equals(parameters, other.parameters)
 				&& base.Equals(other);
 		}
 
@@ -59,5 +59,5 @@ namespace Org.BouncyCastle.Crypto.Parameters
 		}
     }
 }
-
+#pragma warning restore
 #endif

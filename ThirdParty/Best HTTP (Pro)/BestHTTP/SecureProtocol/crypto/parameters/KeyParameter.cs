@@ -1,10 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Crypto;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto;
 
-namespace Org.BouncyCastle.Crypto.Parameters
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters
 {
     public class KeyParameter
 		: ICipherParameters
@@ -29,7 +29,7 @@ namespace Org.BouncyCastle.Crypto.Parameters
 				throw new ArgumentNullException("key");
 			if (keyOff < 0 || keyOff > key.Length)
 				throw new ArgumentOutOfRangeException("keyOff");
-			if (keyLen < 0 || (keyOff + keyLen) > key.Length)
+            if (keyLen < 0 || keyLen > (key.Length - keyOff))
 				throw new ArgumentOutOfRangeException("keyLen");
 
 			this.key = new byte[keyLen];
@@ -43,5 +43,5 @@ namespace Org.BouncyCastle.Crypto.Parameters
     }
 
 }
-
+#pragma warning restore
 #endif

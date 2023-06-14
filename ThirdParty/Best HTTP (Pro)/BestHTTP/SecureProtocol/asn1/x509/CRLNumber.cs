@@ -1,7 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-using Org.BouncyCastle.Math;
+#pragma warning disable
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
 
-namespace Org.BouncyCastle.Asn1.X509
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509
 {
     /**
      * The CRLNumber object.
@@ -29,5 +30,5 @@ namespace Org.BouncyCastle.Asn1.X509
 		}
 	}
 }
-
+#pragma warning restore
 #endif

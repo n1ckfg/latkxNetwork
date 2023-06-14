@@ -1,7 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-using Org.BouncyCastle.Asn1;
+#pragma warning disable
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
 
-namespace Org.BouncyCastle.Asn1.Misc
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Misc
 {
     public class VerisignCzagExtension
         : DerIA5String
@@ -17,5 +18,5 @@ namespace Org.BouncyCastle.Asn1.Misc
         }
     }
 }
-
+#pragma warning restore
 #endif

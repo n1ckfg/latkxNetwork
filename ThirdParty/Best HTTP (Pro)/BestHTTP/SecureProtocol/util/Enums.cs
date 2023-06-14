@@ -1,27 +1,23 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Text;
 
-//#if NETCF_1_0 || NETCF_2_0 || SILVERLIGHT || PORTABLE
+#if NETCF_1_0 || NETCF_2_0 || SILVERLIGHT || PORTABLE || NETFX_CORE
 using System.Collections;
 using System.Reflection;
-//#endif
-
-using Org.BouncyCastle.Utilities.Date;
-
-#if UNITY_WSA && !UNITY_EDITOR && !ENABLE_IL2CPP
-using System.TypeFix;
 #endif
 
-namespace Org.BouncyCastle.Utilities
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Date;
+
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities
 {
     internal abstract class Enums
     {
         internal static Enum GetEnumValue(System.Type enumType, string s)
         {
-            /*if (!enumType.IsEnum)
-                throw new ArgumentException("Not an enumeration type", "enumType");*/
+            if (!IsEnumType(enumType))
+                throw new ArgumentException("Not an enumeration type", "enumType");
 
             // We only want to parse single named constants
             if (s.Length > 0 && char.IsLetter(s[0]) && s.IndexOf(',') < 0)
@@ -37,7 +33,7 @@ namespace Org.BouncyCastle.Utilities
                 }
 #else
                 return (Enum)Enum.Parse(enumType, s, false);
-#endif
+#endif		
             }
 
             throw new ArgumentException();
@@ -45,11 +41,11 @@ namespace Org.BouncyCastle.Utilities
 
         internal static Array GetEnumValues(System.Type enumType)
         {
-            /*if (!enumType.IsEnum)
-                throw new ArgumentException("Not an enumeration type", "enumType");*/
+            if (!IsEnumType(enumType))
+                throw new ArgumentException("Not an enumeration type", "enumType");
 
 #if NETCF_1_0 || NETCF_2_0 || SILVERLIGHT
-            IList result = Org.BouncyCastle.Utilities.Platform.CreateArrayList();
+            IList result = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList();
             FieldInfo[] fields = enumType.GetFields(BindingFlags.Static | BindingFlags.Public);
             foreach (FieldInfo field in fields)
             {
@@ -82,5 +78,5 @@ namespace Org.BouncyCastle.Utilities
         }
     }
 }
-
+#pragma warning restore
 #endif

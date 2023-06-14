@@ -58,17 +58,16 @@ namespace BestHTTP.WebSocket.Extensions
         /// <summary>
         /// Cached object to support context takeover.
         /// </summary>
-        private System.IO.MemoryStream compressorOutputStream;
+        private BufferPoolMemoryStream compressorOutputStream;
         private DeflateStream compressorDeflateStream;
 
         /// <summary>
         /// Cached object to support context takeover.
         /// </summary>
-        private System.IO.MemoryStream decompressorInputStream;
-        private System.IO.MemoryStream decompressorOutputStream;
+        private BufferPoolMemoryStream decompressorInputStream;
+        private BufferPoolMemoryStream decompressorOutputStream;
         private DeflateStream decompressorDeflateStream;
 
-        private byte[] copyBuffer = new byte[1024];
         #endregion
 
         public PerMessageCompression()
@@ -220,11 +219,11 @@ namespace BestHTTP.WebSocket.Extensions
         public byte[] Encode(WebSocketFrame writer)
         {
             if (writer.Data == null)
-                return WebSocketFrame.NoData;
+                return VariableSizedBufferPool.NoData;
 
             // Is compressing enabled for this frame? If so, compress it.
             if ((writer.Header & 0x40) != 0)
-                return Compress(writer.Data);
+                return Compress(writer.Data, writer.DataLength);
             else
                 return writer.Data;
         }
@@ -232,11 +231,11 @@ namespace BestHTTP.WebSocket.Extensions
         /// <summary>
         /// IExtension implementation to possible decompress the data.
         /// </summary>
-        public byte[] Decode(byte header, byte[] data)
+        public byte[] Decode(byte header, byte[] data, int length)
         {
             // Is the server compressed the data? If so, decompress it.
             if ((header & 0x40) != 0)
-                return Decompress(data);
+                return Decompress(data, length);
             else
                 return data;
         }
@@ -248,10 +247,10 @@ namespace BestHTTP.WebSocket.Extensions
         /// <summary>
         /// A function to compress and return the data parameter with possible context takeover support (reusing the DeflateStream).
         /// </summary>
-        private byte[] Compress(byte[] data)
+        private byte[] Compress(byte[] data, int length)
         {
             if (compressorOutputStream == null)
-                compressorOutputStream = new System.IO.MemoryStream();
+                compressorOutputStream = new BufferPoolMemoryStream();
             compressorOutputStream.SetLength(0);
 
             if (compressorDeflateStream == null)
@@ -263,7 +262,7 @@ namespace BestHTTP.WebSocket.Extensions
             byte[] result = null;
             try
             {
-                compressorDeflateStream.Write(data, 0, data.Length);
+                compressorDeflateStream.Write(data, 0, length);
                 compressorDeflateStream.Flush();
 
                 compressorOutputStream.Position = 0;
@@ -289,12 +288,12 @@ namespace BestHTTP.WebSocket.Extensions
         /// <summary>
         /// A function to decompress and return the data parameter with possible context takeover support (reusing the DeflateStream).
         /// </summary>
-        private byte[] Decompress(byte[] data)
+        private byte[] Decompress(byte[] data, int length)
         {
             if (decompressorInputStream == null)
-                decompressorInputStream = new System.IO.MemoryStream(data.Length + 4);
+                decompressorInputStream = new BufferPoolMemoryStream(data.Length + 4);
 
-            decompressorInputStream.Write(data, 0, data.Length);
+            decompressorInputStream.Write(data, 0, length);
 
             // http://tools.ietf.org/html/rfc7692#section-7.2.2
             // Append 4 octets of 0x00 0x00 0xff 0xff to the tail end of the payload of the message.
@@ -309,12 +308,15 @@ namespace BestHTTP.WebSocket.Extensions
             }
 
             if (decompressorOutputStream == null)
-                decompressorOutputStream = new System.IO.MemoryStream();
+                decompressorOutputStream = new BufferPoolMemoryStream();
             decompressorOutputStream.SetLength(0);
 
+            byte[] copyBuffer = VariableSizedBufferPool.Get(1024, true);
             int readCount;
             while ((readCount = decompressorDeflateStream.Read(copyBuffer, 0, copyBuffer.Length)) != 0)
                 decompressorOutputStream.Write(copyBuffer, 0, readCount);
+
+            VariableSizedBufferPool.Release(copyBuffer);
 
             decompressorDeflateStream.SetLength(0);
 

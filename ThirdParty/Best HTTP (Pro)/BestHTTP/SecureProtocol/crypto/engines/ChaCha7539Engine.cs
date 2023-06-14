@@ -1,9 +1,10 @@
-﻿#if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Crypto.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Engines
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Engines
 {
     /// <summary>
     /// Implementation of Daniel J. Bernstein's ChaCha stream cipher.
@@ -20,7 +21,7 @@ namespace Org.BouncyCastle.Crypto.Engines
 
         public override string AlgorithmName
         {
-            get { return "ChaCha" + rounds; }
+            get { return "ChaCha7539" + rounds; }
         }
 
         protected override int NonceSize
@@ -63,4 +64,6 @@ namespace Org.BouncyCastle.Crypto.Engines
         }
     }
 }
+
+#pragma warning restore
 #endif

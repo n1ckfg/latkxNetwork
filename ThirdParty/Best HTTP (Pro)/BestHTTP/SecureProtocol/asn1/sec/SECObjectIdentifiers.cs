@@ -1,10 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Asn1.X9;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X9;
 
-namespace Org.BouncyCastle.Asn1.Sec
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Sec
 {
 	public abstract class SecObjectIdentifiers
 	{
@@ -51,4 +52,5 @@ namespace Org.BouncyCastle.Asn1.Sec
 		public static readonly DerObjectIdentifier SecP256r1 = X9ObjectIdentifiers.Prime256v1;
 	}
 }
+#pragma warning restore
 #endif

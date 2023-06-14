@@ -1,12 +1,12 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Crypto.Digests;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Security;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Digests;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security;
 
-namespace Org.BouncyCastle.Crypto.Signers
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Signers
 {
 	/// <summary> RSA-PSS as described in Pkcs# 1 v 2.1.
 	/// <p>
@@ -105,7 +105,7 @@ namespace Org.BouncyCastle.Crypto.Signers
 			IDigest					digest,
 			int						saltLen,
 			byte					trailer)
-			: this(cipher, digest, digest, saltLen, TrailerImplicit)
+			: this(cipher, digest, digest, saltLen, trailer)
 		{
 		}
 
@@ -386,5 +386,5 @@ namespace Org.BouncyCastle.Crypto.Signers
 		}
 	}
 }
-
+#pragma warning restore
 #endif

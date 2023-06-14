@@ -1,8 +1,9 @@
-﻿#if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.IO;
 
-namespace Org.BouncyCastle.Crypto
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto
 {
     /// <summary>
     /// Base interface for cryptographic operations such as Hashes, MACs, and Signatures which reduce a stream of data
@@ -22,5 +23,5 @@ namespace Org.BouncyCastle.Crypto
         Object GetResult();
     }
 }
-
+#pragma warning restore
 #endif

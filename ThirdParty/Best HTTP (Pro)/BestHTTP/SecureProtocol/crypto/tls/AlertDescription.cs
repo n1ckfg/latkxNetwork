@@ -1,6 +1,6 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
-namespace Org.BouncyCastle.Crypto.Tls
+#pragma warning disable
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     /// <summary>
     /// RFC 5246 7.2
@@ -304,5 +304,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         }
     }
 }
-
+#pragma warning restore
 #endif

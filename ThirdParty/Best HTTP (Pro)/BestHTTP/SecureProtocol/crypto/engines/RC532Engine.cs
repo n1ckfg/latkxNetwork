@@ -1,15 +1,14 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
-
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Utilities;
 
 #if UNITY_WSA && !UNITY_EDITOR && !ENABLE_IL2CPP
 using System.TypeFix;
 #endif
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Engines
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Engines
 {
     /**
     * The specification for RC5 came from the <code>RC5 Encryption Algorithm</code>
@@ -98,7 +97,7 @@ namespace Org.BouncyCastle.Crypto.Engines
             }
             else
             {
-                throw new ArgumentException("invalid parameter passed to RC532 init - " + Org.BouncyCastle.Utilities.Platform.GetTypeName(parameters));
+                throw new ArgumentException("invalid parameter passed to RC532 init - " + BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.GetTypeName(parameters));
             }
 
             this.forEncryption = forEncryption;
@@ -298,5 +297,5 @@ namespace Org.BouncyCastle.Crypto.Engines
         }
     }
 }
-
+#pragma warning restore
 #endif

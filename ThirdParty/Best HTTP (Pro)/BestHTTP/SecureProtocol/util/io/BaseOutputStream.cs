@@ -1,10 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Diagnostics;
 using System.IO;
 
-namespace Org.BouncyCastle.Utilities.IO
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.IO
 {
     public abstract class BaseOutputStream : Stream
     {
@@ -62,7 +62,12 @@ namespace Org.BouncyCastle.Utilities.IO
 		{
 			Write(buffer, 0, buffer.Length);
 		}
-	}
-}
 
+        public override void WriteByte(byte b)
+        {
+            Write(new byte[]{ b }, 0, 1);
+        }
+    }
+}
+#pragma warning restore
 #endif

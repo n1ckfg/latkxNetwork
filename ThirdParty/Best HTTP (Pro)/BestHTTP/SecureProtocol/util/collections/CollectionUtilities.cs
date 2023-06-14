@@ -1,14 +1,13 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
-using System.Text;
-
 #if UNITY_WSA && !UNITY_EDITOR && !ENABLE_IL2CPP
 using System.TypeFix;
 #endif
+using System.Text;
 
-namespace Org.BouncyCastle.Utilities.Collections
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Collections
 {
     public abstract class CollectionUtilities
     {
@@ -32,41 +31,44 @@ namespace Org.BouncyCastle.Utilities.Collections
 
         public static IDictionary ReadOnly(IDictionary d)
         {
-            return d;
+            return new UnmodifiableDictionaryProxy(d);
         }
 
         public static IList ReadOnly(IList l)
         {
-            return l;
+            return new UnmodifiableListProxy(l);
         }
 
         public static ISet ReadOnly(ISet s)
         {
-            return s;
+            return new UnmodifiableSetProxy(s);
+        }
+
+        public static object RequireNext(IEnumerator e)
+        {
+            if (!e.MoveNext())
+                throw new InvalidOperationException();
+
+            return e.Current;
         }
 
         public static string ToString(IEnumerable c)
         {
-            StringBuilder sb = new StringBuilder("[");
-
             IEnumerator e = c.GetEnumerator();
+            if (!e.MoveNext())
+                return "[]";
 
-            if (e.MoveNext())
+            StringBuilder sb = new StringBuilder("[");
+            sb.Append(e.Current.ToString());
+            while (e.MoveNext())
             {
+                sb.Append(", ");
                 sb.Append(e.Current.ToString());
-
-                while (e.MoveNext())
-                {
-                    sb.Append(", ");
-                    sb.Append(e.Current.ToString());
-                }
             }
-
             sb.Append(']');
-
             return sb.ToString();
         }
     }
 }
-
+#pragma warning restore
 #endif

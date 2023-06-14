@@ -1,7 +1,8 @@
-﻿#if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Crypto
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto
 {
     /// <remarks>
     /// With FIPS PUB 202 a new kind of message digest was announced which supported extendable output, or variable digest sizes.
@@ -30,4 +31,5 @@ namespace Org.BouncyCastle.Crypto
         int DoOutput(byte[] output, int outOff, int outLen);
     }
 }
+#pragma warning restore
 #endif

@@ -1,4 +1,4 @@
-﻿#if !BESTHTTP_DISABLE_COOKIES //&& (!UNITY_WEBGL || UNITY_EDITOR)
+﻿#if !BESTHTTP_DISABLE_COOKIES
 
 using System;
 using System.Collections.Generic;

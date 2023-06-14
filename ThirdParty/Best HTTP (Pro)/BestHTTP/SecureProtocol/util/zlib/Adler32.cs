@@ -1,5 +1,5 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 /*
  * $Id: Adler32.cs,v 1.1 2006-07-31 13:59:25 bouncy Exp $
@@ -36,7 +36,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * and contributors of zlib.
  */
 
-namespace Org.BouncyCastle.Utilities.Zlib {
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Zlib {
 
     internal sealed class Adler32{
 
@@ -88,5 +88,5 @@ namespace Org.BouncyCastle.Utilities.Zlib {
 
     }
 }
-
+#pragma warning restore
 #endif

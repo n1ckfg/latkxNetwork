@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Crypto
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto
 {
 	public abstract class BufferedCipherBase
 		: IBufferedCipher
@@ -113,5 +113,5 @@ namespace Org.BouncyCastle.Crypto
 		public abstract void Reset();
 	}
 }
-
+#pragma warning restore
 #endif

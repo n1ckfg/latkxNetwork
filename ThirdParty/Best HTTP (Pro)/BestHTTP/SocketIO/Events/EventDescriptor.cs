@@ -55,15 +55,16 @@ namespace BestHTTP.SocketIO.Events
         /// </summary>
         public void Call(Socket socket, Packet packet, params object[] args)
         {
-            if (CallbackArray == null || CallbackArray.Length < Callbacks.Count)
-                Array.Resize(ref CallbackArray, Callbacks.Count);
+            int callbackCount = Callbacks.Count;
+            if (CallbackArray == null || CallbackArray.Length < callbackCount)
+                Array.Resize(ref CallbackArray, callbackCount);
 
             // Copy the callback delegates to an array, because in one of the callbacks we can modify the list(by calling On/Once/Off in an event handler)
             // This way we can prevent some strange bug
             Callbacks.CopyTo(CallbackArray);
 
             // Go through the delegates and call them
-            for (int i = 0; i < CallbackArray.Length; ++i)
+            for (int i = 0; i < callbackCount; ++i)
             {
                 try
                 {
@@ -74,7 +75,10 @@ namespace BestHTTP.SocketIO.Events
                 }
                 catch (Exception ex)
                 {
-                    (socket as ISocket).EmitError(SocketIOErrors.User, ex.Message + " " + ex.StackTrace);
+                    // Do not try to emit a new Error when we already tried to deliver an Error, possible causing a
+                    //  stack overflow
+                    if (args == null || args.Length == 0 || !(args[0] is Error))
+                        (socket as ISocket).EmitError(SocketIOErrors.User, ex.Message + " " + ex.StackTrace);
 
                     HTTPManager.Logger.Exception("EventDescriptor", "Call", ex);
                 }

@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.IO;
 
-using Org.BouncyCastle.Asn1.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Utilities;
 
-namespace Org.BouncyCastle.Utilities.IO
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.IO
 {
 	public class PushbackStream
 		: FilterStream
@@ -52,5 +52,5 @@ namespace Org.BouncyCastle.Utilities.IO
 		}
 	}
 }
-
+#pragma warning restore
 #endif

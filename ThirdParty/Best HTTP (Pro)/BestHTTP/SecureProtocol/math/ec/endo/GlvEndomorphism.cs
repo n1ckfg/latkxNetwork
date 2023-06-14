@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Math.EC.Endo
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC.Endo
 {
     public interface GlvEndomorphism
         :   ECEndomorphism
@@ -10,5 +10,5 @@ namespace Org.BouncyCastle.Math.EC.Endo
         BigInteger[] DecomposeScalar(BigInteger k);
     }
 }
-
+#pragma warning restore
 #endif

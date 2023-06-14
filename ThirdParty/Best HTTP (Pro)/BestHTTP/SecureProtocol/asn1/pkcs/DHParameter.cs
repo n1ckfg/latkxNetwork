@@ -1,11 +1,12 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-using Org.BouncyCastle.Asn1;
+#pragma warning disable
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
 using System;
 using System.Collections;
 
-using Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
 
-namespace Org.BouncyCastle.Asn1.Pkcs
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Pkcs
 {
     public class DHParameter
         : Asn1Encodable
@@ -58,18 +59,13 @@ namespace Org.BouncyCastle.Asn1.Pkcs
             get { return l == null ? null : l.PositiveValue; }
         }
 
-		public override Asn1Object ToAsn1Object()
+        public override Asn1Object ToAsn1Object()
         {
             Asn1EncodableVector v = new Asn1EncodableVector(p, g);
-
-			if (this.l != null)
-            {
-                v.Add(l);
-            }
-
-			return new DerSequence(v);
+            v.AddOptional(l);
+            return new DerSequence(v);
         }
     }
 }
-
+#pragma warning restore
 #endif

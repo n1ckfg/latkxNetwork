@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Engines
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Engines
 {
     /**
     * An RC6 engine.
@@ -79,7 +79,7 @@ namespace Org.BouncyCastle.Crypto.Engines
             ICipherParameters	parameters)
         {
             if (!(parameters is KeyParameter))
-                throw new ArgumentException("invalid parameter passed to RC6 init - " + Org.BouncyCastle.Utilities.Platform.GetTypeName(parameters));
+                throw new ArgumentException("invalid parameter passed to RC6 init - " + BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.GetTypeName(parameters));
 
             this.forEncryption = forEncryption;
 
@@ -361,5 +361,5 @@ namespace Org.BouncyCastle.Crypto.Engines
         }
     }
 }
-
+#pragma warning restore
 #endif

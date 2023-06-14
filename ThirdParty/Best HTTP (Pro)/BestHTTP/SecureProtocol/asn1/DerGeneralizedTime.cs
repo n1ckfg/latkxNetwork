@@ -1,11 +1,12 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.Globalization;
 using System.Text;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Asn1
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1
 {
     /**
      * Generalized time object.
@@ -28,7 +29,7 @@ namespace Org.BouncyCastle.Asn1
                 return (DerGeneralizedTime)obj;
             }
 
-            throw new ArgumentException("illegal object in GetInstance: " + Org.BouncyCastle.Utilities.Platform.GetTypeName(obj), "obj");
+            throw new ArgumentException("illegal object in GetInstance: " + BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.GetTypeName(obj), "obj");
         }
 
         /**
@@ -164,7 +165,7 @@ namespace Org.BouncyCastle.Asn1
             char sign = '+';
             DateTime time = ToDateTime();
 
-#if true //SILVERLIGHT || PORTABLE || NETFX_CORE
+#if SILVERLIGHT || PORTABLE || NETFX_CORE
             long offset = time.Ticks - time.ToUniversalTime().Ticks;
             if (offset < 0)
             {
@@ -205,7 +206,7 @@ namespace Org.BouncyCastle.Asn1
             string d = time;
             bool makeUniversal = false;
 
-            if (Org.BouncyCastle.Utilities.Platform.EndsWith(d, "Z"))
+            if (BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.EndsWith(d, "Z"))
             {
                 if (HasFractionalSeconds)
                 {
@@ -224,7 +225,7 @@ namespace Org.BouncyCastle.Asn1
 
                 if (HasFractionalSeconds)
                 {
-                    int fCount = Org.BouncyCastle.Utilities.Platform.IndexOf(d, "GMT") - 1 - d.IndexOf('.');
+                    int fCount = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.IndexOf(d, "GMT") - 1 - d.IndexOf('.');
                     formatStr = @"yyyyMMddHHmmss." + FString(fCount) + @"'GMT'zzz";
                 }
                 else
@@ -268,7 +269,7 @@ namespace Org.BouncyCastle.Asn1
              * NOTE: DateTime.Kind and DateTimeStyles.AssumeUniversal not available in .NET 1.1
              */
             DateTimeStyles style = DateTimeStyles.None;
-            if (Org.BouncyCastle.Utilities.Platform.EndsWith(format, "Z"))
+            if (BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.EndsWith(format, "Z"))
             {
                 try
                 {
@@ -319,5 +320,5 @@ namespace Org.BouncyCastle.Asn1
         }
     }
 }
-
+#pragma warning restore
 #endif

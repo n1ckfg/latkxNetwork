@@ -1,10 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.IO;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Asn1
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1
 {
 	/**
 	* Class representing the DER-type External
@@ -130,9 +131,9 @@ namespace Org.BouncyCastle.Asn1
 			if (other == null)
 				return false;
 
-			return Org.BouncyCastle.Utilities.Platform.Equals(directReference, other.directReference)
-				&& Org.BouncyCastle.Utilities.Platform.Equals(indirectReference, other.indirectReference)
-				&& Org.BouncyCastle.Utilities.Platform.Equals(dataValueDescriptor, other.dataValueDescriptor)
+			return BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.Equals(directReference, other.directReference)
+				&& BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.Equals(indirectReference, other.indirectReference)
+				&& BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.Equals(dataValueDescriptor, other.dataValueDescriptor)
 				&& externalContent.Equals(other.externalContent);
 		}
 
@@ -201,5 +202,5 @@ namespace Org.BouncyCastle.Asn1
 		}
 	}
 }
-
+#pragma warning restore
 #endif

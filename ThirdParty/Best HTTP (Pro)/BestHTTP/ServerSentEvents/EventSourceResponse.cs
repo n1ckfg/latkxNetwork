@@ -6,6 +6,7 @@ using System.Threading;
 
 using System.Text;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 namespace BestHTTP.ServerSentEvents
 {
@@ -27,14 +28,9 @@ namespace BestHTTP.ServerSentEvents
         #region Privates
 
         /// <summary>
-        /// Thread sync object
-        /// </summary>
-        private object FrameLock = new object();
-
-        /// <summary>
         /// Buffer for the read data.
         /// </summary>
-        private byte[] LineBuffer = new byte[1024];
+        private byte[] LineBuffer;
 
         /// <summary>
         /// Buffer position.
@@ -49,7 +45,7 @@ namespace BestHTTP.ServerSentEvents
         /// <summary>
         /// Completed messages that waiting to be dispatched
         /// </summary>
-        private List<BestHTTP.ServerSentEvents.Message> CompletedMessages = new List<BestHTTP.ServerSentEvents.Message>();
+        private ConcurrentQueue<BestHTTP.ServerSentEvents.Message> CompletedMessages = new ConcurrentQueue<BestHTTP.ServerSentEvents.Message>();
 
         #endregion
 
@@ -134,13 +130,13 @@ namespace BestHTTP.ServerSentEvents
         private new void ReadChunked(Stream stream)
         {
             int chunkLength = ReadChunkLength(stream);
-            byte[] buffer = new byte[chunkLength];
+            byte[] buffer = Extensions.VariableSizedBufferPool.Get(chunkLength, true);
 
             while (chunkLength != 0)
             {
                 // To avoid more GC garbage we use only one buffer, and resize only if the next chunk doesn't fit.
                 if (buffer.Length < chunkLength)
-                    Array.Resize<byte>(ref buffer, chunkLength);
+                    Extensions.VariableSizedBufferPool.Resize(ref buffer, chunkLength, true);
 
                 int readBytes = 0;
 
@@ -163,13 +159,15 @@ namespace BestHTTP.ServerSentEvents
                 chunkLength = ReadChunkLength(stream);
             }
 
+            Extensions.VariableSizedBufferPool.Release(buffer);
+
             // Read the trailing headers or the CRLF
             ReadHeaders(stream);
         }
 
         private new void ReadRaw(Stream stream, long contentLength)
         {
-            byte[] buffer = new byte[1024];
+            byte[] buffer = Extensions.VariableSizedBufferPool.Get(1024, true);
             int bytes;
 
             do
@@ -178,6 +176,8 @@ namespace BestHTTP.ServerSentEvents
 
                 FeedData(buffer, bytes);
             } while(bytes > 0);
+
+            Extensions.VariableSizedBufferPool.Release(buffer);
         }
 
         #endregion
@@ -191,6 +191,9 @@ namespace BestHTTP.ServerSentEvents
 
             if (count == 0)
                 return;
+
+            if (LineBuffer == null)
+                LineBuffer = Extensions.VariableSizedBufferPool.Get(1024, true);
 
             int newlineIdx;
             int pos = 0;
@@ -216,7 +219,10 @@ namespace BestHTTP.ServerSentEvents
                 int copyIndex = newlineIdx == -1 ? count : newlineIdx;
 
                 if (LineBuffer.Length < LineBufferPos + (copyIndex - pos))
-                    Array.Resize<byte>(ref LineBuffer, LineBufferPos + (copyIndex - pos));
+                {
+                    int newSize = LineBufferPos + (copyIndex - pos);
+                    Extensions.VariableSizedBufferPool.Resize(ref LineBuffer, newSize, true);
+                }
 
                 Array.Copy(buffer, pos, LineBuffer, LineBufferPos, copyIndex - pos);
 
@@ -241,8 +247,7 @@ namespace BestHTTP.ServerSentEvents
             {
                 if (CurrentMessage != null)
                 {
-                    lock (FrameLock)
-                        CompletedMessages.Add(CurrentMessage);
+                    CompletedMessages.Enqueue(CurrentMessage);
                     CurrentMessage = null;
                 }
 
@@ -330,33 +335,26 @@ namespace BestHTTP.ServerSentEvents
 
         void IProtocol.HandleEvents()
         {
-            lock(FrameLock)
+            // Send out messages.
+            if (OnMessage != null)
             {
-                // Send out messages.
-                if (CompletedMessages.Count > 0)
+                Message message;
+                while (this.CompletedMessages.TryDequeue(out message))
                 {
-                    if (OnMessage != null)
-                        for (int i = 0; i < CompletedMessages.Count; ++i)
-                        {
-                            try
-                            {
-                                OnMessage(this, CompletedMessages[i]);
-                            }
-                            catch(Exception ex)
-                            {
-                                HTTPManager.Logger.Exception("EventSourceMessage", "HandleEvents - OnMessage", ex);
-                            }
-                        }
-
-                    CompletedMessages.Clear();
+                    try
+                    {
+                        OnMessage(this, message);
+                    }
+                    catch (Exception ex)
+                    {
+                        HTTPManager.Logger.Exception("EventSourceMessage", "HandleEvents - OnMessage", ex);
+                    }
                 }
             }
 
             // We are closed
             if (IsClosed)
             {
-                CompletedMessages.Clear();
-
                 if (OnClosed != null)
                 {
                     try

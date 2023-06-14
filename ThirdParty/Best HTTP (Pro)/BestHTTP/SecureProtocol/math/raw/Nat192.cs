@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Diagnostics;
 
-using Org.BouncyCastle.Crypto.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Utilities;
 
-namespace Org.BouncyCastle.Math.Raw
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.Raw
 {
     internal abstract class Nat192
     {
@@ -147,11 +147,28 @@ namespace Org.BouncyCastle.Math.Raw
             z[5] = x[5];
         }
 
+        public static void Copy(uint[] x, int xOff, uint[] z, int zOff)
+        {
+            z[zOff + 0] = x[xOff + 0];
+            z[zOff + 1] = x[xOff + 1];
+            z[zOff + 2] = x[xOff + 2];
+            z[zOff + 3] = x[xOff + 3];
+            z[zOff + 4] = x[xOff + 4];
+            z[zOff + 5] = x[xOff + 5];
+        }
+
         public static void Copy64(ulong[] x, ulong[] z)
         {
             z[0] = x[0];
             z[1] = x[1];
             z[2] = x[2];
+        }
+
+        public static void Copy64(ulong[] x, int xOff, ulong[] z, int zOff)
+        {
+            z[zOff + 0] = x[xOff + 0];
+            z[zOff + 1] = x[xOff + 1];
+            z[zOff + 2] = x[xOff + 2];
         }
 
         public static uint[] Create()
@@ -483,9 +500,10 @@ namespace Org.BouncyCastle.Math.Raw
                 c += x_i * y_5 + zz[i + 5];
                 zz[i + 5] = (uint)c;
                 c >>= 32;
-                c += zc + zz[i + 6];
-                zz[i + 6] = (uint)c;
-                zc = c >> 32;
+
+                zc += c + zz[i + 6];
+                zz[i + 6] = (uint)zc;
+                zc >>= 32;
             }
             return (uint)zc;
         }
@@ -521,9 +539,10 @@ namespace Org.BouncyCastle.Math.Raw
                 c += x_i * y_5 + zz[zzOff + 5];
                 zz[zzOff + 5] = (uint)c;
                 c >>= 32;
-                c += zc + zz[zzOff + 6];
-                zz[zzOff + 6] = (uint)c;
-                zc = c >> 32;
+
+                zc += c + zz[zzOff + 6];
+                zz[zzOff + 6] = (uint)zc;
+                zc >>= 32;
                 ++zzOff;
             }
             return (uint)zc;
@@ -708,8 +727,8 @@ namespace Org.BouncyCastle.Math.Raw
             }
 
             ulong x_3 = x[3];
-            ulong zz_5 = zz[5];
-            ulong zz_6 = zz[6];
+            ulong zz_5 = zz[5] + (zz_4 >> 32); zz_4 &= M;
+            ulong zz_6 = zz[6] + (zz_5 >> 32); zz_5 &= M;
             {
                 zz_3 += x_3 * x_0;
                 w = (uint)zz_3;
@@ -723,8 +742,8 @@ namespace Org.BouncyCastle.Math.Raw
             }
 
             ulong x_4 = x[4];
-            ulong zz_7 = zz[7];
-            ulong zz_8 = zz[8];
+            ulong zz_7 = zz[7] + (zz_6 >> 32); zz_6 &= M;
+            ulong zz_8 = zz[8] + (zz_7 >> 32); zz_7 &= M;
             {
                 zz_4 += x_4 * x_0;
                 w = (uint)zz_4;
@@ -740,8 +759,8 @@ namespace Org.BouncyCastle.Math.Raw
             }
 
             ulong x_5 = x[5];
-            ulong zz_9 = zz[9];
-            ulong zz_10 = zz[10];
+            ulong zz_9 = zz[9] + (zz_8 >> 32); zz_8 &= M;
+            ulong zz_10 = zz[10] + (zz_9 >> 32); zz_9 &= M;
             {
                 zz_5 += x_5 * x_0;
                 w = (uint)zz_5;
@@ -824,8 +843,8 @@ namespace Org.BouncyCastle.Math.Raw
             }
 
             ulong x_3 = x[xOff + 3];
-            ulong zz_5 = zz[zzOff + 5];
-            ulong zz_6 = zz[zzOff + 6];
+            ulong zz_5 = zz[zzOff + 5] + (zz_4 >> 32); zz_4 &= M;
+            ulong zz_6 = zz[zzOff + 6] + (zz_5 >> 32); zz_5 &= M;
             {
                 zz_3 += x_3 * x_0;
                 w = (uint)zz_3;
@@ -839,8 +858,8 @@ namespace Org.BouncyCastle.Math.Raw
             }
 
             ulong x_4 = x[xOff + 4];
-            ulong zz_7 = zz[zzOff + 7];
-            ulong zz_8 = zz[zzOff + 8];
+            ulong zz_7 = zz[zzOff + 7] + (zz_6 >> 32); zz_6 &= M;
+            ulong zz_8 = zz[zzOff + 8] + (zz_7 >> 32); zz_7 &= M;
             {
                 zz_4 += x_4 * x_0;
                 w = (uint)zz_4;
@@ -856,8 +875,8 @@ namespace Org.BouncyCastle.Math.Raw
             }
 
             ulong x_5 = x[xOff + 5];
-            ulong zz_9 = zz[zzOff + 9];
-            ulong zz_10 = zz[zzOff + 10];
+            ulong zz_9 = zz[zzOff + 9] + (zz_8 >> 32); zz_8 &= M;
+            ulong zz_10 = zz[zzOff + 10] + (zz_9 >> 32); zz_9 &= M;
             {
                 zz_5 += x_5 * x_0;
                 w = (uint)zz_5;
@@ -1048,5 +1067,5 @@ namespace Org.BouncyCastle.Math.Raw
         }
     }
 }
-
+#pragma warning restore
 #endif

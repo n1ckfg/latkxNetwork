@@ -1,14 +1,14 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.IO;
 
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Macs;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Macs;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Modes
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Modes
 {
     /**
     * Implements the Counter with Cipher Block Chaining mode (CCM) detailed in
@@ -94,9 +94,7 @@ namespace Org.BouncyCastle.Crypto.Modes
             }
 
             if (nonce == null || nonce.Length < 7 || nonce.Length > 13)
-            {
                 throw new ArgumentException("nonce must have length from 7 to 13 octets");
-            }
 
             Reset();
         }
@@ -449,5 +447,5 @@ namespace Org.BouncyCastle.Crypto.Modes
         }
     }
 }
-
+#pragma warning restore
 #endif

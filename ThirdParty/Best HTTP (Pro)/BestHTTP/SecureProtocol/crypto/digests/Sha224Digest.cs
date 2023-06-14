@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Crypto.Utilities;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Digests
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Digests
 {
     /**
      * SHA-224 as described in RFC 3874
@@ -289,5 +289,5 @@ namespace Org.BouncyCastle.Crypto.Digests
 
     }
 }
-
+#pragma warning restore
 #endif

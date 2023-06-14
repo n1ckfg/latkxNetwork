@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Diagnostics;
 
-using Org.BouncyCastle.Math.Raw;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math.Raw;
 
-namespace Org.BouncyCastle.Math.EC.Custom.Sec
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC.Custom.Sec
 {
     internal class SecP128R1Field
     {
@@ -21,7 +21,7 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
         public static void Add(uint[] x, uint[] y, uint[] z)
         {
             uint c = Nat128.Add(x, y, z);
-            if (c != 0 || (z[3] == P3 && Nat128.Gte(z, P)))
+            if (c != 0 || (z[3] >= P3 && Nat128.Gte(z, P)))
             {
                 AddPInvTo(z);
             }
@@ -30,7 +30,7 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
         public static void AddExt(uint[] xx, uint[] yy, uint[] zz)
         {
             uint c = Nat256.Add(xx, yy, zz);
-            if (c != 0 || (zz[7] == PExt7 && Nat256.Gte(zz, PExt)))
+            if (c != 0 || (zz[7] >= PExt7 && Nat256.Gte(zz, PExt)))
             {
                 Nat.AddTo(PExtInv.Length, PExtInv, zz);
             }
@@ -39,7 +39,7 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
         public static void AddOne(uint[] x, uint[] z)
         {
             uint c = Nat.Inc(4, x, z);
-            if (c != 0 || (z[3] == P3 && Nat128.Gte(z, P)))
+            if (c != 0 || (z[3] >= P3 && Nat128.Gte(z, P)))
             {
                 AddPInvTo(z);
             }
@@ -48,7 +48,7 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
         public static uint[] FromBigInteger(BigInteger x)
         {
             uint[] z = Nat128.FromBigInteger(x);
-            if (z[3] == P3 && Nat128.Gte(z, P))
+            if (z[3] >= P3 && Nat128.Gte(z, P))
             {
                 Nat128.SubFrom(P, z);
             }
@@ -78,7 +78,7 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
         public static void MultiplyAddToExt(uint[] x, uint[] y, uint[] zz)
         {
             uint c = Nat128.MulAddTo(x, y, zz);
-            if (c != 0 || (zz[7] == PExt7 && Nat256.Gte(zz, PExt)))
+            if (c != 0 || (zz[7] >= PExt7 && Nat256.Gte(zz, PExt)))
             {
                 Nat.AddTo(PExtInv.Length, PExtInv, zz);
             }
@@ -136,6 +136,11 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
 
                 x = (uint)c;
             }
+
+            if (z[3] >= P3 && Nat128.Gte(z, P))
+            {
+                AddPInvTo(z);
+            }
         }
 
         public static void Square(uint[] x, uint[] z)
@@ -181,7 +186,7 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
         public static void Twice(uint[] x, uint[] z)
         {
             uint c = Nat.ShiftUpBit(4, x, 0, z);
-            if (c != 0 || (z[3] == P3 && Nat128.Gte(z, P)))
+            if (c != 0 || (z[3] >= P3 && Nat128.Gte(z, P)))
             {
                 AddPInvTo(z);
             }
@@ -218,5 +223,5 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
         }
     }
 }
-
+#pragma warning restore
 #endif

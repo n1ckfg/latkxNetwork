@@ -74,7 +74,7 @@ namespace BestHTTP.Decompression.Zlib
     /// </remarks>
     ///
     /// <seealso cref="DeflateStream" />
-    internal class GZipStream : System.IO.Stream
+    public class GZipStream : System.IO.Stream
     {
         // GZip format
         // source: http://tools.ietf.org/html/rfc1952
@@ -859,7 +859,7 @@ namespace BestHTTP.Decompression.Zlib
             int fnLength = (FileName == null) ? 0 : filenameBytes.Length + 1;
 
             int bufferLength = 10 + cbLength + fnLength;
-            byte[] header = new byte[bufferLength];
+            byte[] header = Extensions.VariableSizedBufferPool.Get(bufferLength, false);
             int i = 0;
             // ID
             header[i++] = 0x1F;
@@ -909,115 +909,11 @@ namespace BestHTTP.Decompression.Zlib
             }
 
             _baseStream._stream.Write(header, 0, header.Length);
+            int headerLength = header.Length;
 
-            return header.Length; // bytes written
+            Extensions.VariableSizedBufferPool.Release(header);
+
+            return headerLength; // bytes written
         }
-
-
-
-        /// <summary>
-        ///   Compress a string into a byte array using GZip.
-        /// </summary>
-        ///
-        /// <remarks>
-        ///   Uncompress it with <see cref="GZipStream.UncompressString(byte[])"/>.
-        /// </remarks>
-        ///
-        /// <seealso cref="GZipStream.UncompressString(byte[])"/>
-        /// <seealso cref="GZipStream.CompressBuffer(byte[])"/>
-        ///
-        /// <param name="s">
-        ///   A string to compress. The string will first be encoded
-        ///   using UTF8, then compressed.
-        /// </param>
-        ///
-        /// <returns>The string in compressed form</returns>
-        public static byte[] CompressString(String s)
-        {
-            using (var ms = new MemoryStream())
-            {
-                System.IO.Stream compressor =
-                    new GZipStream(ms, CompressionMode.Compress, CompressionLevel.BestCompression);
-                ZlibBaseStream.CompressString(s, compressor);
-                return ms.ToArray();
-            }
-        }
-
-
-        /// <summary>
-        ///   Compress a byte array into a new byte array using GZip.
-        /// </summary>
-        ///
-        /// <remarks>
-        ///   Uncompress it with <see cref="GZipStream.UncompressBuffer(byte[])"/>.
-        /// </remarks>
-        ///
-        /// <seealso cref="GZipStream.CompressString(string)"/>
-        /// <seealso cref="GZipStream.UncompressBuffer(byte[])"/>
-        ///
-        /// <param name="b">
-        ///   A buffer to compress.
-        /// </param>
-        ///
-        /// <returns>The data in compressed form</returns>
-        public static byte[] CompressBuffer(byte[] b)
-        {
-            using (var ms = new MemoryStream())
-            {
-                System.IO.Stream compressor =
-                    new GZipStream( ms, CompressionMode.Compress, CompressionLevel.BestCompression );
-
-                ZlibBaseStream.CompressBuffer(b, compressor);
-                return ms.ToArray();
-            }
-        }
-
-
-        /// <summary>
-        ///   Uncompress a GZip'ed byte array into a single string.
-        /// </summary>
-        ///
-        /// <seealso cref="GZipStream.CompressString(String)"/>
-        /// <seealso cref="GZipStream.UncompressBuffer(byte[])"/>
-        ///
-        /// <param name="compressed">
-        ///   A buffer containing GZIP-compressed data.
-        /// </param>
-        ///
-        /// <returns>The uncompressed string</returns>
-        public static String UncompressString(byte[] compressed)
-        {
-            using (var input = new MemoryStream(compressed))
-            {
-                Stream decompressor = new GZipStream(input, CompressionMode.Decompress);
-                return ZlibBaseStream.UncompressString(compressed, decompressor);
-            }
-        }
-
-
-        /// <summary>
-        ///   Uncompress a GZip'ed byte array into a byte array.
-        /// </summary>
-        ///
-        /// <seealso cref="GZipStream.CompressBuffer(byte[])"/>
-        /// <seealso cref="GZipStream.UncompressString(byte[])"/>
-        ///
-        /// <param name="compressed">
-        ///   A buffer containing data that has been compressed with GZip.
-        /// </param>
-        ///
-        /// <returns>The data in uncompressed form</returns>
-        public static byte[] UncompressBuffer(byte[] compressed)
-        {
-            using (var input = new System.IO.MemoryStream(compressed))
-            {
-                System.IO.Stream decompressor =
-                    new GZipStream( input, CompressionMode.Decompress );
-
-                return ZlibBaseStream.UncompressBuffer(compressed, decompressor);
-            }
-        }
-
-
     }
 }

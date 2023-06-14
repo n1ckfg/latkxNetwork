@@ -5,17 +5,12 @@ using System.Linq;
 using System.Text;
 
 #if NETFX_CORE
-	using Windows.Security.Cryptography;
-	using Windows.Security.Cryptography.Core;
-	using Windows.Storage.Streams;
-	using BestHTTP.PlatformSupport.IO;
-
-	using FileStream = BestHTTP.PlatformSupport.IO.FileStream;
-#elif UNITY_WP8
-    using Cryptography = BestHTTP.PlatformSupport.Cryptography;
+    using Windows.Security.Cryptography;
+    using Windows.Security.Cryptography.Core;
+    using Windows.Storage.Streams;
 #else
-	using Cryptography = System.Security.Cryptography;
-	using FileStream = System.IO.FileStream;
+    using Cryptography = System.Security.Cryptography;
+    using FileStream = System.IO.FileStream;
 #endif
 
 namespace BestHTTP.Extensions
@@ -40,7 +35,7 @@ namespace BestHTTP.Extensions
         /// </summary>
         public static byte[] GetASCIIBytes(this string str)
         {
-            byte[] result = new byte[str.Length];
+            byte[] result = VariableSizedBufferPool.Get(str.Length, false);
             for (int i = 0; i < str.Length; ++i)
             {
                 char ch = str[i];
@@ -64,23 +59,25 @@ namespace BestHTTP.Extensions
 
         #region FileSystem WriteLine function support
 
-        public static void WriteLine(this FileStream fs)
+        public static void WriteLine(this Stream fs)
         {
             fs.Write(HTTPRequest.EOL, 0, 2);
         }
 
-        public static void WriteLine(this FileStream fs, string line)
+        public static void WriteLine(this Stream fs, string line)
         {
             var buff = line.GetASCIIBytes();
             fs.Write(buff, 0, buff.Length);
             fs.WriteLine();
+            VariableSizedBufferPool.Release(buff);
         }
 
-        public static void WriteLine(this FileStream fs, string format, params object[] values)
+        public static void WriteLine(this Stream fs, string format, params object[] values)
         {
             var buff = string.Format(format, values).GetASCIIBytes();
             fs.Write(buff, 0, buff.Length);
             fs.WriteLine();
+            VariableSizedBufferPool.Release(buff);
         }
 
         #endregion
@@ -216,13 +213,21 @@ namespace BestHTTP.Extensions
             return str;
         }
 
+        public static string ToBinaryStr(this byte value)
+        {
+            return Convert.ToString(value, 2).PadLeft(8, '0');
+        }
+
         #endregion
 
         #region MD5 Hashing
 
         public static string CalculateMD5Hash(this string input)
         {
-            return input.GetASCIIBytes().CalculateMD5Hash();
+            byte[] ascii = input.GetASCIIBytes();
+            var hash = ascii.CalculateMD5Hash();
+            VariableSizedBufferPool.Release(ascii);
+            return hash;
         }
 
         public static string CalculateMD5Hash(this byte[] input)
@@ -234,11 +239,14 @@ namespace BestHTTP.Extensions
             var res = CryptographicBuffer.EncodeToHexString(hashed);
             return res;
 #else
-            var hash = Cryptography.MD5.Create().ComputeHash(input);
-            var sb = new StringBuilder();
-            foreach (var b in hash)
-                sb.Append(b.ToString("x2"));
-            return sb.ToString();
+            using (var md5 = Cryptography.MD5.Create()) {
+                var hash = md5.ComputeHash(input);
+                var sb = new StringBuilder(hash.Length);
+                for (int i = 0; i < hash.Length; ++i)
+                    sb.Append(hash[i].ToString("x2"));
+                VariableSizedBufferPool.Release(hash);
+                return sb.ToString();
+            }
 #endif
         }
 
@@ -410,30 +418,43 @@ namespace BestHTTP.Extensions
             } while (count < buffer.Length);
         }
 
+        public static void ReadBuffer(this Stream stream, byte[] buffer, int length)
+        {
+            int count = 0;
+
+            do
+            {
+                int read = stream.Read(buffer, count, length - count);
+
+                if (read <= 0)
+                    throw ExceptionHelper.ServerClosedTCPStream();
+
+                count += read;
+            } while (count < length);
+        }
+
         #endregion
 
-        #region MemoryStream
+        #region BufferPoolMemoryStream
 
-        public static void WriteAll(this MemoryStream ms, byte[] buffer)
+        public static void WriteString(this BufferPoolMemoryStream ms, string str)
         {
-            ms.Write(buffer, 0, buffer.Length);
+            var byteCount = Encoding.UTF8.GetByteCount(str);
+            byte[] buffer = VariableSizedBufferPool.Get(byteCount, true);
+            Encoding.UTF8.GetBytes(str, 0, str.Length, buffer, 0);
+            ms.Write(buffer, 0, byteCount);
+            VariableSizedBufferPool.Release(buffer);
         }
 
-        public static void WriteString(this MemoryStream ms, string str)
+        public static void WriteLine(this BufferPoolMemoryStream ms)
         {
-            byte[] buffer = Encoding.UTF8.GetBytes(str);
-            ms.WriteAll(buffer);
+            ms.Write(HTTPRequest.EOL, 0, HTTPRequest.EOL.Length);
         }
 
-        public static void WriteLine(this MemoryStream ms)
-        {
-            ms.WriteAll(HTTPRequest.EOL);
-        }
-
-        public static void WriteLine(this MemoryStream ms, string str)
+        public static void WriteLine(this BufferPoolMemoryStream ms, string str)
         {
             ms.WriteString(str);
-            ms.WriteLine();
+            ms.Write(HTTPRequest.EOL, 0, HTTPRequest.EOL.Length);
         }
 
         #endregion

@@ -1,8 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Math.EC.Multiplier
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math.Raw;
+
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC.Multiplier
 {
     public class FixedPointCombMultiplier
         : AbstractECMultiplier
@@ -23,41 +25,38 @@ namespace Org.BouncyCastle.Math.EC.Multiplier
                 throw new InvalidOperationException("fixed-point comb doesn't support scalars larger than the curve order");
             }
 
-            int minWidth = GetWidthForCombSize(size);
-
-            FixedPointPreCompInfo info = FixedPointUtilities.Precompute(p, minWidth);
-            ECPoint[] lookupTable = info.PreComp;
+            FixedPointPreCompInfo info = FixedPointUtilities.Precompute(p);
+            ECLookupTable lookupTable = info.LookupTable;
             int width = info.Width;
 
             int d = (size + width - 1) / width;
 
             ECPoint R = c.Infinity;
 
-            int top = d * width - 1;
+            int fullComb = d * width;
+            uint[] K = Nat.FromBigInteger(fullComb, k);
+
+            int top = fullComb - 1;
             for (int i = 0; i < d; ++i)
             {
-                int index = 0;
+                uint secretIndex = 0;
 
                 for (int j = top - i; j >= 0; j -= d)
                 {
-                    index <<= 1;
-                    if (k.TestBit(j))
-                    {
-                        index |= 1;
-                    }
+                    uint secretBit = K[j >> 5] >> (j & 0x1F);
+                    secretIndex ^= secretBit >> 1;
+                    secretIndex <<= 1;
+                    secretIndex ^= secretBit;
                 }
 
-                R = R.TwicePlus(lookupTable[index]);
+                ECPoint add = lookupTable.Lookup((int)secretIndex);
+
+                R = R.TwicePlus(add);
             }
 
-            return R;
-        }
-
-        protected virtual int GetWidthForCombSize(int combSize)
-        {
-            return combSize > 257 ? 6 : 5;
+            return R.Add(info.Offset);
         }
     }
 }
-
+#pragma warning restore
 #endif

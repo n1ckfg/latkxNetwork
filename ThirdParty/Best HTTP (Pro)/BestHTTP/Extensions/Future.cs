@@ -246,6 +246,8 @@ namespace BestHTTP.Futures
             return this;
         }
 
+#pragma warning disable 1998
+
         /// <summary>
         /// Begins running a given function on a background thread to resolve the future's value, as long
         /// as it is still in the Pending state.
@@ -293,6 +295,8 @@ namespace BestHTTP.Futures
                 _processFunc = null;
             }
         }
+
+#pragma warning restore 1998
 
         /// <summary>
         /// Allows manually assigning a value to a future, as long as it is still in the pending state.

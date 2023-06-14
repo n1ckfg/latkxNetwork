@@ -1,10 +1,11 @@
-﻿#if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.Diagnostics;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Digests
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Digests
 {
     /// <summary>
     /// Implementation of SHAKE based on following KeccakNISTInterface.c from http://keccak.noekeon.org/
@@ -65,10 +66,10 @@ namespace Org.BouncyCastle.Crypto.Digests
         {
             if (!squeezing)
             {
-                Absorb(new byte[] { 0x0F }, 0, 4);
+                AbsorbBits(0x0F, 4);
             }
 
-            Squeeze(output, outOff, ((long)outLen) * 8);
+            Squeeze(output, outOff, (long)outLen << 3);
 
             return outLen;
         }
@@ -95,19 +96,17 @@ namespace Org.BouncyCastle.Crypto.Digests
 
             if (finalBits >= 8)
             {
-                oneByte[0] = (byte)finalInput;
-                Absorb(oneByte, 0, 8);
+                Absorb(new byte[]{ (byte)finalInput }, 0, 1);
                 finalBits -= 8;
                 finalInput >>= 8;
             }
 
             if (finalBits > 0)
             {
-                oneByte[0] = (byte)finalInput;
-                Absorb(oneByte, 0, finalBits);
+                AbsorbBits(finalInput, finalBits);
             }
 
-            Squeeze(output, outOff, ((long)outLen) * 8);
+            Squeeze(output, outOff, (long)outLen << 3);
 
             Reset();
 
@@ -120,4 +119,5 @@ namespace Org.BouncyCastle.Crypto.Digests
         }
     }
 }
+#pragma warning restore
 #endif

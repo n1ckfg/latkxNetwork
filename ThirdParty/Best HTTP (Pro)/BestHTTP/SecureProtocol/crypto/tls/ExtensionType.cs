@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     public abstract class ExtensionType
     {
@@ -40,6 +40,7 @@ namespace Org.BouncyCastle.Crypto.Tls
         /*
          * RFC 4492 5.1.
          */
+        [Obsolete("Use 'supported_groups' instead")]
         public const int elliptic_curves = supported_groups;
         public const int ec_point_formats = 11;
 
@@ -100,13 +101,23 @@ namespace Org.BouncyCastle.Crypto.Tls
         public const int extended_master_secret = 23;
 
         /*
+         * draft-ietf-tokbind-negotiation-08
+         */
+        public static readonly int DRAFT_token_binding = 24;
+
+        /*
+         * RFC 7924
+         */
+        public const int cached_info = 25;
+
+        /*
          * RFC 5077 7.
          */
         public const int session_ticket = 35;
 
         /*
          * draft-ietf-tls-negotiated-ff-dhe-01
-         *
+         * 
          * WARNING: Placeholder value; the real value is TBA
          */
         public static readonly int negotiated_ff_dhe_groups = 101;
@@ -117,5 +128,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         public const int renegotiation_info = 0xff01;
     }
 }
-
+#pragma warning restore
 #endif

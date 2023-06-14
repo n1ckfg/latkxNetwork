@@ -1,12 +1,12 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Crypto.Modes;
-using Org.BouncyCastle.Crypto.Paddings;
-using Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Modes;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Paddings;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
 
-namespace Org.BouncyCastle.Crypto.Macs
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Macs
 {
     /**
     * implements a Cipher-FeedBack (CFB) mode on top of a simple cipher.
@@ -368,5 +368,5 @@ namespace Org.BouncyCastle.Crypto.Macs
     }
 
 }
-
+#pragma warning restore
 #endif

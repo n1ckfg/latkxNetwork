@@ -1,5 +1,6 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-namespace Org.BouncyCastle.Asn1.TeleTrust
+#pragma warning disable
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.TeleTrust
 {
 	public sealed class TeleTrusTObjectIdentifiers
 	{
@@ -44,5 +45,5 @@ namespace Org.BouncyCastle.Asn1.TeleTrust
 		public static readonly DerObjectIdentifier BrainpoolP512T1 = new DerObjectIdentifier(VersionOne + ".14");
 	}
 }
-
+#pragma warning restore
 #endif

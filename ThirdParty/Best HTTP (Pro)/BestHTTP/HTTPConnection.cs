@@ -7,19 +7,20 @@ using System.Threading;
 using BestHTTP.Extensions;
 using BestHTTP.Authentication;
 
-#if (!NETFX_CORE && !UNITY_WP8) || UNITY_EDITOR
+#if !NETFX_CORE || UNITY_EDITOR
     using System.Net.Security;
 #endif
 
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
     using BestHTTP.Caching;
 #endif
 
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+    using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls;
     using Org.BouncyCastle.Crypto.Tls;
 #endif
 
-#if !BESTHTTP_DISABLE_COOKIES && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_COOKIES
     using BestHTTP.Cookies;
 #endif
 
@@ -31,8 +32,6 @@ using BestHTTP.Authentication;
 
     //Disable CD4014: Because this call is not awaited, execution of the current method continues before the call is completed. Consider applying the 'await' operator to the result of the call.
     #pragma warning disable 4014
-#elif UNITY_WP8 && !UNITY_EDITOR
-    using TcpClient = BestHTTP.PlatformSupport.TcpClient.WP8.TcpClient;
 #else
     using TcpClient = BestHTTP.PlatformSupport.TcpClient.General.TcpClient;
 #endif
@@ -139,11 +138,7 @@ namespace BestHTTP
 
         #region Request Processing Implementation
 
-        protected override
-#if NETFX_CORE
-            async
-#endif
-            void ThreadFunc(object param)
+        protected override void ThreadFunc()
         {
             bool alreadyReconnected = false;
             bool redirected = false;
@@ -152,7 +147,7 @@ namespace BestHTTP
 
             try
             {
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
                 // Try load the full response from an already saved cache entity. If the response
                 if (TryLoadAllFromCache())
                     return;
@@ -164,14 +159,7 @@ namespace BestHTTP
                 do // of while (reconnect)
                 {
                     if (cause == RetryCauses.Reconnect)
-                    {
                         Close();
-#if NETFX_CORE
-                        await Task.Delay(100);
-#else
-                        Thread.Sleep(100);
-#endif
-                    }
 
                     LastProcessedUri = CurrentRequest.CurrentUri;
 
@@ -183,7 +171,7 @@ namespace BestHTTP
                     if (State == HTTPConnectionStates.AbortRequested)
                         throw new Exception("AbortRequested");
 
-                    #if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+                    #if !BESTHTTP_DISABLE_CACHING
                     // Setup cache control headers before we send out the request
                     if (!CurrentRequest.DisableCache)
                         HTTPCacheService.SetHeaders(CurrentRequest);
@@ -236,10 +224,13 @@ namespace BestHTTP
 
                         if (CurrentRequest.Response != null)
                         {
-#if !BESTHTTP_DISABLE_COOKIES && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_COOKIES
                             // Try to store cookies before we do anything else, as we may remove the response deleting the cookies as well.
                             if (CurrentRequest.IsCookiesEnabled)
+                            {
                                 CookieJar.Set(CurrentRequest.Response);
+                                CookieJar.Persist();
+                            }
 #endif
 
                             switch (CurrentRequest.Response.StatusCode)
@@ -334,7 +325,7 @@ namespace BestHTTP
 
 
                                 default:
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
                                     TryStoreInCache();
 #endif
                                     break;
@@ -377,7 +368,7 @@ namespace BestHTTP
             {
                 if (CurrentRequest != null)
                 {
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
                     if (CurrentRequest.UseStreaming)
                         HTTPCacheService.DeleteEntity(CurrentRequest.CurrentUri);
 #endif
@@ -439,14 +430,6 @@ namespace BestHTTP
                         if (OnConnectionRecycled != null)
                             RecycleNow();
                     }
-
-                    #if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
-                    HTTPCacheService.SaveLibrary();
-                    #endif
-
-                    #if !BESTHTTP_DISABLE_COOKIES && (!UNITY_WEBGL || UNITY_EDITOR)
-                    CookieJar.Persist();
-                    #endif
                 }
             }
         }
@@ -467,14 +450,6 @@ namespace BestHTTP
             if (!Client.Connected)
             {
                 Client.ConnectTimeout = CurrentRequest.ConnectTimeout;
-
-#if NETFX_CORE || (UNITY_WP8 && !UNITY_EDITOR)
-                Client.UseHTTPSProtocol =
-                #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-                    !CurrentRequest.UseAlternateSSL &&
-                #endif
-                    HTTPProtocolFactory.IsSecureProtocol(uri);
-#endif
 
                 if (HTTPManager.Logger.Level == Logger.Loglevels.All)
                     HTTPManager.Logger.Verbose("HTTPConnection", string.Format("'{0}' - Connecting to {1}:{2}", this.CurrentRequest.CurrentUri.ToString(), uri.Host, uri.Port.ToString()));
@@ -527,7 +502,7 @@ namespace BestHTTP
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
                     if (CurrentRequest.UseAlternateSSL)
                     {
-                        var handler = new TlsClientProtocol(Client.GetStream(), new Org.BouncyCastle.Security.SecureRandom());
+                        var handler = new TlsClientProtocol(Client.GetStream(), new BestHTTP.SecureProtocol.Org.BouncyCastle.Security.SecureRandom());
 
                         // http://tools.ietf.org/html/rfc3546#section-3.1
                         // -It is RECOMMENDED that clients include an extension of type "server_name" in the client hello whenever they locate a server by a supported name type.
@@ -553,7 +528,7 @@ namespace BestHTTP
                     else
 #endif
                     {
-#if !NETFX_CORE && !UNITY_WP8
+#if !NETFX_CORE
                         SslStream sslStream = new SslStream(Client.GetStream(), false, (sender, cert, chain, errors) =>
                         {
                             return CurrentRequest.CallCustomCertificationValidator(cert, chain);
@@ -590,12 +565,12 @@ namespace BestHTTP
             }
 
             if (CurrentRequest.Response.StatusCode == 304
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
                 && !CurrentRequest.DisableCache
 #endif
                 )
             {
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
                 if (CurrentRequest.IsRedirected)
                 {
                     if (!LoadFromCache(CurrentRequest.RedirectUri))
@@ -618,7 +593,7 @@ namespace BestHTTP
 
 #region Helper Functions
 
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
 
         private bool LoadFromCache(Uri uri)
         {
@@ -632,20 +607,29 @@ namespace BestHTTP
                 return false;
             }
 
-            CurrentRequest.Response.CacheFileInfo = cacheEntity;
-
-            int bodyLength;
-            using (var cacheStream = cacheEntity.GetBodyStream(out bodyLength))
+            try
             {
-                if (cacheStream == null)
-                    return false;
+                int bodyLength;
+                using (var cacheStream = cacheEntity.GetBodyStream(out bodyLength))
+                {
+                    if (cacheStream == null)
+                        return false;
 
-                if (!CurrentRequest.Response.HasHeader("content-length"))
-                    CurrentRequest.Response.Headers.Add("content-length", new List<string>(1) { bodyLength.ToString() });
-                CurrentRequest.Response.IsFromCache = true;
+                    if (!CurrentRequest.Response.HasHeader("content-length"))
+                        CurrentRequest.Response.AddHeader("content-length", bodyLength.ToString());
+                    CurrentRequest.Response.IsFromCache = true;
 
-                if (!CurrentRequest.CacheOnly)
-                    CurrentRequest.Response.ReadRaw(cacheStream, bodyLength);
+                    if (!CurrentRequest.CacheOnly)
+                        CurrentRequest.Response.ReadRaw(cacheStream, bodyLength);
+                }
+
+                CurrentRequest.Response.CacheFileInfo = cacheEntity;
+            }
+            catch
+            {
+                cacheEntity.Delete();
+
+                return false;
             }
 
             return true;
@@ -682,7 +666,7 @@ namespace BestHTTP
         }
 #endif
 
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
         private void TryStoreInCache()
         {
             // if UseStreaming && !DisableCache then we already wrote the response to the cache
@@ -696,6 +680,7 @@ namespace BestHTTP
                     HTTPCacheService.Store(CurrentRequest.Uri, CurrentRequest.MethodType, CurrentRequest.Response);
                 else
                     HTTPCacheService.Store(CurrentRequest.CurrentUri, CurrentRequest.MethodType, CurrentRequest.Response);
+                HTTPCacheService.SaveLibrary();
             }
         }
 #endif

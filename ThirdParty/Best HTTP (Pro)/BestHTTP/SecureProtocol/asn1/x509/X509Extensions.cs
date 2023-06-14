@@ -1,11 +1,12 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.Collections;
 
-using Org.BouncyCastle.Utilities;
-using Org.BouncyCastle.Utilities.Collections;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Collections;
 
-namespace Org.BouncyCastle.Asn1.X509
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509
 {
     public class X509Extensions
         : Asn1Encodable
@@ -165,7 +166,12 @@ namespace Org.BouncyCastle.Asn1.X509
 		 */
 		public static readonly DerObjectIdentifier TargetInformation = new DerObjectIdentifier("2.5.29.55");
 
-        private readonly IDictionary extensions = Org.BouncyCastle.Utilities.Platform.CreateHashtable();
+        /**
+         * Expired Certificates on CRL extension
+         */
+        public static readonly DerObjectIdentifier ExpiredCertsOnCrl = new DerObjectIdentifier("2.5.29.60");
+
+        private readonly IDictionary extensions = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateHashtable();
         private readonly IList ordering;
 
 		public static X509Extensions GetInstance(
@@ -193,7 +199,7 @@ namespace Org.BouncyCastle.Asn1.X509
                 return GetInstance(((Asn1TaggedObject) obj).GetObject());
             }
 
-            throw new ArgumentException("unknown object in factory: " + Org.BouncyCastle.Utilities.Platform.GetTypeName(obj), "obj");
+            throw new ArgumentException("unknown object in factory: " + BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.GetTypeName(obj), "obj");
 		}
 
 		/**
@@ -204,7 +210,7 @@ namespace Org.BouncyCastle.Asn1.X509
         private X509Extensions(
             Asn1Sequence seq)
         {
-            this.ordering = Org.BouncyCastle.Utilities.Platform.CreateArrayList();
+            this.ordering = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList();
 
 			foreach (Asn1Encodable ae in seq)
 			{
@@ -220,7 +226,10 @@ namespace Org.BouncyCastle.Asn1.X509
 
 				Asn1OctetString octets = Asn1OctetString.GetInstance(s[s.Count - 1].ToAsn1Object());
 
-				extensions.Add(oid, new X509Extension(isCritical, octets));
+                if (extensions.Contains(oid))
+                    throw new ArgumentException("repeated extension found: " + oid);
+
+                extensions.Add(oid, new X509Extension(isCritical, octets));
 				ordering.Add(oid);
 			}
         }
@@ -247,11 +256,11 @@ namespace Org.BouncyCastle.Asn1.X509
         {
             if (ordering == null)
             {
-                this.ordering = Org.BouncyCastle.Utilities.Platform.CreateArrayList(extensions.Keys);
+                this.ordering = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList(extensions.Keys);
             }
             else
             {
-                this.ordering = Org.BouncyCastle.Utilities.Platform.CreateArrayList(ordering);
+                this.ordering = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList(ordering);
             }
 
             foreach (DerObjectIdentifier oid in this.ordering)
@@ -270,7 +279,7 @@ namespace Org.BouncyCastle.Asn1.X509
             IList oids,
             IList values)
         {
-            this.ordering = Org.BouncyCastle.Utilities.Platform.CreateArrayList(oids);
+            this.ordering = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList(oids);
 
             int count = 0;
             foreach (DerObjectIdentifier oid in this.ordering)
@@ -279,9 +288,8 @@ namespace Org.BouncyCastle.Asn1.X509
             }
         }
 
-#if !SILVERLIGHT && !NETFX_CORE && !UNITY_WP8// || !PORTABLE
-//#if !(SILVERLIGHT || PORTABLE)
-        /**
+#if !(SILVERLIGHT || PORTABLE || NETFX_CORE)
+		/**
          * constructor from a table of extensions.
          * <p>
          * it's is assumed the table contains Oid/string pairs.</p>
@@ -305,11 +313,11 @@ namespace Org.BouncyCastle.Asn1.X509
         {
             if (ordering == null)
             {
-                this.ordering = Org.BouncyCastle.Utilities.Platform.CreateArrayList(extensions.Keys);
+                this.ordering = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList(extensions.Keys);
             }
             else
             {
-                this.ordering = Org.BouncyCastle.Utilities.Platform.CreateArrayList(ordering);
+                this.ordering = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList(ordering);
             }
 
             foreach (DerObjectIdentifier oid in this.ordering)
@@ -329,7 +337,7 @@ namespace Org.BouncyCastle.Asn1.X509
 			ArrayList	oids,
 			ArrayList	values)
 		{
-            this.ordering = Org.BouncyCastle.Utilities.Platform.CreateArrayList(oids);
+            this.ordering = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList(oids);
 
             int count = 0;
 			foreach (DerObjectIdentifier oid in this.ordering)
@@ -429,7 +437,7 @@ namespace Org.BouncyCastle.Asn1.X509
 
 		private DerObjectIdentifier[] GetExtensionOids(bool isCritical)
 		{
-			IList oids = Org.BouncyCastle.Utilities.Platform.CreateArrayList();
+			IList oids = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList();
 
 			foreach (DerObjectIdentifier oid in this.ordering)
             {
@@ -451,5 +459,5 @@ namespace Org.BouncyCastle.Asn1.X509
 		}
 	}
 }
-
+#pragma warning restore
 #endif

@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     /// <summary>RFC 5246 7.4.1.4.1</summary>
     public abstract class HashAlgorithm
@@ -47,7 +47,23 @@ namespace Org.BouncyCastle.Crypto.Tls
         {
             return 224 <= hashAlgorithm && hashAlgorithm <= 255;
         }
+
+        public static bool IsRecognized(byte hashAlgorithm)
+        {
+            switch (hashAlgorithm)
+            {
+            case md5:
+            case sha1:
+            case sha224:
+            case sha256:
+            case sha384:
+            case sha512:
+                return true;
+            default:
+                return false;
+            }
+        }
     }
 }
-
+#pragma warning restore
 #endif

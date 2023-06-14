@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 
 namespace BestHTTP
 {
@@ -20,7 +17,7 @@ namespace BestHTTP
 #endif
     }
 
-    internal static class HTTPProtocolFactory
+    public static class HTTPProtocolFactory
     {
         public static HTTPResponse Get(SupportedProtocols protocol, HTTPRequest request, Stream stream, bool isStreamed, bool isFromCache)
         {
@@ -33,7 +30,7 @@ namespace BestHTTP
 #if !BESTHTTP_DISABLE_SERVERSENT_EVENTS && (!UNITY_WEBGL || UNITY_EDITOR)
                 case SupportedProtocols.ServerSentEvents: return new ServerSentEvents.EventSourceResponse(request, stream, isStreamed, isFromCache);
 #endif
-                default: return new HTTPResponse(request, stream, isStreamed, isFromCache);
+                default: return new HTTPResponse(request, new Extensions.ReadOnlyBufferedStream(stream), isStreamed, isFromCache);
             }
         }
 

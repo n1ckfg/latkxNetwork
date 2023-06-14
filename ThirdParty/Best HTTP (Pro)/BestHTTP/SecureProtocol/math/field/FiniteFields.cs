@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Math.Field
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.Field
 {
     public abstract class FiniteFields
     {
@@ -54,5 +54,5 @@ namespace Org.BouncyCastle.Math.Field
         }
     }
 }
-
+#pragma warning restore
 #endif

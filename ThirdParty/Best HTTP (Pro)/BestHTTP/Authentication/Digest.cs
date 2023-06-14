@@ -212,7 +212,7 @@ namespace BestHTTP.Authentication
                             byte[] entityBody = request.GetEntityBody();
 
                             if (entityBody == null)
-                                entityBody = string.Empty.GetASCIIBytes();
+                                entityBody = VariableSizedBufferPool.NoData; //string.Empty.GetASCIIBytes();
 
                             string HA2 = string.Format("{0}:{1}:{2}", method, uri, entityBody.CalculateMD5Hash()).CalculateMD5Hash();
 

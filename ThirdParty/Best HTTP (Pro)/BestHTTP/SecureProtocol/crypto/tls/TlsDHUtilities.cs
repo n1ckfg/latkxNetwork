@@ -1,18 +1,18 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 using System.IO;
 
-using Org.BouncyCastle.Crypto.Agreement;
-using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Utilities;
-using Org.BouncyCastle.Utilities.Encoders;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Agreement;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Generators;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Encoders;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     public abstract class TlsDHUtilities
     {
@@ -206,36 +206,20 @@ namespace Org.BouncyCastle.Crypto.Tls
 
         public static byte[] CreateNegotiatedDheGroupsServerExtension(byte dheGroup)
         {
-            return new byte[]{ dheGroup };
+            return TlsUtilities.EncodeUint8(dheGroup);
         }
 
         public static byte[] ReadNegotiatedDheGroupsClientExtension(byte[] extensionData)
         {
-            if (extensionData == null)
-                throw new ArgumentNullException("extensionData");
-
-            MemoryStream buf = new MemoryStream(extensionData, false);
-
-            byte length = TlsUtilities.ReadUint8(buf);
-            if (length < 1)
+            byte[] dheGroups = TlsUtilities.DecodeUint8ArrayWithUint8Length(extensionData);
+            if (dheGroups.Length < 1)
                 throw new TlsFatalAlert(AlertDescription.decode_error);
-
-            byte[] dheGroups = TlsUtilities.ReadUint8Array(length, buf);
-
-            TlsProtocol.AssertEmpty(buf);
-
             return dheGroups;
         }
 
         public static byte ReadNegotiatedDheGroupsServerExtension(byte[] extensionData)
         {
-            if (extensionData == null)
-                throw new ArgumentNullException("extensionData");
-
-            if (extensionData.Length != 1)
-                throw new TlsFatalAlert(AlertDescription.decode_error);
-
-            return extensionData[0];
+            return TlsUtilities.DecodeUint8(extensionData);
         }
 
         public static DHParameters GetParametersForDHEGroup(short dheGroup)
@@ -384,6 +368,25 @@ namespace Org.BouncyCastle.Crypto.Tls
             case CipherSuite.DRAFT_TLS_DHE_PSK_WITH_AES_128_OCB:
             case CipherSuite.DRAFT_TLS_DHE_PSK_WITH_AES_256_OCB:
 
+            /*
+             * DH_anon cipher suites are consider ephemeral DH 
+             */
+            case CipherSuite.TLS_DH_anon_WITH_3DES_EDE_CBC_SHA:
+            case CipherSuite.TLS_DH_anon_WITH_AES_128_CBC_SHA:
+            case CipherSuite.TLS_DH_anon_WITH_AES_128_CBC_SHA256:
+            case CipherSuite.TLS_DH_anon_WITH_AES_128_GCM_SHA256:
+            case CipherSuite.TLS_DH_anon_WITH_AES_256_CBC_SHA:
+            case CipherSuite.TLS_DH_anon_WITH_AES_256_CBC_SHA256:
+            case CipherSuite.TLS_DH_anon_WITH_AES_256_GCM_SHA384:
+            case CipherSuite.TLS_DH_anon_WITH_CAMELLIA_128_CBC_SHA:
+            case CipherSuite.TLS_DH_anon_WITH_CAMELLIA_128_CBC_SHA256:
+            case CipherSuite.TLS_DH_anon_WITH_CAMELLIA_128_GCM_SHA256:
+            case CipherSuite.TLS_DH_anon_WITH_CAMELLIA_256_CBC_SHA:
+            case CipherSuite.TLS_DH_anon_WITH_CAMELLIA_256_CBC_SHA256:
+            case CipherSuite.TLS_DH_anon_WITH_CAMELLIA_256_GCM_SHA384:
+            case CipherSuite.TLS_DH_anon_WITH_RC4_128_MD5:
+            case CipherSuite.TLS_DH_anon_WITH_SEED_CBC_SHA:
+
                 return true;
 
             default:
@@ -435,36 +438,10 @@ namespace Org.BouncyCastle.Crypto.Tls
             AsymmetricCipherKeyPair kp = GenerateDHKeyPair(random, dhParams);
 
             DHPublicKeyParameters dhPublic = (DHPublicKeyParameters)kp.Public;
-            new ServerDHParams(dhPublic).Encode(output);
+            WriteDHParameters(dhParams, output);
+            WriteDHParameter(dhPublic.Y, output);
 
             return (DHPrivateKeyParameters)kp.Private;
-        }
-
-        public static DHParameters ValidateDHParameters(DHParameters parameters)
-        {
-            BigInteger p = parameters.P;
-            BigInteger g = parameters.G;
-
-            if (!p.IsProbablePrime(2))
-                throw new TlsFatalAlert(AlertDescription.illegal_parameter);
-            if (g.CompareTo(Two) < 0 || g.CompareTo(p.Subtract(Two)) > 0)
-                throw new TlsFatalAlert(AlertDescription.illegal_parameter);
-
-
-            return parameters;
-        }
-
-        public static DHPublicKeyParameters ValidateDHPublicKey(DHPublicKeyParameters key)
-        {
-            DHParameters parameters = ValidateDHParameters(key.Parameters);
-
-            BigInteger Y = key.Y;
-            if (Y.CompareTo(Two) < 0 || Y.CompareTo(parameters.P.Subtract(Two)) > 0)
-                throw new TlsFatalAlert(AlertDescription.illegal_parameter);
-
-            // TODO See RFC 2631 for more discussion of Diffie-Hellman validation
-
-            return key;
         }
 
         public static BigInteger ReadDHParameter(Stream input)
@@ -472,11 +449,34 @@ namespace Org.BouncyCastle.Crypto.Tls
             return new BigInteger(1, TlsUtilities.ReadOpaque16(input));
         }
 
+        public static DHParameters ReadDHParameters(Stream input)
+        {
+            BigInteger p = ReadDHParameter(input);
+            BigInteger g = ReadDHParameter(input);
+
+            return new DHParameters(p, g);
+        }
+
+        public static DHParameters ReceiveDHParameters(TlsDHVerifier dhVerifier, Stream input)
+        {
+            DHParameters dhParameters = ReadDHParameters(input);
+            if (!dhVerifier.Accept(dhParameters))
+                throw new TlsFatalAlert(AlertDescription.insufficient_security);
+
+            return dhParameters;
+        }
+
         public static void WriteDHParameter(BigInteger x, Stream output)
         {
             TlsUtilities.WriteOpaque16(BigIntegers.AsUnsignedByteArray(x), output);
         }
+
+        public static void WriteDHParameters(DHParameters dhParameters, Stream output)
+        {
+            WriteDHParameter(dhParameters.P, output);
+            WriteDHParameter(dhParameters.G, output);
+        }
     }
 }
-
+#pragma warning restore
 #endif

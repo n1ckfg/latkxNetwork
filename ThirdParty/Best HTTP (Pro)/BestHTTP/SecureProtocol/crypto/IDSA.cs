@@ -1,9 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
-using Org.BouncyCastle.Math;
 
-namespace Org.BouncyCastle.Crypto
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
+
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto
 {
     /**
      * interface for classes implementing the Digital Signature Algorithm
@@ -40,5 +41,5 @@ namespace Org.BouncyCastle.Crypto
         bool VerifySignature(byte[] message, BigInteger  r, BigInteger s);
     }
 }
-
+#pragma warning restore
 #endif

@@ -1,11 +1,11 @@
-﻿#if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Engines
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Engines
 {
     public abstract class SerpentEngineBase
         :   IBlockCipher
@@ -35,7 +35,7 @@ namespace Org.BouncyCastle.Crypto.Engines
         public virtual void Init(bool encrypting, ICipherParameters parameters)
         {
             if (!(parameters is KeyParameter))
-				throw new ArgumentException("invalid parameter passed to " + AlgorithmName + " init - " + Org.BouncyCastle.Utilities.Platform.GetTypeName(parameters));
+				throw new ArgumentException("invalid parameter passed to " + AlgorithmName + " init - " + BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.GetTypeName(parameters));
 
             this.encrypting = encrypting;
             this.wKey = MakeWorkingKey(((KeyParameter)parameters).GetKey());
@@ -469,5 +469,5 @@ namespace Org.BouncyCastle.Crypto.Engines
         protected abstract void DecryptBlock(byte[] input, int inOff, byte[] output, int outOff);
     }
 }
-
+#pragma warning restore
 #endif

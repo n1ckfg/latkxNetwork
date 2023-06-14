@@ -1,5 +1,6 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-namespace Org.BouncyCastle.Asn1
+#pragma warning disable
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1
 {
     /**
      * basic interface for Der string objects.
@@ -9,5 +10,5 @@ namespace Org.BouncyCastle.Asn1
         string GetString();
     }
 }
-
+#pragma warning restore
 #endif

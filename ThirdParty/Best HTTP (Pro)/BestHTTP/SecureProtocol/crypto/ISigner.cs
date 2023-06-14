@@ -1,10 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 
 using System;
 using System.Text;
 
-namespace Org.BouncyCastle.Crypto
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto
 {
     public interface ISigner
     {
@@ -50,5 +50,5 @@ namespace Org.BouncyCastle.Crypto
         void Reset();
     }
 }
-
+#pragma warning restore
 #endif

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-#if NETFX_CORE || BUILD_FOR_WP8
+#if NETFX_CORE
     using System.Threading.Tasks;
 #endif
 
@@ -105,11 +105,11 @@ namespace BestHTTP
 
         private void Setup()
         {
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
             Caching.HTTPCacheService.SetupCacheFolder();
 #endif
 
-#if !BESTHTTP_DISABLE_COOKIES //&& (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_COOKIES
             Cookies.CookieJar.SetupFolder();
             Cookies.CookieJar.Load();
 #endif

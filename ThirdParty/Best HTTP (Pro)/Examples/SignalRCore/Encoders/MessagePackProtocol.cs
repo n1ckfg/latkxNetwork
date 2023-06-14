@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if !BESTHTTP_DISABLE_SIGNALR_CORE
+
+using System;
 using System.Collections.Generic;
 using BestHTTP.SignalRCore.Messages;
 
@@ -86,3 +88,5 @@ namespace BestHTTP.SignalRCore.Encoders
         }
     }
 }
+
+#endif

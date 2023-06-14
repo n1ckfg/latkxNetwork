@@ -1,12 +1,13 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 using System.IO;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.IO;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     public class ServerNameList
     {
@@ -54,7 +55,7 @@ namespace Org.BouncyCastle.Crypto.Tls
 
             TlsUtilities.CheckUint16(buf.Length);
             TlsUtilities.WriteUint16((int)buf.Length, output);
-            buf.WriteTo(output);
+            Streams.WriteBufTo(buf, output);
         }
 
         /**
@@ -76,7 +77,7 @@ namespace Org.BouncyCastle.Crypto.Tls
             MemoryStream buf = new MemoryStream(data, false);
 
             byte[] nameTypesSeen = TlsUtilities.EmptyBytes;
-            IList server_name_list = Org.BouncyCastle.Utilities.Platform.CreateArrayList();
+            IList server_name_list = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList();
             while (buf.Position < buf.Length)
             {
                 ServerName entry = ServerName.Parse(buf);
@@ -104,5 +105,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         }
     }
 }
-
+#pragma warning restore
 #endif

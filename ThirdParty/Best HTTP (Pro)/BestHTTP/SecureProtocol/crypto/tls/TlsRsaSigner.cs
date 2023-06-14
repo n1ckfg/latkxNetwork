@@ -1,16 +1,16 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Crypto.Digests;
-using Org.BouncyCastle.Crypto.Encodings;
-using Org.BouncyCastle.Crypto.Engines;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Crypto.Signers;
-using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Digests;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Encodings;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Engines;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Signers;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     public class TlsRsaSigner
         :   AbstractTlsSigner
@@ -93,7 +93,7 @@ namespace Org.BouncyCastle.Crypto.Tls
         protected virtual IAsymmetricBlockCipher CreateRsaImpl()
         {
             /*
-             * RFC 5264 7.4.7.1. Implementation note: It is now known that remote timing-based attacks
+             * RFC 5246 7.4.7.1. Implementation note: It is now known that remote timing-based attacks
              * on TLS are possible, at least when the client and server are on the same LAN.
              * Accordingly, implementations that use static RSA keys MUST use RSA blinding or some other
              * anti-timing technique, as described in [TIMING].
@@ -102,5 +102,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         }
     }
 }
-
+#pragma warning restore
 #endif

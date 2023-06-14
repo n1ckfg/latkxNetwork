@@ -1,21 +1,21 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Threading;
 
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Digests;
-using Org.BouncyCastle.Crypto.Prng;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Digests;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Prng;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Security
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Security
 {
     public class SecureRandom
         : Random
     {
         private static long counter = Times.NanoTime();
 
-#if NETCF_1_0 || PORTABLE
+#if NETCF_1_0 || PORTABLE || NETFX_CORE
         private static object counterLock = new object();
         private static long NextCounterValue()
         {
@@ -99,8 +99,8 @@ namespace Org.BouncyCastle.Security
         /// <param name="autoSeed">If true, the instance will be auto-seeded.</param>
         public static SecureRandom GetInstance(string algorithm, bool autoSeed)
         {
-            string upper = Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(algorithm);
-            if (Org.BouncyCastle.Utilities.Platform.EndsWith(upper, "PRNG"))
+            string upper = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(algorithm);
+            if (BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.EndsWith(upper, "PRNG"))
             {
                 string digestName = upper.Substring(0, upper.Length - "PRNG".Length);
                 DigestRandomGenerator prng = CreatePrng(digestName, autoSeed);
@@ -262,5 +262,5 @@ namespace Org.BouncyCastle.Security
         }
     }
 }
-
+#pragma warning restore
 #endif

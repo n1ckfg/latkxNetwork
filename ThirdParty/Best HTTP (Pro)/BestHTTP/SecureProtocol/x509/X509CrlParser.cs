@@ -1,19 +1,19 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 using System.IO;
 using System.Text;
 
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Asn1.Pkcs;
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Security.Certificates;
-using Org.BouncyCastle.Utilities;
-using Org.BouncyCastle.Utilities.Encoders;
-using Org.BouncyCastle.Utilities.IO;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Pkcs;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security.Certificates;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Encoders;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.IO;
 
-namespace Org.BouncyCastle.X509
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.X509
 {
 	public class X509CrlParser
 	{
@@ -184,7 +184,7 @@ namespace Org.BouncyCastle.X509
 			Stream inStream)
 		{
 			X509Crl crl;
-			IList crls = Org.BouncyCastle.Utilities.Platform.CreateArrayList();
+			IList crls = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList();
 
 			while ((crl = ReadCrl(inStream)) != null)
 			{
@@ -195,5 +195,5 @@ namespace Org.BouncyCastle.X509
 		}
 	}
 }
-
+#pragma warning restore
 #endif

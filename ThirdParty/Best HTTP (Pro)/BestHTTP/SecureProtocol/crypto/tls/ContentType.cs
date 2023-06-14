@@ -1,6 +1,6 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
-namespace Org.BouncyCastle.Crypto.Tls
+#pragma warning disable
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     /**
      * RFC 2246 6.2.1
@@ -14,5 +14,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         public const byte heartbeat = 24;
     }
 }
-
+#pragma warning restore
 #endif

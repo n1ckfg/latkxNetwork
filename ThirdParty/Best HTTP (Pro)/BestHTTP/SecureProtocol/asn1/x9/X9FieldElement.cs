@@ -1,10 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Math.EC;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC;
 
-namespace Org.BouncyCastle.Asn1.X9
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X9
 {
     /**
      * Class for processing an ECFieldElement as a DER object.
@@ -20,6 +21,7 @@ namespace Org.BouncyCastle.Asn1.X9
             this.f = f;
         }
 
+        [Obsolete("Will be removed")]
         public X9FieldElement(
             BigInteger		p,
             Asn1OctetString	s)
@@ -27,6 +29,7 @@ namespace Org.BouncyCastle.Asn1.X9
         {
         }
 
+        [Obsolete("Will be removed")]
         public X9FieldElement(
             int				m,
             int				k1,
@@ -68,5 +71,5 @@ namespace Org.BouncyCastle.Asn1.X9
         }
     }
 }
-
+#pragma warning restore
 #endif

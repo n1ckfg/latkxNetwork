@@ -1,12 +1,13 @@
-﻿#if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.Collections;
 
-using Org.BouncyCastle.Crypto.Digests;
-using Org.BouncyCastle.Utilities;
-using Org.BouncyCastle.Utilities.Collections;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Digests;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Collections;
 
-namespace Org.BouncyCastle.Crypto.Signers
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Signers
 {
     public class IsoTrailers
     {
@@ -24,7 +25,7 @@ namespace Org.BouncyCastle.Crypto.Signers
 
         private static IDictionary CreateTrailerMap()
         {
-            IDictionary trailers = Org.BouncyCastle.Utilities.Platform.CreateHashtable();
+            IDictionary trailers = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateHashtable();
 
             trailers.Add("RIPEMD128", TRAILER_RIPEMD128);
             trailers.Add("RIPEMD160", TRAILER_RIPEMD160);
@@ -56,5 +57,5 @@ namespace Org.BouncyCastle.Crypto.Signers
         }
     }
 }
-
+#pragma warning restore
 #endif

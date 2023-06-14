@@ -1,10 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.Text;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Asn1.X509
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509
 {
     public class CrlDistPoint
         : Asn1Encodable
@@ -31,7 +32,7 @@ namespace Org.BouncyCastle.Asn1.X509
                 return new CrlDistPoint((Asn1Sequence) obj);
             }
 
-            throw new ArgumentException("unknown object in factory: " + Org.BouncyCastle.Utilities.Platform.GetTypeName(obj), "obj");
+            throw new ArgumentException("unknown object in factory: " + BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.GetTypeName(obj), "obj");
 		}
 
 		private CrlDistPoint(
@@ -77,7 +78,7 @@ namespace Org.BouncyCastle.Asn1.X509
 		public override string ToString()
 		{
 			StringBuilder buf = new StringBuilder();
-			string sep = Org.BouncyCastle.Utilities.Platform.NewLine;
+			string sep = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.NewLine;
 
 			buf.Append("CRLDistPoint:");
 			buf.Append(sep);
@@ -92,5 +93,5 @@ namespace Org.BouncyCastle.Asn1.X509
 		}
 	}
 }
-
+#pragma warning restore
 #endif

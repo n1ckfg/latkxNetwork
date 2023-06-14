@@ -1,12 +1,12 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 using System.IO;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     public abstract class AbstractTlsClient
         :   AbstractTlsPeer, TlsClient
@@ -38,7 +38,7 @@ namespace Org.BouncyCastle.Crypto.Tls
         {
             switch (extensionType)
             {
-            case ExtensionType.elliptic_curves:
+            case ExtensionType.supported_groups:
                 /*
                  * Exception added based on field reports that some servers do send this, although the
                  * Supported Elliptic Curves Extension is clearly intended to be client-only. If
@@ -46,6 +46,16 @@ namespace Org.BouncyCastle.Crypto.Tls
                  */
                 TlsEccUtilities.ReadSupportedEllipticCurvesExtension(extensionData);
                 return true;
+
+            case ExtensionType.ec_point_formats:
+                /*
+                 * Exception added based on field reports that some servers send this even when they
+                 * didn't negotiate an ECC cipher suite. If present, we still require that it is a valid
+                 * ECPointFormatList.
+                 */
+                TlsEccUtilities.ReadSupportedPointFormatsExtension(extensionData);
+                return true;
+
             default:
                 return false;
             }
@@ -202,7 +212,7 @@ namespace Org.BouncyCastle.Crypto.Tls
                  */
                 CheckForUnexpectedServerExtension(serverExtensions, ExtensionType.signature_algorithms);
 
-                CheckForUnexpectedServerExtension(serverExtensions, ExtensionType.elliptic_curves);
+                CheckForUnexpectedServerExtension(serverExtensions, ExtensionType.supported_groups);
 
                 if (TlsEccUtilities.IsEccCipherSuite(this.mSelectedCipherSuite))
                 {
@@ -268,5 +278,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         }
     }
 }
-
+#pragma warning restore
 #endif

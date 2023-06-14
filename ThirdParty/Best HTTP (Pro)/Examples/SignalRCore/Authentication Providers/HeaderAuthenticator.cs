@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if !BESTHTTP_DISABLE_SIGNALR_CORE
+
+using System;
 
 namespace BestHTTP.SignalRCore.Authentication
 {
@@ -41,7 +43,7 @@ namespace BestHTTP.SignalRCore.Authentication
         public void PrepareRequest(BestHTTP.HTTPRequest request)
         {
 #if !UNITY_WEBGL
-            request.SetHeader("Authorization", "Basic " + this._credentials);
+            request.SetHeader("Authorization", "Bearer " + this._credentials);
 #endif
         }
 
@@ -57,3 +59,5 @@ namespace BestHTTP.SignalRCore.Authentication
         }
     }
 }
+
+#endif

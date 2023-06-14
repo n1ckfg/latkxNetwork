@@ -1,12 +1,12 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 using System.IO;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     public sealed class SessionParameters
     {
@@ -19,6 +19,7 @@ namespace Org.BouncyCastle.Crypto.Tls
             private byte[] mPskIdentity = null;
             private byte[] mSrpIdentity = null;
             private byte[] mEncodedServerExtensions = null;
+            private bool mExtendedMasterSecret = false;
 
             public Builder()
             {
@@ -30,7 +31,7 @@ namespace Org.BouncyCastle.Crypto.Tls
                 Validate(this.mCompressionAlgorithm >= 0, "compressionAlgorithm");
                 Validate(this.mMasterSecret != null, "masterSecret");
                 return new SessionParameters(mCipherSuite, (byte)mCompressionAlgorithm, mMasterSecret, mPeerCertificate,
-                    mPskIdentity, mSrpIdentity, mEncodedServerExtensions);
+                    mPskIdentity, mSrpIdentity, mEncodedServerExtensions, mExtendedMasterSecret);
             }
 
             public Builder SetCipherSuite(int cipherSuite)
@@ -42,6 +43,12 @@ namespace Org.BouncyCastle.Crypto.Tls
             public Builder SetCompressionAlgorithm(byte compressionAlgorithm)
             {
                 this.mCompressionAlgorithm = compressionAlgorithm;
+                return this;
+            }
+
+            public Builder SetExtendedMasterSecret(bool extendedMasterSecret)
+            {
+                this.mExtendedMasterSecret = extendedMasterSecret;
                 return this;
             }
 
@@ -98,9 +105,11 @@ namespace Org.BouncyCastle.Crypto.Tls
         private byte[] mPskIdentity;
         private byte[] mSrpIdentity;
         private byte[] mEncodedServerExtensions;
+        private bool mExtendedMasterSecret;
 
         private SessionParameters(int cipherSuite, byte compressionAlgorithm, byte[] masterSecret,
-            Certificate peerCertificate, byte[] pskIdentity, byte[] srpIdentity, byte[] encodedServerExtensions)
+            Certificate peerCertificate, byte[] pskIdentity, byte[] srpIdentity, byte[] encodedServerExtensions,
+            bool extendedMasterSecret)
         {
             this.mCipherSuite = cipherSuite;
             this.mCompressionAlgorithm = compressionAlgorithm;
@@ -109,6 +118,7 @@ namespace Org.BouncyCastle.Crypto.Tls
             this.mPskIdentity = Arrays.Clone(pskIdentity);
             this.mSrpIdentity = Arrays.Clone(srpIdentity);
             this.mEncodedServerExtensions = encodedServerExtensions;
+            this.mExtendedMasterSecret = extendedMasterSecret;
         }
 
         public void Clear()
@@ -122,7 +132,7 @@ namespace Org.BouncyCastle.Crypto.Tls
         public SessionParameters Copy()
         {
             return new SessionParameters(mCipherSuite, mCompressionAlgorithm, mMasterSecret, mPeerCertificate,
-                mPskIdentity, mSrpIdentity, mEncodedServerExtensions);
+                mPskIdentity, mSrpIdentity, mEncodedServerExtensions, mExtendedMasterSecret);
         }
 
         public int CipherSuite
@@ -133,6 +143,11 @@ namespace Org.BouncyCastle.Crypto.Tls
         public byte CompressionAlgorithm
         {
             get { return mCompressionAlgorithm; }
+        }
+
+        public bool IsExtendedMasterSecret
+        {
+            get { return mExtendedMasterSecret; }
         }
 
         public byte[] MasterSecret
@@ -165,5 +180,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         }
     }
 }
-
+#pragma warning restore
 #endif

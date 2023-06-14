@@ -1,14 +1,14 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Crypto.Macs;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Macs;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Signers
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Signers
 {
     /**
      * A deterministic K calculator based on the algorithm in section 3.2 of RFC 6979.
@@ -51,12 +51,13 @@ namespace Org.BouncyCastle.Crypto.Signers
             Arrays.Fill(V, (byte)0x01);
             Arrays.Fill(K, (byte)0);
 
-            byte[] x = new byte[(n.BitLength + 7) / 8];
+            int size = BigIntegers.GetUnsignedByteLength(n);
+            byte[] x = new byte[size];
             byte[] dVal = BigIntegers.AsUnsignedByteArray(d);
 
             Array.Copy(dVal, 0, x, x.Length - dVal.Length, dVal.Length);
 
-            byte[] m = new byte[(n.BitLength + 7) / 8];
+            byte[] m = new byte[size];
 
             BigInteger mInt = BitsToInt(message);
 
@@ -100,7 +101,7 @@ namespace Org.BouncyCastle.Crypto.Signers
 
         public virtual BigInteger NextK()
         {
-            byte[] t = new byte[((n.BitLength + 7) / 8)];
+            byte[] t = new byte[BigIntegers.GetUnsignedByteLength(n)];
 
             for (;;)
             {
@@ -150,5 +151,5 @@ namespace Org.BouncyCastle.Crypto.Signers
         }
     }
 }
-
+#pragma warning restore
 #endif

@@ -1,10 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Diagnostics;
 using System.IO;
 
-namespace Org.BouncyCastle.Utilities.IO
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.IO
 {
     public abstract class BaseInputStream : Stream
     {
@@ -24,7 +24,7 @@ namespace Org.BouncyCastle.Utilities.IO
             base.Dispose(disposing);
         }
 #else
-        public override void Close()
+		public override void Close()
         {
             closed = true;
             base.Close();
@@ -64,5 +64,5 @@ namespace Org.BouncyCastle.Utilities.IO
         public sealed override void Write(byte[] buffer, int offset, int count) { throw new NotSupportedException(); }
     }
 }
-
+#pragma warning restore
 #endif

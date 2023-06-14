@@ -1,5 +1,5 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 /*
 Copyright (c) 2001 Lapo Luchini.
 
@@ -9,8 +9,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimer in
+  2. Redistributions in binary form must reproduce the above copyright 
+     notice, this list of conditions and the following disclaimer in 
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -39,7 +39,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 
-namespace Org.BouncyCastle.Utilities.Zlib
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Zlib
 {
 	public class ZOutputStream
 		: Stream
@@ -126,7 +126,7 @@ namespace Org.BouncyCastle.Utilities.Zlib
             base.Dispose(disposing);
         }
 #else
-        public override void Close()
+		public override void Close()
 		{
 			if (closed)
 				return;
@@ -153,7 +153,7 @@ namespace Org.BouncyCastle.Utilities.Zlib
             {
                 this.closed = true;
                 End();
-                Org.BouncyCastle.Utilities.Platform.Dispose(output);
+                BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.Dispose(output);
                 output = null;
             }
         }
@@ -265,5 +265,5 @@ namespace Org.BouncyCastle.Utilities.Zlib
 		}
 	}
 }
-
+#pragma warning restore
 #endif

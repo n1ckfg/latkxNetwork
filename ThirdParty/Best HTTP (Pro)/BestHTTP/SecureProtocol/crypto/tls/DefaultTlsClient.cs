@@ -1,29 +1,37 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 using System.IO;
 
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Digests;
-using Org.BouncyCastle.Crypto.Engines;
-using Org.BouncyCastle.Crypto.Modes;
-using Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Digests;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Engines;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Modes;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     public abstract class DefaultTlsClient
         :   AbstractTlsClient
     {
+        protected TlsDHVerifier mDHVerifier;
+
         public DefaultTlsClient()
-            :   base()
+            : this(new DefaultTlsCipherFactory())
         {
         }
 
         public DefaultTlsClient(TlsCipherFactory cipherFactory)
-            :   base(cipherFactory)
+            : this(cipherFactory, new DefaultTlsDHVerifier())
         {
+        }
+
+        public DefaultTlsClient(TlsCipherFactory cipherFactory, TlsDHVerifier dhVerifier)
+            : base(cipherFactory)
+        {
+            this.mDHVerifier = dhVerifier;
         }
 
         public override int[] GetCipherSuites()
@@ -36,12 +44,6 @@ namespace Org.BouncyCastle.Crypto.Tls
                 CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
                 CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
                 CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
-                CipherSuite.TLS_DHE_DSS_WITH_AES_128_GCM_SHA256,
-                CipherSuite.TLS_DHE_DSS_WITH_AES_128_CBC_SHA256,
-                CipherSuite.TLS_DHE_DSS_WITH_AES_128_CBC_SHA,
-                CipherSuite.TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,
-                CipherSuite.TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,
-                CipherSuite.TLS_DHE_RSA_WITH_AES_128_CBC_SHA,
                 CipherSuite.TLS_RSA_WITH_AES_128_GCM_SHA256,
                 CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA256,
                 CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA,
@@ -54,6 +56,7 @@ namespace Org.BouncyCastle.Crypto.Tls
 
             switch (keyExchangeAlgorithm)
             {
+            case KeyExchangeAlgorithm.DH_anon:
             case KeyExchangeAlgorithm.DH_DSS:
             case KeyExchangeAlgorithm.DH_RSA:
                 return CreateDHKeyExchange(keyExchangeAlgorithm);
@@ -86,12 +89,12 @@ namespace Org.BouncyCastle.Crypto.Tls
 
         protected virtual TlsKeyExchange CreateDHKeyExchange(int keyExchange)
         {
-            return new TlsDHKeyExchange(keyExchange, mSupportedSignatureAlgorithms, null);
+            return new TlsDHKeyExchange(keyExchange, mSupportedSignatureAlgorithms, mDHVerifier, null);
         }
 
         protected virtual TlsKeyExchange CreateDheKeyExchange(int keyExchange)
         {
-            return new TlsDheKeyExchange(keyExchange, mSupportedSignatureAlgorithms, null);
+            return new TlsDheKeyExchange(keyExchange, mSupportedSignatureAlgorithms, mDHVerifier, null);
         }
 
         protected virtual TlsKeyExchange CreateECDHKeyExchange(int keyExchange)
@@ -112,5 +115,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         }
     }
 }
-
+#pragma warning restore
 #endif

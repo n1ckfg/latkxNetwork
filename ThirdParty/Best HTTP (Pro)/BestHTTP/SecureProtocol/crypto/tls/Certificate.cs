@@ -1,14 +1,14 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 using System.IO;
 
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     /**
      * Parsing and encoding of a <i>Certificate</i> struct from RFC 4346.
@@ -21,7 +21,7 @@ namespace Org.BouncyCastle.Crypto.Tls
      * } Certificate;
      * </pre>
      *
-     * @see Org.BouncyCastle.Asn1.X509.X509CertificateStructure
+     * @see BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509.X509CertificateStructure
      */
     public class Certificate
     {
@@ -76,7 +76,7 @@ namespace Org.BouncyCastle.Crypto.Tls
          */
         public virtual void Encode(Stream output)
         {
-            IList derEncodings = Org.BouncyCastle.Utilities.Platform.CreateArrayList(mCertificateList.Length);
+            IList derEncodings = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList(mCertificateList.Length);
 
             int totalLength = 0;
             foreach (Asn1Encodable asn1Cert in mCertificateList)
@@ -114,11 +114,11 @@ namespace Org.BouncyCastle.Crypto.Tls
 
             MemoryStream buf = new MemoryStream(certListData, false);
 
-            IList certificate_list = Org.BouncyCastle.Utilities.Platform.CreateArrayList();
+            IList certificate_list = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList();
             while (buf.Position < buf.Length)
             {
-                byte[] derEncoding = TlsUtilities.ReadOpaque24(buf);
-                Asn1Object asn1Cert = TlsUtilities.ReadDerObject(derEncoding);
+                byte[] berEncoding = TlsUtilities.ReadOpaque24(buf);
+                Asn1Object asn1Cert = TlsUtilities.ReadAsn1Object(berEncoding);
                 certificate_list.Add(X509CertificateStructure.GetInstance(asn1Cert));
             }
 
@@ -136,5 +136,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         }
     }
 }
-
+#pragma warning restore
 #endif

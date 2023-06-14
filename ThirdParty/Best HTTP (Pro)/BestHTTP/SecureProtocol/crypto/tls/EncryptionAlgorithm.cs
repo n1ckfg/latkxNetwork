@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     /// <summary>RFC 2246</summary>
     /// <remarks>
@@ -58,10 +58,9 @@ namespace Org.BouncyCastle.Crypto.Tls
         public const int CAMELLIA_256_GCM = 20;
 
         /*
-         * draft-ietf-tls-chacha20-poly1305-04
+         * RFC 7905
          */
-        public const int CHACHA20_POLY1305 = 102;
-        [Obsolete] public const int AEAD_CHACHA20_POLY1305 = CHACHA20_POLY1305;
+        public const int CHACHA20_POLY1305 = 21;
 
         /*
          * draft-zauner-tls-aes-ocb-04
@@ -70,5 +69,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         public const int AES_256_OCB_TAGLEN96 = 104;
     }
 }
-
+#pragma warning restore
 #endif

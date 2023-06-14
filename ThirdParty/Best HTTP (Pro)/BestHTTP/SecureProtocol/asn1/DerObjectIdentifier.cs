@@ -1,13 +1,14 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Asn1
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1
 {
     public class DerObjectIdentifier
         : Asn1Object
@@ -27,7 +28,7 @@ namespace Org.BouncyCastle.Asn1
                 return (DerObjectIdentifier) obj;
             if (obj is byte[])
                 return FromOctetString((byte[])obj);
-            throw new ArgumentException("illegal object in GetInstance: " + Org.BouncyCastle.Utilities.Platform.GetTypeName(obj), "obj");
+            throw new ArgumentException("illegal object in GetInstance: " + BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.GetTypeName(obj), "obj");
         }
 
         /**
@@ -43,7 +44,14 @@ namespace Org.BouncyCastle.Asn1
             Asn1TaggedObject	obj,
             bool				explicitly)
         {
-            return GetInstance(obj.GetObject());
+            Asn1Object o = obj.GetObject();
+
+            if (explicitly || o is DerObjectIdentifier)
+            {
+                return GetInstance(o);
+            }
+
+            return FromOctetString(Asn1OctetString.GetInstance(o).GetOctets());
         }
 
         public DerObjectIdentifier(
@@ -84,7 +92,7 @@ namespace Org.BouncyCastle.Asn1
         public virtual bool On(DerObjectIdentifier stem)
         {
             string id = Id, stemId = stem.Id;
-            return id.Length > stemId.Length && id[stemId.Length] == '.' && Org.BouncyCastle.Utilities.Platform.StartsWith(id, stemId);
+            return id.Length > stemId.Length && id[stemId.Length] == '.' && BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.StartsWith(id, stemId);
         }
 
         internal DerObjectIdentifier(byte[] bytes)
@@ -204,36 +212,36 @@ namespace Org.BouncyCastle.Asn1
             return identifier;
         }
 
-        private static bool IsValidBranchID(
-            String branchID, int start)
+        private static bool IsValidBranchID(string branchID, int start)
         {
-            bool periodAllowed = false;
+            int digitCount = 0;
 
             int pos = branchID.Length;
             while (--pos >= start)
             {
                 char ch = branchID[pos];
 
-                // TODO Leading zeroes?
-                if ('0' <= ch && ch <= '9')
-                {
-                    periodAllowed = true;
-                    continue;
-                }
-
                 if (ch == '.')
                 {
-                    if (!periodAllowed)
+                    if (0 == digitCount || (digitCount > 1 && branchID[pos + 1] == '0'))
                         return false;
 
-                    periodAllowed = false;
-                    continue;
+                    digitCount = 0;
                 }
-
-                return false;
+                else if ('0' <= ch && ch <= '9')
+                {
+                    ++digitCount;
+                }
+                else
+                {
+                    return false;
+                }
             }
 
-            return periodAllowed;
+            if (0 == digitCount || (digitCount > 1 && branchID[pos + 1] == '0'))
+                return false;
+
+            return true;
         }
 
         private static bool IsValidIdentifier(string identifier)
@@ -346,5 +354,5 @@ namespace Org.BouncyCastle.Asn1
         }
     }
 }
-
+#pragma warning restore
 #endif

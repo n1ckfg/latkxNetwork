@@ -1,10 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.Text;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Asn1.X509
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509
 {
     /**
      * The DistributionPoint object.
@@ -43,7 +44,7 @@ namespace Org.BouncyCastle.Asn1.X509
                 return new DistributionPoint((Asn1Sequence) obj);
             }
 
-            throw new ArgumentException("Invalid DistributionPoint: " + Org.BouncyCastle.Utilities.Platform.GetTypeName(obj));
+            throw new ArgumentException("Invalid DistributionPoint: " + BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.GetTypeName(obj));
         }
 
 		private DistributionPoint(
@@ -93,34 +94,21 @@ namespace Org.BouncyCastle.Asn1.X509
 			get { return cRLIssuer; }
         }
 
-		public override Asn1Object ToAsn1Object()
+        public override Asn1Object ToAsn1Object()
         {
             Asn1EncodableVector v = new Asn1EncodableVector();
 
-			if (distributionPoint != null)
-            {
-                //
-                // as this is a CHOICE it must be explicitly tagged
-                //
-                v.Add(new DerTaggedObject(0, distributionPoint));
-            }
+            // As this is a CHOICE it must be explicitly tagged
+            v.AddOptionalTagged(true, 0, distributionPoint);
 
-			if (reasons != null)
-            {
-                v.Add(new DerTaggedObject(false, 1, reasons));
-            }
-
-			if (cRLIssuer != null)
-            {
-                v.Add(new DerTaggedObject(false, 2, cRLIssuer));
-            }
-
-			return new DerSequence(v);
+            v.AddOptionalTagged(false, 1, reasons);
+            v.AddOptionalTagged(false, 2, cRLIssuer);
+            return new DerSequence(v);
         }
 
 		public override string ToString()
 		{
-			string sep = Org.BouncyCastle.Utilities.Platform.NewLine;
+			string sep = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.NewLine;
 			StringBuilder buf = new StringBuilder();
 			buf.Append("DistributionPoint: [");
 			buf.Append(sep);
@@ -160,5 +148,5 @@ namespace Org.BouncyCastle.Asn1.X509
 		}
 	}
 }
-
+#pragma warning restore
 #endif

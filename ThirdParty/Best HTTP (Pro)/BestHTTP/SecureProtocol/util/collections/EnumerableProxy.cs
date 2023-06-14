@@ -1,9 +1,9 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 
-namespace Org.BouncyCastle.Utilities.Collections
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Collections
 {
 	public sealed class EnumerableProxy
 		: IEnumerable
@@ -25,5 +25,5 @@ namespace Org.BouncyCastle.Utilities.Collections
 		}
 	}
 }
-
+#pragma warning restore
 #endif

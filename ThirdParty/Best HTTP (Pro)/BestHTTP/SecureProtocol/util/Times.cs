@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Utilities
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities
 {
     public sealed class Times
     {
@@ -14,5 +14,5 @@ namespace Org.BouncyCastle.Utilities
         }
     }
 }
-
+#pragma warning restore
 #endif

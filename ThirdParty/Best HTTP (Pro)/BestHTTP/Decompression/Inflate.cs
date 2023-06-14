@@ -120,7 +120,7 @@ namespace BestHTTP.Decompression.Zlib
         {
             _codec = codec;
             hufts = new int[MANY * 3];
-            window = new byte[w];
+            window = Extensions.VariableSizedBufferPool.Get(w, true);
             end = w;
             this.checkfn = checkfn;
             mode = InflateBlockMode.TYPE;
@@ -656,6 +656,7 @@ namespace BestHTTP.Decompression.Zlib
         internal void Free()
         {
             Reset();
+            Extensions.VariableSizedBufferPool.Release(window);
             window = null;
             hufts = null;
         }

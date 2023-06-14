@@ -1,7 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System.IO;
 
-namespace Org.BouncyCastle.Asn1
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1
 {
 	public abstract class Asn1Encodable
 		: IAsn1Convertible
@@ -71,11 +72,11 @@ namespace Org.BouncyCastle.Asn1
 			Asn1Object o1 = ToAsn1Object();
 			Asn1Object o2 = other.ToAsn1Object();
 
-			return o1 == o2 || o1.CallAsn1Equals(o2);
+			return o1 == o2 || (null != o2 && o1.CallAsn1Equals(o2));
 		}
 
 		public abstract Asn1Object ToAsn1Object();
     }
 }
-
+#pragma warning restore
 #endif

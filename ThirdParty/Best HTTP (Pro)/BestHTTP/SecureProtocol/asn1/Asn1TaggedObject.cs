@@ -1,9 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Asn1
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1
 {
     /**
      * ASN.1 TaggedObject - in ASN.1 notation this is any object preceded by
@@ -34,7 +35,7 @@ namespace Org.BouncyCastle.Asn1
         {
             if (explicitly)
             {
-                return (Asn1TaggedObject) obj.GetObject();
+                return GetInstance(obj.GetObject());
             }
 
             throw new ArgumentException("implicitly tagged tagged object");
@@ -48,7 +49,7 @@ namespace Org.BouncyCastle.Asn1
 				return (Asn1TaggedObject) obj;
 			}
 
-			throw new ArgumentException("Unknown object in GetInstance: " + Org.BouncyCastle.Utilities.Platform.GetTypeName(obj), "obj");
+			throw new ArgumentException("Unknown object in GetInstance: " + BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.GetTypeName(obj), "obj");
 		}
 
 		/**
@@ -91,7 +92,7 @@ namespace Org.BouncyCastle.Asn1
 			return this.tagNo == other.tagNo
 //				&& this.empty == other.empty
 				&& this.explicitly == other.explicitly   // TODO Should this be part of equality?
-				&& Org.BouncyCastle.Utilities.Platform.Equals(GetObject(), other.GetObject());
+				&& BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.Equals(GetObject(), other.GetObject());
 		}
 
 		protected override int Asn1GetHashCode()
@@ -178,7 +179,7 @@ namespace Org.BouncyCastle.Asn1
 				return GetObject();
 			}
 
-			throw Org.BouncyCastle.Utilities.Platform.CreateNotImplementedException("implicit tagging for tag: " + tag);
+			throw BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateNotImplementedException("implicit tagging for tag: " + tag);
 		}
 
 		public override string ToString()
@@ -187,5 +188,5 @@ namespace Org.BouncyCastle.Asn1
 		}
 	}
 }
-
+#pragma warning restore
 #endif

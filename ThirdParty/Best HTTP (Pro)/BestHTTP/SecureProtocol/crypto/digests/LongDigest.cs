@@ -1,12 +1,12 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Utilities;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Digests
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Digests
 {
     /**
     * Base class for SHA-384 and SHA-512.
@@ -355,5 +355,5 @@ namespace Org.BouncyCastle.Crypto.Digests
 		public abstract void Reset(IMemoable t);
     }
 }
-
+#pragma warning restore
 #endif

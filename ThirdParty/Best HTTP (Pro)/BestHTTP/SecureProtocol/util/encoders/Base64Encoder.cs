@@ -1,9 +1,9 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.IO;
 
-namespace Org.BouncyCastle.Utilities.Encoders
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Encoders
 {
     public class Base64Encoder
         : IEncoder
@@ -271,6 +271,9 @@ namespace Org.BouncyCastle.Utilities.Encoders
         {
             if (c3 == padding)
             {
+                if (c4 != padding)
+                    throw new IOException("invalid characters encountered at end of base64 data");
+
                 byte b1 = decodingTable[c1];
                 byte b2 = decodingTable[c2];
 
@@ -324,5 +327,5 @@ namespace Org.BouncyCastle.Utilities.Encoders
         }
     }
 }
-
+#pragma warning restore
 #endif

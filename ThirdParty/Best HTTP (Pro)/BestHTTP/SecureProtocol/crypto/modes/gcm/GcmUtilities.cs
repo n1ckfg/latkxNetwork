@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Crypto.Utilities;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Modes.Gcm
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Modes.Gcm
 {
     internal abstract class GcmUtilities
     {
@@ -256,7 +256,6 @@ namespace Org.BouncyCastle.Crypto.Modes.Gcm
             return b << nInv;
         }
 
-#if true //!ENABLE_IL2CPP || UNITY_WEBGL
         internal static void Xor(byte[] x, byte[] y)
         {
             int i = 0;
@@ -269,46 +268,33 @@ namespace Org.BouncyCastle.Crypto.Modes.Gcm
             }
             while (i < 16);
         }
-#else
-        internal static unsafe void Xor(byte[] x, byte[] y)
+
+        internal static void Xor(byte[] x, byte[] y, int yOff)
         {
-            //int i = 0;
-            fixed (byte* px = x)
-            fixed (byte* py = y)
+            int i = 0;
+            do
             {
-                //do
-                //{
-                //    px[i] ^= py[i]; ++i;
-                //    px[i] ^= py[i]; ++i;
-                //    px[i] ^= py[i]; ++i;
-                //    px[i] ^= py[i]; ++i;
-                //}
-                //while (i < 16);
-
-                px[0] ^= py[0];
-                px[1] ^= py[1];
-                px[2] ^= py[2];
-                px[3] ^= py[3];
-
-                px[4] ^= py[4];
-                px[5] ^= py[5];
-                px[6] ^= py[6];
-                px[7] ^= py[7];
-
-                px[8] ^= py[8];
-                px[9] ^= py[9];
-                px[10] ^= py[10];
-                px[11] ^= py[11];
-
-                px[12] ^= py[12];
-                px[13] ^= py[13];
-                px[14] ^= py[14];
-                px[15] ^= py[15];
+                x[i] ^= y[yOff + i]; ++i;
+                x[i] ^= y[yOff + i]; ++i;
+                x[i] ^= y[yOff + i]; ++i;
+                x[i] ^= y[yOff + i]; ++i;
             }
+            while (i < 16);
         }
-#endif
 
-#if true //!ENABLE_IL2CPP || UNITY_WEBGL
+        internal static void Xor(byte[] x, int xOff, byte[] y, int yOff, byte[] z, int zOff)
+        {
+            int i = 0;
+            do
+            {
+                z[zOff + i] = (byte)(x[xOff + i] ^ y[yOff + i]); ++i;
+                z[zOff + i] = (byte)(x[xOff + i] ^ y[yOff + i]); ++i;
+                z[zOff + i] = (byte)(x[xOff + i] ^ y[yOff + i]); ++i;
+                z[zOff + i] = (byte)(x[xOff + i] ^ y[yOff + i]); ++i;
+            }
+            while (i < 16);
+        }
+
         internal static void Xor(byte[] x, byte[] y, int yOff, int yLen)
         {
             while (--yLen >= 0)
@@ -316,18 +302,14 @@ namespace Org.BouncyCastle.Crypto.Modes.Gcm
                 x[yLen] ^= y[yOff + yLen];
             }
         }
-#else
 
-        internal static unsafe void Xor(byte[] x, byte[] y, int yOff, int yLen)
+        internal static void Xor(byte[] x, int xOff, byte[] y, int yOff, int len)
         {
-            fixed (byte* px = x)
-            fixed(byte* py = y)
-                while (--yLen >= 0)
-                {
-                    px[yLen] ^= py[yOff + yLen];
-                }
+            while (--len >= 0)
+            {
+                x[xOff + len] ^= y[yOff + len];
+            }
         }
-#endif
 
         internal static void Xor(byte[] x, byte[] y, byte[] z)
         {
@@ -342,7 +324,6 @@ namespace Org.BouncyCastle.Crypto.Modes.Gcm
             while (i < 16);
         }
 
-#if true //!ENABLE_IL2CPP || UNITY_WEBGL
         internal static void Xor(uint[] x, uint[] y)
         {
             x[0] ^= y[0];
@@ -350,19 +331,6 @@ namespace Org.BouncyCastle.Crypto.Modes.Gcm
             x[2] ^= y[2];
             x[3] ^= y[3];
         }
-#else
-        internal static unsafe void Xor(uint[] x, uint[] y)
-        {
-            fixed (uint* px = x)
-            fixed (uint* py = y)
-            {
-                px[0] ^= py[0];
-                px[1] ^= py[1];
-                px[2] ^= py[2];
-                px[3] ^= py[3];
-            }
-        }
-#endif
 
         internal static void Xor(uint[] x, uint[] y, uint[] z)
         {
@@ -385,5 +353,5 @@ namespace Org.BouncyCastle.Crypto.Modes.Gcm
         }
     }
 }
-
+#pragma warning restore
 #endif

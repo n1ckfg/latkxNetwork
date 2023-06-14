@@ -1,6 +1,7 @@
-﻿#if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 
-namespace Org.BouncyCastle.Crypto
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto
 {
     /// <summary>
     /// Operators that reduce their input to a single block return an object
@@ -23,5 +24,5 @@ namespace Org.BouncyCastle.Crypto
         int Collect(byte[] destination, int offset);
     }
 }
-
+#pragma warning restore
 #endif

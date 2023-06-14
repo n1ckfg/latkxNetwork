@@ -1,23 +1,28 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 using System.IO;
 
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Utilities.IO;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.IO;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     public class TlsDheKeyExchange
         :   TlsDHKeyExchange
     {
         protected TlsSignerCredentials mServerCredentials = null;
 
+        [Obsolete("Use constructor that takes a TlsDHVerifier")]
         public TlsDheKeyExchange(int keyExchange, IList supportedSignatureAlgorithms, DHParameters dhParameters)
-            :   base(keyExchange, supportedSignatureAlgorithms, dhParameters)
+            :   this(keyExchange, supportedSignatureAlgorithms, new DefaultTlsDHVerifier(), dhParameters)
+        {
+        }
+
+        public TlsDheKeyExchange(int keyExchange, IList supportedSignatureAlgorithms, TlsDHVerifier dhVerifier, DHParameters dhParameters)
+            :   base(keyExchange, supportedSignatureAlgorithms, dhVerifier, dhParameters)
         {
         }
 
@@ -71,7 +76,8 @@ namespace Org.BouncyCastle.Crypto.Tls
             SignerInputBuffer buf = new SignerInputBuffer();
             Stream teeIn = new TeeInputStream(input, buf);
 
-            ServerDHParams dhParams = ServerDHParams.Parse(teeIn);
+            this.mDHParameters = TlsDHUtilities.ReceiveDHParameters(mDHVerifier, teeIn);
+            this.mDHAgreePublicKey = new DHPublicKeyParameters(TlsDHUtilities.ReadDHParameter(teeIn), mDHParameters);
 
             DigitallySigned signed_params = ParseSignature(input);
 
@@ -79,9 +85,6 @@ namespace Org.BouncyCastle.Crypto.Tls
             buf.UpdateSigner(signer);
             if (!signer.VerifySignature(signed_params.Signature))
                 throw new TlsFatalAlert(AlertDescription.decrypt_error);
-
-            this.mDHAgreePublicKey = TlsDHUtilities.ValidateDHPublicKey(dhParams.PublicKey);
-            this.mDHParameters = ValidateDHParameters(mDHAgreePublicKey.Parameters);
         }
 
         protected virtual ISigner InitVerifyer(TlsSigner tlsSigner, SignatureAndHashAlgorithm algorithm,
@@ -94,5 +97,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         }
     }
 }
-
+#pragma warning restore
 #endif

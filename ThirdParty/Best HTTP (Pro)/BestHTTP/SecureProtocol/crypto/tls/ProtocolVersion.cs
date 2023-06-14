@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.IO;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     public sealed class ProtocolVersion
     {
@@ -154,10 +154,10 @@ namespace Org.BouncyCastle.Crypto.Tls
             TlsUtilities.CheckUint8(minor);
 
             int v = (major << 8) | minor;
-            String hex = Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(Convert.ToString(0x10000 | v, 16).Substring(1));
+            String hex = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(Convert.ToString(0x10000 | v, 16).Substring(1));
             return new ProtocolVersion(v, prefix + " 0x" + hex);
         }
     }
 }
-
+#pragma warning restore
 #endif

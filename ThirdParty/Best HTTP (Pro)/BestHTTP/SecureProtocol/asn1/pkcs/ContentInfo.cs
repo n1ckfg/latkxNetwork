@@ -1,10 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.Collections;
 
-using Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
 
-namespace Org.BouncyCastle.Asn1.Pkcs
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Pkcs
 {
     public class ContentInfo
         : Asn1Encodable
@@ -73,5 +74,5 @@ namespace Org.BouncyCastle.Asn1.Pkcs
         }
     }
 }
-
+#pragma warning restore
 #endif

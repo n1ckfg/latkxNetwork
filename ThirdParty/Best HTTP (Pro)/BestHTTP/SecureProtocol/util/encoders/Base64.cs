@@ -1,10 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.IO;
 using System.Text;
 
-namespace Org.BouncyCastle.Utilities.Encoders
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Encoders
 {
     public sealed class Base64
     {
@@ -120,5 +120,5 @@ namespace Org.BouncyCastle.Utilities.Encoders
         }
     }
 }
-
+#pragma warning restore
 #endif

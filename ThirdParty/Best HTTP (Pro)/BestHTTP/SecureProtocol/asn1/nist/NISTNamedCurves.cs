@@ -1,14 +1,15 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.Collections;
 
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Asn1.Sec;
-using Org.BouncyCastle.Asn1.X9;
-using Org.BouncyCastle.Utilities;
-using Org.BouncyCastle.Utilities.Collections;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Sec;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X9;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Collections;
 
-namespace Org.BouncyCastle.Asn1.Nist
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Nist
 {
     /**
     * Utility class for fetching curves using their NIST names as published in FIPS-PUB 186-3
@@ -19,14 +20,14 @@ namespace Org.BouncyCastle.Asn1.Nist
         {
         }
 
-        private static readonly IDictionary objIds = Org.BouncyCastle.Utilities.Platform.CreateHashtable();
-        private static readonly IDictionary names = Org.BouncyCastle.Utilities.Platform.CreateHashtable();
+        private static readonly IDictionary objIds = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateHashtable();
+        private static readonly IDictionary names = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateHashtable();
 
         private static void DefineCurveAlias(
             string				name,
             DerObjectIdentifier	oid)
         {
-            objIds.Add(Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(name), oid);
+            objIds.Add(BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(name), oid);
             names.Add(oid, name);
         }
 
@@ -79,7 +80,7 @@ namespace Org.BouncyCastle.Asn1.Nist
         public static DerObjectIdentifier GetOid(
             string name)
         {
-            return (DerObjectIdentifier) objIds[Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(name)];
+            return (DerObjectIdentifier) objIds[BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(name)];
         }
 
         /**
@@ -101,5 +102,5 @@ namespace Org.BouncyCastle.Asn1.Nist
         }
     }
 }
-
+#pragma warning restore
 #endif

@@ -1,10 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Digests
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Digests
 {
     /**
     * base implementation of MD4 family style digest as outlined in
@@ -133,5 +133,5 @@ namespace Org.BouncyCastle.Crypto.Digests
 		public abstract void Reset(IMemoable t);
     }
 }
-
+#pragma warning restore
 #endif

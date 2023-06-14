@@ -113,6 +113,10 @@ namespace BestHTTP.WebSocket
         /// </summary>
         public int Latency { get { return webSocket.Latency; } }
 
+        /// <summary>
+        /// When we received the last message from the server.
+        /// </summary>
+        public DateTime LastMessageReceived { get { return webSocket.lastMessage; } }
 #endif
 
         /// <summary>
@@ -230,12 +234,6 @@ namespace BestHTTP.WebSocket
 
             //http://tools.ietf.org/html/rfc6455#section-4
 
-            //The request MUST contain a |Host| header field whose value contains /host/ plus optionally ":" followed by /port/ (when not using the default port).
-            if ((!HTTPProtocolFactory.IsSecureProtocol(uri) && uri.Port != 80) && (HTTPProtocolFactory.IsSecureProtocol(uri) && uri.Port != 443))
-                InternalRequest.SetHeader("Host", uri.Host + ":" + uri.Port);
-            else
-                InternalRequest.SetHeader("Host", uri.Host);
-
             // The request MUST contain an |Upgrade| header field whose value MUST include the "websocket" keyword.
             InternalRequest.SetHeader("Upgrade", "websocket");
 
@@ -264,7 +262,7 @@ namespace BestHTTP.WebSocket
 
             this.Extensions = extensions;
 
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
             InternalRequest.DisableCache = true;
             InternalRequest.DisableRetry = true;
 #endif
@@ -302,11 +300,11 @@ namespace BestHTTP.WebSocket
             switch (req.State)
             {
                 case HTTPRequestStates.Finished:
-                    if (resp.IsSuccess || resp.StatusCode == 101)
-                    {
-                        // The request finished without any problem.
-                        HTTPManager.Logger.Information("WebSocket", string.Format("Request finished. Status Code: {0} Message: {1}", resp.StatusCode.ToString(), resp.Message));
+                    HTTPManager.Logger.Information("WebSocket", string.Format("Request finished. Status Code: {0} Message: {1}", resp.StatusCode.ToString(), resp.Message));
 
+                    if (resp.StatusCode == 101)
+                    {
+                        // The request upgraded successfully.
                         return;
                     }
                     else
@@ -603,7 +601,7 @@ namespace BestHTTP.WebSocket
             // the body MAY contain UTF-8-encoded data with value /reason/, the interpretation of which is not defined by this specification.
             // This data is not necessarily human readable but may be useful for debugging or passing information relevant to the script that opened the connection.
             int msgLen = Encoding.UTF8.GetByteCount(message);
-            using (MemoryStream ms = new MemoryStream(2 + msgLen))
+            using (BufferPoolMemoryStream ms = new BufferPoolMemoryStream(2 + msgLen))
             {
                 byte[] buff = BitConverter.GetBytes(code);
                 if (BitConverter.IsLittleEndian)

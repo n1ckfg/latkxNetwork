@@ -1,24 +1,24 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 using System.Text;
 
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Asn1.Utilities;
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Security.Certificates;
-using Org.BouncyCastle.Utilities;
-using Org.BouncyCastle.Utilities.Collections;
-using Org.BouncyCastle.Utilities.Date;
-using Org.BouncyCastle.Utilities.Encoders;
-using Org.BouncyCastle.X509.Extension;
-using Org.BouncyCastle.Crypto.Operators;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Operators;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security.Certificates;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Collections;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Date;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Encoders;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.X509.Extension;
 
-namespace Org.BouncyCastle.X509
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.X509
 {
 	/**
 	 * The following extensions are listed in RFC 2459 as relevant to CRLs
@@ -37,6 +37,9 @@ namespace Org.BouncyCastle.X509
 		private readonly string sigAlgName;
 		private readonly byte[] sigAlgParams;
 		private readonly bool isIndirect;
+
+        private volatile bool hashValueSet;
+        private volatile int hashValue;
 
 		public X509Crl(
 			CertificateList c)
@@ -109,7 +112,7 @@ namespace Org.BouncyCastle.X509
                 throw new CrlException("Signature algorithm on CertificateList does not match TbsCertList.");
             }
 
-            //Asn1Encodable parameters = c.SignatureAlgorithm.Parameters;
+            Asn1Encodable parameters = c.SignatureAlgorithm.Parameters;
 
             IStreamCalculator streamCalculator = verifier.CreateCalculator();
 
@@ -117,7 +120,7 @@ namespace Org.BouncyCastle.X509
 
             streamCalculator.Stream.Write(b, 0, b.Length);
 
-            Org.BouncyCastle.Utilities.Platform.Dispose(streamCalculator.Stream);
+            BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.Dispose(streamCalculator.Stream);
 
             if (!((IVerifier)streamCalculator.GetResult()).IsVerified(this.GetSignature()))
             {
@@ -231,27 +234,41 @@ namespace Org.BouncyCastle.X509
 			return Arrays.Clone(sigAlgParams);
 		}
 
-		public override bool Equals(
-			object obj)
+		public override bool Equals(object other)
 		{
-			if (obj == this)
-				return true;
+            if (this == other)
+                return true;
 
-			X509Crl other = obj as X509Crl;
+            X509Crl that = other as X509Crl;
+            if (null == that)
+                return false;
 
-			if (other == null)
-				return false;
+            if (this.hashValueSet && that.hashValueSet)
+            {
+                if (this.hashValue != that.hashValue)
+                    return false;
+            }
+            else if (!this.c.Signature.Equals(that.c.Signature))
+            {
+                return false;
+            }
 
-			return c.Equals(other.c);
+            return this.c.Equals(that.c);
 
-			// NB: May prefer this implementation of Equals if more than one certificate implementation in play
-			//return Arrays.AreEqual(this.GetEncoded(), other.GetEncoded());
+            // NB: May prefer this implementation of Equals if more than one CRL implementation in play
+			//return Arrays.AreEqual(this.GetEncoded(), that.GetEncoded());
 		}
 
-		public override int GetHashCode()
-		{
-			return c.GetHashCode();
-		}
+        public override int GetHashCode()
+        {
+            if (!hashValueSet)
+            {
+                hashValue = this.c.GetHashCode();
+                hashValueSet = true;
+            }
+
+            return hashValue;
+        }
 
 		/**
 		 * Returns a string representation of this CRL.
@@ -261,7 +278,7 @@ namespace Org.BouncyCastle.X509
 		public override string ToString()
 		{
 			StringBuilder buf = new StringBuilder();
-			string nl = Org.BouncyCastle.Utilities.Platform.NewLine;
+			string nl = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.NewLine;
 
 			buf.Append("              Version: ").Append(this.Version).Append(nl);
 			buf.Append("             IssuerDN: ").Append(this.IssuerDN).Append(nl);
@@ -426,5 +443,5 @@ namespace Org.BouncyCastle.X509
 		}
 	}
 }
-
+#pragma warning restore
 #endif

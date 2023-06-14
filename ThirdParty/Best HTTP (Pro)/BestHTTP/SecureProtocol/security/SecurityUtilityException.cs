@@ -1,10 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Security
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Security
 {
-#if !(NETCF_1_0 || NETCF_2_0 || SILVERLIGHT || NETFX_CORE || PORTABLE)
+#if !(NETCF_1_0 || NETCF_2_0 || SILVERLIGHT || PORTABLE || NETFX_CORE)
     [Serializable]
 #endif
     public class SecurityUtilityException
@@ -36,5 +36,5 @@ namespace Org.BouncyCastle.Security
         }
     }
 }
-
+#pragma warning restore
 #endif

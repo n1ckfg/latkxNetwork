@@ -1,10 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.Collections;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Asn1.X9
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X9
 {
 	public class DHDomainParameters
 		: Asn1Encodable
@@ -25,7 +26,7 @@ namespace Org.BouncyCastle.Asn1.X9
 			if (obj is Asn1Sequence)
 				return new DHDomainParameters((Asn1Sequence)obj);
 
-			throw new ArgumentException("Invalid DHDomainParameters: " + Org.BouncyCastle.Utilities.Platform.GetTypeName(obj), "obj");
+			throw new ArgumentException("Invalid DHDomainParameters: " + BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.GetTypeName(obj), "obj");
 		}
 
 		public DHDomainParameters(DerInteger p, DerInteger g, DerInteger q, DerInteger j,
@@ -99,23 +100,13 @@ namespace Org.BouncyCastle.Asn1.X9
 			get { return this.validationParms; }
 		}
 
-		public override Asn1Object ToAsn1Object()
-		{
-			Asn1EncodableVector v = new Asn1EncodableVector(p, g, q);
-
-			if (this.j != null)
-			{
-				v.Add(this.j);
-			}
-
-			if (this.validationParms != null)
-			{
-				v.Add(this.validationParms);
-			}
-
-			return new DerSequence(v);
-		}
+        public override Asn1Object ToAsn1Object()
+        {
+            Asn1EncodableVector v = new Asn1EncodableVector(p, g, q);
+            v.AddOptional(j, validationParms);
+            return new DerSequence(v);
+        }
 	}
 }
-
+#pragma warning restore
 #endif

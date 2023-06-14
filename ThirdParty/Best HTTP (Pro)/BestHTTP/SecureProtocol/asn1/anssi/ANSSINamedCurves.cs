@@ -1,18 +1,27 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.Collections;
 
-using Org.BouncyCastle.Asn1.X9;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Math.EC;
-using Org.BouncyCastle.Utilities;
-using Org.BouncyCastle.Utilities.Collections;
-using Org.BouncyCastle.Utilities.Encoders;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X9;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC.Multiplier;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Collections;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Encoders;
 
-namespace Org.BouncyCastle.Asn1.Anssi
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Anssi
 {
     public class AnssiNamedCurves
     {
+        private static X9ECPoint ConfigureBasepoint(ECCurve curve, string encoding)
+        {
+            X9ECPoint G = new X9ECPoint(curve, Hex.Decode(encoding));
+            WNafUtilities.ConfigureBasepoint(G.Point);
+            return G;
+        }
+
         private static ECCurve ConfigureCurve(ECCurve curve)
         {
             return curve;
@@ -43,25 +52,24 @@ namespace Org.BouncyCastle.Asn1.Anssi
                 BigInteger h = BigInteger.One;
 
                 ECCurve curve = ConfigureCurve(new FpCurve(p, a, b, n, h));
-                X9ECPoint G = new X9ECPoint(curve, Hex.Decode("04"
-                    + "B6B3D4C356C139EB31183D4749D423958C27D2DCAF98B70164C97A2DD98F5CFF"
-                    + "6142E0F7C8B204911F9271F0F3ECEF8C2701C307E8E4C9E183115A1554062CFB"));
+                X9ECPoint G = ConfigureBasepoint(curve,
+                    "04B6B3D4C356C139EB31183D4749D423958C27D2DCAF98B70164C97A2DD98F5CFF6142E0F7C8B204911F9271F0F3ECEF8C2701C307E8E4C9E183115A1554062CFB");
 
                 return new X9ECParameters(curve, G, n, h, S);
             }
         };
 
 
-        private static readonly IDictionary objIds = Org.BouncyCastle.Utilities.Platform.CreateHashtable();
-        private static readonly IDictionary curves = Org.BouncyCastle.Utilities.Platform.CreateHashtable();
-        private static readonly IDictionary names = Org.BouncyCastle.Utilities.Platform.CreateHashtable();
+        private static readonly IDictionary objIds = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateHashtable();
+        private static readonly IDictionary curves = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateHashtable();
+        private static readonly IDictionary names = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateHashtable();
 
         private static void DefineCurve(
             string					name,
             DerObjectIdentifier		oid,
             X9ECParametersHolder	holder)
         {
-            objIds.Add(Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(name), oid);
+            objIds.Add(BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(name), oid);
             names.Add(oid, name);
             curves.Add(oid, holder);
         }
@@ -100,7 +108,7 @@ namespace Org.BouncyCastle.Asn1.Anssi
         public static DerObjectIdentifier GetOid(
             string name)
         {
-            return (DerObjectIdentifier)objIds[Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(name)];
+            return (DerObjectIdentifier)objIds[BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(name)];
         }
 
         /**
@@ -122,5 +130,5 @@ namespace Org.BouncyCastle.Asn1.Anssi
         }
     }
 }
-
+#pragma warning restore
 #endif

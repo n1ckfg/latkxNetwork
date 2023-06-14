@@ -23,7 +23,7 @@ namespace BestHTTP.Extensions
         {
             this.stream = stream;
 
-            this.buffer = new byte[bufferSize];
+            this.buffer = VariableSizedBufferPool.Get(bufferSize, true);
             this._position = 0;
         }
 
@@ -31,10 +31,12 @@ namespace BestHTTP.Extensions
         {
             if (this._position > 0)
             {
-                if (HTTPManager.Logger.Level == Logger.Loglevels.All)
-                    HTTPManager.Logger.Information("BufferStream", string.Format("Flushing {0:N0} bytes", this._position));
-
                 this.stream.Write(this.buffer, 0, this._position);
+                this.stream.Flush();
+
+                //if (HTTPManager.Logger.Level == Logger.Loglevels.All)
+                //    HTTPManager.Logger.Information("WriteOnlyBufferedStream", string.Format("Flushed {0:N0} bytes", this._position));
+
                 this._position = 0;
             }
         }
@@ -66,5 +68,14 @@ namespace BestHTTP.Extensions
         }
 
         public override void SetLength(long value) { }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (this.buffer != null)
+                VariableSizedBufferPool.Release(this.buffer);
+            this.buffer = null;
+        }
     }
 }

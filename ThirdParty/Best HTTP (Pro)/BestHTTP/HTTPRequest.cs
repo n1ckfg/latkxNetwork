@@ -10,7 +10,7 @@ namespace BestHTTP
     using BestHTTP.Extensions;
     using BestHTTP.Forms;
 
-    #if !BESTHTTP_DISABLE_COOKIES //&& (!UNITY_WEBGL || UNITY_EDITOR)
+    #if !BESTHTTP_DISABLE_COOKIES
         using BestHTTP.Cookies;
     #endif
 
@@ -149,7 +149,7 @@ namespace BestHTTP
             }
         }
 
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
         /// <summary>
         /// With this property caching can be enabled/disabled on a per-request basis.
         /// </summary>
@@ -299,7 +299,7 @@ namespace BestHTTP
         public bool UseAlternateSSL { get; set; }
 #endif
 
-#if !BESTHTTP_DISABLE_COOKIES //&& (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_COOKIES
 
         /// <summary>
         /// If true cookies will be added to the headers (if any), and parsed from the response. If false, all cookie operations will be ignored. It's default value is HTTPManager's IsCookiesEnabled.
@@ -338,7 +338,7 @@ namespace BestHTTP
         /// </summary>
         public int RedirectCount { get; internal set; }
 
-#if !NETFX_CORE && !UNITY_WP8
+#if !NETFX_CORE
         /// <summary>
         /// Custom validator for an SslStream. This event will receive the original HTTPRequest, an X509Certificate and an X509Chain objects. It must return true if the certificate valid, false otherwise.
         /// <remarks>It's called in a thread! Not available on Windows Phone!</remarks>
@@ -494,7 +494,7 @@ namespace BestHTTP
         #region Privates
 
         private bool isKeepAlive;
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
         private bool disableCache;
         private bool cacheOnly;
 #endif
@@ -522,7 +522,7 @@ namespace BestHTTP
 
         public HTTPRequest(Uri uri)
             : this(uri, HTTPMethods.Get, HTTPManager.KeepAliveDefaultValue,
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
             HTTPManager.IsCachingDisabled
 #else
             true
@@ -533,7 +533,7 @@ namespace BestHTTP
 
         public HTTPRequest(Uri uri, OnRequestFinishedDelegate callback)
             : this(uri, HTTPMethods.Get, HTTPManager.KeepAliveDefaultValue,
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
             HTTPManager.IsCachingDisabled
 #else
             true
@@ -544,7 +544,7 @@ namespace BestHTTP
 
         public HTTPRequest(Uri uri, bool isKeepAlive, OnRequestFinishedDelegate callback)
             : this(uri, HTTPMethods.Get, isKeepAlive,
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
             HTTPManager.IsCachingDisabled
 #else
             true
@@ -562,7 +562,7 @@ namespace BestHTTP
 
         public HTTPRequest(Uri uri, HTTPMethods methodType)
             : this(uri, methodType, HTTPManager.KeepAliveDefaultValue,
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
             HTTPManager.IsCachingDisabled || methodType != HTTPMethods.Get
 #else
             true
@@ -573,7 +573,7 @@ namespace BestHTTP
 
         public HTTPRequest(Uri uri, HTTPMethods methodType, OnRequestFinishedDelegate callback)
             : this(uri, methodType, HTTPManager.KeepAliveDefaultValue,
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
             HTTPManager.IsCachingDisabled || methodType != HTTPMethods.Get
 #else
             true
@@ -584,7 +584,7 @@ namespace BestHTTP
 
         public HTTPRequest(Uri uri, HTTPMethods methodType, bool isKeepAlive, OnRequestFinishedDelegate callback)
             : this(uri, methodType, isKeepAlive,
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
             HTTPManager.IsCachingDisabled || methodType != HTTPMethods.Get
 #else
             true
@@ -598,7 +598,7 @@ namespace BestHTTP
             this.Uri = uri;
             this.MethodType = methodType;
             this.IsKeepAlive = isKeepAlive;
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
             this.DisableCache = disableCache;
 #endif
             this.Callback = callback;
@@ -608,7 +608,7 @@ namespace BestHTTP
             this.DisableRetry = !(methodType == HTTPMethods.Get);
             this.MaxRedirects = int.MaxValue;
             this.RedirectCount = 0;
-#if !BESTHTTP_DISABLE_COOKIES //&& (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_COOKIES
             this.IsCookiesEnabled = HTTPManager.IsCookiesEnabled;
 #endif
 
@@ -636,12 +636,12 @@ namespace BestHTTP
             this.UseAlternateSSL = HTTPManager.UseAlternateSSLDefaultValue;
 #endif
 
-#if !NETFX_CORE && !UNITY_WP8
+#if !NETFX_CORE
             this.CustomCertificationValidator += HTTPManager.DefaultCertificationValidator;
 #endif
             this.TryToMinimizeTCPLatency = HTTPManager.TryToMinimizeTCPLatency;
 
-#if UNITY_WEBGL
+#if UNITY_WEBGL && !BESTHTTP_DISABLE_COOKIES
             this.WithCredentials = this.IsCookiesEnabled;
 #endif
         }
@@ -695,17 +695,6 @@ namespace BestHTTP
 
             FieldCollector.AddBinaryData(fieldName, content, fileName, mimeType);
         }
-
-#if !BESTHTTP_DISABLE_UNITY_FORM
-        /// <summary>
-        /// Set or overwrite the internal form. Remarks: on WP8 it doesn't supported!
-        /// </summary>
-        public void SetFields(UnityEngine.WWWForm wwwForm)
-        {
-            FormUsage = HTTPFormUsage.Unity;
-            FormImpl = new UnityForm(wwwForm);
-        }
-#endif
 
         /// <summary>
         /// Manually set a HTTP Form.
@@ -761,9 +750,6 @@ namespace BestHTTP
                 case HTTPFormUsage.UrlEncoded:  FormImpl = new HTTPUrlEncodedForm(); break;
                 case HTTPFormUsage.Multipart:   FormImpl = new HTTPMultiPartForm(); break;
                 case HTTPFormUsage.RawJSon: FormImpl = new RawJsonForm(); break;
-#if !BESTHTTP_DISABLE_UNITY_FORM
-                case HTTPFormUsage.Unity:       FormImpl = new UnityForm(); break;
-#endif
             }
 
             // Copy the fields, and other properties to the new implementation
@@ -931,8 +917,8 @@ namespace BestHTTP
             if (!HasHeader("TE"))
                 AddHeader("TE", "identity");
 
-            if (!HasHeader("User-Agent"))
-                AddHeader("User-Agent", "BestHTTP");
+            if (!string.IsNullOrEmpty(HTTPManager.UserAgent) && !HasHeader("User-Agent"))
+                AddHeader("User-Agent", HTTPManager.UserAgent);
 #endif
             long contentLength = -1;
 
@@ -1025,7 +1011,7 @@ namespace BestHTTP
             }
 
             // Cookies.
-#if !BESTHTTP_DISABLE_COOKIES //&& (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_COOKIES
             // User added cookies are sent even when IsCookiesEnabled is set to false
             List<Cookie> cookies = IsCookiesEnabled ? CookieJar.Get(CurrentUri) : null;
 
@@ -1124,10 +1110,16 @@ namespace BestHTTP
                         if (HTTPManager.Logger.Level <= Logger.Loglevels.Information)
                             VerboseLogging("Header - '" + header + "': '" + values[i] + "'");
 
+                        byte[] valueBytes = values[i].GetASCIIBytes();
+
                         stream.WriteArray(headerName);
-                        stream.WriteArray(values[i].GetASCIIBytes());
+                        stream.WriteArray(valueBytes);
                         stream.WriteArray(EOL);
+
+                        VariableSizedBufferPool.Release(valueBytes);
                     }
+
+                    VariableSizedBufferPool.Release(headerName);
                 }, /*callBeforeSendCallback:*/ true);
         }
 
@@ -1136,7 +1128,7 @@ namespace BestHTTP
         /// </summary>
         public string DumpHeaders()
         {
-            using (var ms = new MemoryStream())
+            using (var ms = new BufferPoolMemoryStream(5 * 1024))
             {
                 SendHeaders(ms);
                 return ms.ToArray().AsciiToString();
@@ -1186,91 +1178,104 @@ namespace BestHTTP
                 // Create a buffer stream that will not close 'stream' when disposed or closed.
                 // buffersize should be larger than UploadChunkSize as it might be used for uploading user data and
                 //  it should have enough room for UploadChunkSize data and additional chunk information.
-                WriteOnlyBufferedStream bufferStream = new WriteOnlyBufferedStream(stream, (int)(UploadChunkSize * 1.5f));
-
-                bufferStream.WriteArray(requestLine.GetASCIIBytes());
-                bufferStream.WriteArray(EOL);
-
-                // Write headers to the buffer
-                SendHeaders(bufferStream);
-                bufferStream.WriteArray(EOL);
-
-                // Send remaining data to the wire
-                bufferStream.Flush();
-
-                byte[] data = RawData;
-
-                // We are sending forms? Then convert the form to a byte array
-                if (data == null && FormImpl != null)
-                    data = FormImpl.GetData();
-
-                if (data != null || UploadStream != null)
+                using (WriteOnlyBufferedStream bufferStream = new WriteOnlyBufferedStream(stream, (int)(UploadChunkSize * 1.5f)))
                 {
-                    // Make a new reference, as we will check the UploadStream property in the HTTPManager
-                    Stream uploadStream = UploadStream;
+                    byte[] requestLineBytes = requestLine.GetASCIIBytes();
+                    bufferStream.WriteArray(requestLineBytes);
+                    bufferStream.WriteArray(EOL);
 
-                    if (uploadStream == null)
+                    VariableSizedBufferPool.Release(requestLineBytes);
+
+                    // Write headers to the buffer
+                    SendHeaders(bufferStream);
+                    bufferStream.WriteArray(EOL);
+
+                    // Send remaining data to the wire
+                    bufferStream.Flush();
+
+                    byte[] data = RawData;
+
+                    // We are sending forms? Then convert the form to a byte array
+                    if (data == null && FormImpl != null)
+                        data = FormImpl.GetData();
+
+                    if (data != null || UploadStream != null)
                     {
-                        // Make stream from the data
-                        uploadStream = new MemoryStream(data, 0, data.Length);
+                        // Make a new reference, as we will check the UploadStream property in the HTTPManager
+                        Stream uploadStream = UploadStream;
 
-                        // Initialize progress report variable
-                        UploadLength = data.Length;
-                    }
-                    else
-                        UploadLength = UseUploadStreamLength ? UploadStreamLength : -1;
-
-                    // Initialize the progress report variables
-                    Uploaded = 0;
-
-                    // Upload buffer. First we will read the data into this buffer from the UploadStream, then write this buffer to our outStream
-                    byte[] buffer = new byte[UploadChunkSize];
-
-                    // How many bytes was read from the UploadStream
-                    int count = 0;
-                    while ((count = uploadStream.Read(buffer, 0, buffer.Length)) > 0)
-                    {
-                        // If we don't know the size, send as chunked
-                        if (!UseUploadStreamLength)
+                        if (uploadStream == null)
                         {
-                            bufferStream.WriteArray(count.ToString("X").GetASCIIBytes());
-                            bufferStream.WriteArray(EOL);
+                            // Make stream from the data
+                            uploadStream = new MemoryStream(data, 0, data.Length);
+
+                            // Initialize progress report variable
+                            UploadLength = data.Length;
+                        }
+                        else
+                            UploadLength = UseUploadStreamLength ? UploadStreamLength : -1;
+
+                        // Initialize the progress report variables
+                        Uploaded = 0;
+
+                        // Upload buffer. First we will read the data into this buffer from the UploadStream, then write this buffer to our outStream
+                        byte[] buffer = VariableSizedBufferPool.Get(UploadChunkSize, true);
+
+                        // How many bytes was read from the UploadStream
+                        int count = 0;
+                        while ((count = uploadStream.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            // If we don't know the size, send as chunked
+                            if (!UseUploadStreamLength)
+                            {
+                                byte[] countBytes = count.ToString("X").GetASCIIBytes();
+                                bufferStream.WriteArray(countBytes);
+                                bufferStream.WriteArray(EOL);
+
+                                VariableSizedBufferPool.Release(countBytes);
+                            }
+
+                            // write out the buffer to the wire
+                            bufferStream.Write(buffer, 0, count);
+
+                            // chunk trailing EOL
+                            if (!UseUploadStreamLength)
+                                bufferStream.WriteArray(EOL);
+
+                            // update how many bytes are uploaded
+                            Uploaded += count;
+
+                            // Write to the wire
+                            bufferStream.Flush();
+
+                            // let the callback fire
+                            UploadProgressChanged = true;
                         }
 
-                        // write out the buffer to the wire
-                        bufferStream.Write(buffer, 0, count);
+                        VariableSizedBufferPool.Release(buffer);
 
-                        // chunk trailing EOL
+                        // All data from the stream are sent, write the 'end' chunk if necessary
                         if (!UseUploadStreamLength)
+                        {
+                            byte[] noMoreChunkBytes = VariableSizedBufferPool.Get(1, true);
+                            noMoreChunkBytes[0] = (byte)'0';
+                            bufferStream.Write(noMoreChunkBytes, 0, 1);
+                            bufferStream.WriteArray(EOL);
                             bufferStream.WriteArray(EOL);
 
-                        // update how many bytes are uploaded
-                        Uploaded += count;
+                            VariableSizedBufferPool.Release(noMoreChunkBytes);
+                        }
 
-                        // Write to the wire
+                        // Make sure all remaining data will be on the wire
                         bufferStream.Flush();
 
-                        // let the callback fire
-                        UploadProgressChanged = true;
+                        // Dispose the MemoryStream
+                        if (UploadStream == null && uploadStream != null)
+                            uploadStream.Dispose();
                     }
-
-                    // All data from the stream are sent, write the 'end' chunk if necessary
-                    if (!UseUploadStreamLength)
-                    {
-                        bufferStream.WriteArray("0".GetASCIIBytes());
-                        bufferStream.WriteArray(EOL);
-                        bufferStream.WriteArray(EOL);
-                    }
-
-                    // Make sure all remaining data will be on the wire
-                    bufferStream.Flush();
-
-                    // Dispose the MemoryStream
-                    if (UploadStream == null && uploadStream != null)
-                        uploadStream.Dispose();
-                }
-                else
-                    bufferStream.Flush();
+                    else
+                        bufferStream.Flush();
+                } // bufferStream.Dispose
 
                 HTTPManager.Logger.Information("HTTPRequest", "'" + requestLine + "' sent out");
             }
@@ -1330,13 +1335,10 @@ namespace BestHTTP
         /// </summary>
         internal void Prepare()
         {
-#if !BESTHTTP_DISABLE_UNITY_FORM
-            if (FormUsage == HTTPFormUsage.Unity)
-                SelectFormImplementation();
-#endif
+
         }
 
-#if !NETFX_CORE && !UNITY_WP8
+#if !NETFX_CORE
         internal bool CallCustomCertificationValidator(System.Security.Cryptography.X509Certificates.X509Certificate cert, System.Security.Cryptography.X509Certificates.X509Chain chain)
         {
             if (CustomCertificationValidator != null)
@@ -1444,7 +1446,8 @@ namespace BestHTTP
 
         public void Dispose()
         {
-
+            if (Response != null)
+                Response.Dispose();
         }
     }
 }

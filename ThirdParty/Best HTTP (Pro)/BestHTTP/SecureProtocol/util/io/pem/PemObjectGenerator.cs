@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Utilities.IO.Pem
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.IO.Pem
 {
 	public interface PemObjectGenerator
 	{
@@ -13,5 +13,5 @@ namespace Org.BouncyCastle.Utilities.IO.Pem
 		PemObject Generate();
 	}
 }
-
+#pragma warning restore
 #endif

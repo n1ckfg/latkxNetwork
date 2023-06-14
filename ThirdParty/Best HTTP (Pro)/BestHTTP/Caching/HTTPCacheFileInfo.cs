@@ -1,23 +1,13 @@
-﻿#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+﻿#if !BESTHTTP_DISABLE_CACHING
 
 using System;
 using System.Collections.Generic;
-
-#if NETFX_CORE
-    using FileStream = BestHTTP.PlatformSupport.IO.FileStream;
-    using Directory = BestHTTP.PlatformSupport.IO.Directory;
-    using File = BestHTTP.PlatformSupport.IO.File;
-
-    using BestHTTP.PlatformSupport.IO;
-#else
-    using FileStream = System.IO.FileStream;
-
-    using System.IO;
-#endif
+using System.IO;
 
 namespace BestHTTP.Caching
 {
     using BestHTTP.Extensions;
+    using BestHTTP.PlatformSupport.FileSystem;
 
     /// <summary>
     /// Holds all metadata that need for efficient caching, so we don't need to touch the disk to load headers.
@@ -169,7 +159,7 @@ namespace BestHTTP.Caching
             if (!HTTPCacheService.IsSupported)
                 return false;
 
-            return File.Exists(GetPath());
+            return HTTPManager.IOService.FileExists(GetPath());
         }
 
         internal void Delete()
@@ -180,7 +170,7 @@ namespace BestHTTP.Caching
             string path = GetPath();
             try
             {
-                File.Delete(path);
+                HTTPManager.IOService.FileDelete(path);
             }
             catch
             { }
@@ -207,6 +197,29 @@ namespace BestHTTP.Caching
         #endregion
 
         #region Caching
+
+        /// <summary>
+        /// Returns true if the stored caching values are the same than the ones in the response.
+        /// </summary>
+        private bool AlreadyStored(HTTPResponse response)
+        {
+            if (!IsExists())
+                return false;
+
+            string newEtag = response.GetFirstHeaderValue("ETag").ToStrOrEmpty();
+            if (newEtag != this.ETag)
+                return false;
+
+            DateTime newExpires = response.GetFirstHeaderValue("Expires").ToDateTime(DateTime.FromBinary(0));
+            if (newExpires != this.Expires)
+                return false;
+
+            string newLastModified = response.GetFirstHeaderValue("Last-Modified").ToStrOrEmpty();
+            if (newLastModified != this.LastModified)
+                return false;
+
+            return true;
+        }
 
         private void SetUpCachingValues(HTTPResponse response)
         {
@@ -274,10 +287,10 @@ namespace BestHTTP.Caching
             // -If both an entity tag and a Last-Modified value have been provided by the origin server, SHOULD use both validators in cache-conditional requests. This allows both HTTP/1.0 and HTTP/1.1 caches to respond appropriately.
 
             if (!string.IsNullOrEmpty(ETag))
-                request.AddHeader("If-None-Match", ETag);
+                request.SetHeader("If-None-Match", ETag);
 
             if (!string.IsNullOrEmpty(LastModified))
-                request.AddHeader("If-Modified-Since", LastModified);
+                request.SetHeader("If-Modified-Since", LastModified);
         }
 
         public System.IO.Stream GetBodyStream(out int length)
@@ -292,7 +305,7 @@ namespace BestHTTP.Caching
 
             LastAccess = DateTime.UtcNow;
 
-            FileStream stream = new FileStream(GetPath(), FileMode.Open, FileAccess.Read, FileShare.Read);
+            Stream stream = HTTPManager.IOService.CreateFileStream(GetPath(), FileStreamModes.Open);
             stream.Seek(-length, System.IO.SeekOrigin.End);
 
             return stream;
@@ -305,7 +318,7 @@ namespace BestHTTP.Caching
 
             LastAccess = DateTime.UtcNow;
 
-            using (FileStream stream = new FileStream(GetPath(), FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (Stream stream = HTTPManager.IOService.CreateFileStream(GetPath(), FileStreamModes.Open))
             {
                 var response = new HTTPResponse(request, stream, request.UseStreaming, true);
                 response.CacheFileInfo = this;
@@ -325,24 +338,29 @@ namespace BestHTTP.Caching
             if (path.Length > HTTPManager.MaxPathLength)
                 return;
 
-            if (File.Exists(path))
-                Delete();
-
-            using (FileStream writer = new FileStream(path, FileMode.Create))
+            // Don't delete and write the very same content to the disk if possible.
+            if (!AlreadyStored(response))
             {
-                writer.WriteLine("HTTP/1.1 {0} {1}", response.StatusCode, response.Message);
-                foreach (var kvp in response.Headers)
+                if (HTTPManager.IOService.FileExists(path))
+                    Delete();
+
+                using (Stream writer = HTTPManager.IOService.CreateFileStream(GetPath(), FileStreamModes.Create))
                 {
-                    for (int i = 0; i < kvp.Value.Count; ++i)
-                        writer.WriteLine("{0}: {1}", kvp.Key, kvp.Value[i]);
+                    writer.WriteLine("HTTP/1.1 {0} {1}", response.StatusCode, response.Message);
+                    foreach (var kvp in response.Headers)
+                    {
+                        for (int i = 0; i < kvp.Value.Count; ++i)
+                            writer.WriteLine("{0}: {1}", kvp.Key, kvp.Value[i]);
+                    }
+
+                    writer.WriteLine();
+
+                    writer.Write(response.Data, 0, response.Data.Length);
                 }
 
-                writer.WriteLine();
-
-                writer.Write(response.Data, 0, response.Data.Length);
+                BodyLength = response.Data.Length;
             }
 
-            BodyLength = response.Data.Length;
             LastAccess = DateTime.UtcNow;
 
             SetUpCachingValues(response);
@@ -357,7 +375,7 @@ namespace BestHTTP.Caching
 
             string path = GetPath();
 
-            if (File.Exists(path))
+            if (HTTPManager.IOService.FileExists(path))
                 Delete();
 
             // Path name too long, we don't want to get exceptions
@@ -365,7 +383,7 @@ namespace BestHTTP.Caching
                 return null;
 
             // First write out the headers
-            using (FileStream writer = new FileStream(path, FileMode.Create))
+            using (Stream writer = HTTPManager.IOService.CreateFileStream(GetPath(), FileStreamModes.Create))
             {
                 writer.WriteLine("HTTP/1.1 {0} {1}", response.StatusCode, response.Message);
                 foreach (var kvp in response.Headers)
@@ -378,13 +396,13 @@ namespace BestHTTP.Caching
             }
 
             // If caching is enabled and the response is from cache, and no content-length header set, then we set one to the response.
-            if (response.IsFromCache && !response.Headers.ContainsKey("content-length"))
-                response.Headers.Add("content-length", new List<string> { BodyLength.ToString() });
+            if (response.IsFromCache && !response.HasHeader("content-length"))
+                response.AddHeader("content-length", BodyLength.ToString());
 
             SetUpCachingValues(response);
 
             // then create the stream with Append FileMode
-            return new FileStream(GetPath(), FileMode.Append);
+            return HTTPManager.IOService.CreateFileStream(GetPath(), FileStreamModes.Append);
         }
 
         #endregion

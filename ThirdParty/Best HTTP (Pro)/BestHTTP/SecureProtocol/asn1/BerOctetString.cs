@@ -1,18 +1,19 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.Collections;
 using System.IO;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Asn1
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1
 {
     public class BerOctetString
         : DerOctetString, IEnumerable
     {
 		public static BerOctetString FromSequence(Asn1Sequence seq)
 		{
-			IList v = Org.BouncyCastle.Utilities.Platform.CreateArrayList();
+			IList v = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList();
 
 			foreach (Asn1Encodable obj in seq)
 			{
@@ -93,7 +94,7 @@ namespace Org.BouncyCastle.Asn1
 
 		private IList GenerateOcts()
         {
-            IList vec = Org.BouncyCastle.Utilities.Platform.CreateArrayList();
+            IList vec = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList();
 			for (int i = 0; i < str.Length; i += MaxLength)
 			{
 				int end = System.Math.Min(str.Length, i + MaxLength);
@@ -134,5 +135,5 @@ namespace Org.BouncyCastle.Asn1
         }
     }
 }
-
+#pragma warning restore
 #endif

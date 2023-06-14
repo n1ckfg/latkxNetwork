@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Utilities.Date
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Date
 {
 	public sealed class DateTimeObject
 	{
@@ -25,5 +25,5 @@ namespace Org.BouncyCastle.Utilities.Date
 		}
 	}
 }
-
+#pragma warning restore
 #endif

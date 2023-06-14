@@ -1,5 +1,5 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 /*
  * $Id: JZlib.cs,v 1.3 2011-02-15 05:46:04 bouncy Exp $
@@ -36,7 +36,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * and contributors of zlib.
  */
 
-namespace Org.BouncyCastle.Utilities.Zlib {
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Zlib {
 
     public sealed class JZlib{
         private const String _version="1.0.7";
@@ -73,5 +73,5 @@ namespace Org.BouncyCastle.Utilities.Zlib {
         public const int Z_VERSION_ERROR=-6;
     }
 }
-
+#pragma warning restore
 #endif

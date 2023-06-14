@@ -1,6 +1,6 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
-namespace Org.BouncyCastle.Math.EC.Multiplier
+#pragma warning disable
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC.Multiplier
 {
 	/**
 	* Interface for classes storing precomputation data for multiplication
@@ -11,5 +11,5 @@ namespace Org.BouncyCastle.Math.EC.Multiplier
 	{
 	}
 }
-
+#pragma warning restore
 #endif

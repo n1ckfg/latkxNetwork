@@ -1,6 +1,6 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
-namespace Org.BouncyCastle.Math.EC.Abc
+#pragma warning disable
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC.Abc
 {
 	/**
 	* Class representing an element of <code><b>Z</b>[&#964;]</code>. Let
@@ -36,5 +36,5 @@ namespace Org.BouncyCastle.Math.EC.Abc
 		}
 	}
 }
-
+#pragma warning restore
 #endif

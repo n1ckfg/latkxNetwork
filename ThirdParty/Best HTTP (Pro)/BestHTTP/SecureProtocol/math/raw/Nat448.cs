@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Diagnostics;
 
-using Org.BouncyCastle.Crypto.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Utilities;
 
-namespace Org.BouncyCastle.Math.Raw
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.Raw
 {
     internal abstract class Nat448
     {
@@ -18,6 +18,17 @@ namespace Org.BouncyCastle.Math.Raw
             z[4] = x[4];
             z[5] = x[5];
             z[6] = x[6];
+        }
+
+        public static void Copy64(ulong[] x, int xOff, ulong[] z, int zOff)
+        {
+            z[zOff + 0] = x[xOff + 0];
+            z[zOff + 1] = x[xOff + 1];
+            z[zOff + 2] = x[xOff + 2];
+            z[zOff + 3] = x[xOff + 3];
+            z[zOff + 4] = x[xOff + 4];
+            z[zOff + 5] = x[xOff + 5];
+            z[zOff + 6] = x[xOff + 6];
         }
 
         public static ulong[] Create64()
@@ -100,5 +111,5 @@ namespace Org.BouncyCastle.Math.Raw
         }
     }
 }
-
+#pragma warning restore
 #endif

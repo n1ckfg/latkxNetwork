@@ -1,6 +1,6 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
-namespace Org.BouncyCastle.Math.EC.Multiplier
+#pragma warning disable
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC.Multiplier
 {
     public abstract class AbstractECMultiplier
         : ECMultiplier
@@ -18,11 +18,16 @@ namespace Org.BouncyCastle.Math.EC.Multiplier
              * Although the various multipliers ought not to produce invalid output under normal
              * circumstances, a final check here is advised to guard against fault attacks.
              */
-            return ECAlgorithms.ValidatePoint(result);
+            return CheckResult(result);
         }
 
         protected abstract ECPoint MultiplyPositive(ECPoint p, BigInteger k);
+
+        protected virtual ECPoint CheckResult(ECPoint p)
+        {
+            return ECAlgorithms.ImplCheckResult(p);
+        }
     }
 }
-
+#pragma warning restore
 #endif

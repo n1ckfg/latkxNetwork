@@ -1,9 +1,9 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.IO;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     public interface DatagramTransport
     {
@@ -23,5 +23,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         void Close();
     }
 }
-
+#pragma warning restore
 #endif

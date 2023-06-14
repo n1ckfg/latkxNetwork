@@ -1,21 +1,21 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Math.EC;
-using Org.BouncyCastle.Security;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Generators;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security;
 
-namespace Org.BouncyCastle.Crypto.Signers
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Signers
 {
     /**
      * EC-NR as described in IEEE 1363-2000
      */
     public class ECNRSigner
-        : IDsa
+        : IDsaExt
     {
         private bool			forSigning;
         private ECKeyParameters	key;
@@ -60,6 +60,11 @@ namespace Org.BouncyCastle.Crypto.Signers
             }
         }
 
+        public virtual BigInteger Order
+        {
+            get { return key.Parameters.N; }
+        }
+
         // Section 7.2.5 ECSP-NR, pg 34
         /**
          * generate a signature for the given message using the key we were
@@ -79,7 +84,7 @@ namespace Org.BouncyCastle.Crypto.Signers
                 throw new InvalidOperationException("not initialised for signing");
             }
 
-            BigInteger n = ((ECPrivateKeyParameters) this.key).Parameters.N;
+            BigInteger n = Order;
             int nBitLength = n.BitLength;
 
             BigInteger e = new BigInteger(1, message);
@@ -188,5 +193,5 @@ namespace Org.BouncyCastle.Crypto.Signers
         }
     }
 }
-
+#pragma warning restore
 #endif

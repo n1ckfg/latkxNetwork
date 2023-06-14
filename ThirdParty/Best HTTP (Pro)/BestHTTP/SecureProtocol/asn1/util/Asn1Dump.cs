@@ -1,17 +1,18 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.Collections;
 using System.IO;
 using System.Text;
 
-using Org.BouncyCastle.Utilities;
-using Org.BouncyCastle.Utilities.Encoders;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Encoders;
 
-namespace Org.BouncyCastle.Asn1.Utilities
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Utilities
 {
     public sealed class Asn1Dump
     {
-        private static readonly string NewLine = Org.BouncyCastle.Utilities.Platform.NewLine;
+        private static readonly string NewLine = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.NewLine;
 
         private Asn1Dump()
         {
@@ -64,7 +65,7 @@ namespace Org.BouncyCastle.Asn1.Utilities
                     }
                 }
             }
-            else if (obj is DerTaggedObject)
+            else if (obj is Asn1TaggedObject)
             {
                 string tab = indent + Tab;
                 buf.Append(indent);
@@ -77,7 +78,7 @@ namespace Org.BouncyCastle.Asn1.Utilities
                     buf.Append("Tagged [");
                 }
 
-                DerTaggedObject o = (DerTaggedObject)obj;
+                Asn1TaggedObject o = (Asn1TaggedObject)obj;
 
                 buf.Append(((int)o.TagNo).ToString());
                 buf.Append(']');
@@ -380,5 +381,5 @@ namespace Org.BouncyCastle.Asn1.Utilities
         }
     }
 }
-
+#pragma warning restore
 #endif

@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Diagnostics;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Digests
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Digests
 {
     /// <summary>
     /// Implementation of SHA-3 based on following KeccakNISTInterface.c from http://keccak.noekeon.org/
@@ -52,7 +52,7 @@ namespace Org.BouncyCastle.Crypto.Digests
 
         public override int DoFinal(byte[] output, int outOff)
         {
-            Absorb(new byte[]{ 0x02 }, 0, 2);
+            AbsorbBits(0x02, 2);
 
             return base.DoFinal(output,  outOff);
         }
@@ -71,8 +71,7 @@ namespace Org.BouncyCastle.Crypto.Digests
 
             if (finalBits >= 8)
             {
-                oneByte[0] = (byte)finalInput;
-                Absorb(oneByte, 0, 8);
+                Absorb(new byte[]{ (byte)finalInput }, 0, 1);
                 finalBits -= 8;
                 finalInput >>= 8;
             }
@@ -86,5 +85,5 @@ namespace Org.BouncyCastle.Crypto.Digests
 		}
     }
 }
-
+#pragma warning restore
 #endif

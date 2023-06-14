@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Crypto
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto
 {
 	/// <remarks>Base interface for a public/private key block cipher.</remarks>
 	public interface IAsymmetricBlockCipher
@@ -30,5 +30,5 @@ namespace Org.BouncyCastle.Crypto
         byte[] ProcessBlock(byte[] inBuf, int inOff, int inLen);
     }
 }
-
+#pragma warning restore
 #endif

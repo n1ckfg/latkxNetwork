@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System.IO;
 
-namespace Org.BouncyCastle.Utilities.IO
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.IO
 {
     public class FilterStream : Stream
     {
@@ -36,14 +36,14 @@ namespace Org.BouncyCastle.Utilities.IO
         {
             if (disposing)
             {
-                Org.BouncyCastle.Utilities.Platform.Dispose(s);
+                BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.Dispose(s);
             }
             base.Dispose(disposing);
         }
 #else
         public override void Close()
         {
-            Org.BouncyCastle.Utilities.Platform.Dispose(s);
+            BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.Dispose(s);
             base.Close();
         }
 #endif
@@ -78,5 +78,5 @@ namespace Org.BouncyCastle.Utilities.IO
         protected readonly Stream s;
     }
 }
-
+#pragma warning restore
 #endif

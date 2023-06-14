@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     public abstract class CertificateStatusType
     {
@@ -12,5 +12,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         public const byte ocsp = 1;
     }
 }
-
+#pragma warning restore
 #endif

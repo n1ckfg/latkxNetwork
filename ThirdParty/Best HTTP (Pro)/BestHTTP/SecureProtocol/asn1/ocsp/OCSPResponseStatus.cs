@@ -1,9 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
 
-namespace Org.BouncyCastle.Asn1.Ocsp
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Ocsp
 {
     public class OcspResponseStatus
         : DerEnumerated
@@ -40,5 +41,5 @@ namespace Org.BouncyCastle.Asn1.Ocsp
         }
     }
 }
-
+#pragma warning restore
 #endif

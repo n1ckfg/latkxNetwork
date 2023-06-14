@@ -1,10 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Math.Field
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.Field
 {
     internal class GF2Polynomial
         : IPolynomial
@@ -46,5 +46,5 @@ namespace Org.BouncyCastle.Math.Field
         }
     }
 }
-
+#pragma warning restore
 #endif

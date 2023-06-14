@@ -1,15 +1,17 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Utilities.Encoders;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math.Raw;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Encoders;
 
-namespace Org.BouncyCastle.Math.EC.Custom.Sec
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC.Custom.Sec
 {
     internal class SecT113R2Curve
         : AbstractF2mCurve
     {
-        private const int SecT113R2_DEFAULT_COORDS = COORD_LAMBDA_PROJECTIVE;
+        private const int SECT113R2_DEFAULT_COORDS = COORD_LAMBDA_PROJECTIVE;
+        private const int SECT113R2_FE_LONGS = 2;
 
         protected readonly SecT113R2Point m_infinity;
 
@@ -23,7 +25,7 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
             this.m_order = new BigInteger(1, Hex.Decode("010000000000000108789B2496AF93"));
             this.m_cofactor = BigInteger.Two;
 
-            this.m_coord = SecT113R2_DEFAULT_COORDS;
+            this.m_coord = SECT113R2_DEFAULT_COORDS;
         }
 
         protected override ECCurve CloneCurve()
@@ -96,7 +98,64 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
         {
             get { return 0; }
         }
+
+        public override ECLookupTable CreateCacheSafeLookupTable(ECPoint[] points, int off, int len)
+        {
+            ulong[] table = new ulong[len * SECT113R2_FE_LONGS * 2];
+            {
+                int pos = 0;
+                for (int i = 0; i < len; ++i)
+                {
+                    ECPoint p = points[off + i];
+                    Nat128.Copy64(((SecT113FieldElement)p.RawXCoord).x, 0, table, pos); pos += SECT113R2_FE_LONGS;
+                    Nat128.Copy64(((SecT113FieldElement)p.RawYCoord).x, 0, table, pos); pos += SECT113R2_FE_LONGS;
+                }
+            }
+
+            return new SecT113R2LookupTable(this, table, len);
+        }
+
+        private class SecT113R2LookupTable
+            : ECLookupTable
+        {
+            private readonly SecT113R2Curve m_outer;
+            private readonly ulong[] m_table;
+            private readonly int m_size;
+
+            internal SecT113R2LookupTable(SecT113R2Curve outer, ulong[] table, int size)
+            {
+                this.m_outer = outer;
+                this.m_table = table;
+                this.m_size = size;
+            }
+
+            public virtual int Size
+            {
+                get { return m_size; }
+            }
+
+            public virtual ECPoint Lookup(int index)
+            {
+                ulong[] x = Nat128.Create64(), y = Nat128.Create64();
+                int pos = 0;
+
+                for (int i = 0; i < m_size; ++i)
+                {
+                    ulong MASK = (ulong)(long)(((i ^ index) - 1) >> 31);
+
+                    for (int j = 0; j < SECT113R2_FE_LONGS; ++j)
+                    {
+                        x[j] ^= m_table[pos + j] & MASK;
+                        y[j] ^= m_table[pos + SECT113R2_FE_LONGS + j] & MASK;
+                    }
+
+                    pos += (SECT113R2_FE_LONGS * 2);
+                }
+
+                return m_outer.CreateRawPoint(new SecT113FieldElement(x), new SecT113FieldElement(y), false);
+            }
+        }
     }
 }
-
+#pragma warning restore
 #endif

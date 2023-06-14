@@ -1,5 +1,6 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-namespace Org.BouncyCastle.Asn1.Oiw
+#pragma warning disable
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Oiw
 {
 	public abstract class OiwObjectIdentifiers
 	{
@@ -28,5 +29,5 @@ namespace Org.BouncyCastle.Asn1.Oiw
 		public static readonly DerObjectIdentifier ElGamalAlgorithm		= new DerObjectIdentifier("1.3.14.7.2.1.1");
 	}
 }
-
+#pragma warning restore
 #endif

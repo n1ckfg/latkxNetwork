@@ -27,11 +27,5 @@ namespace BestHTTP.Forms
         /// </summary>
         RawJSon,
 
-#if !BESTHTTP_DISABLE_UNITY_FORM
-        /// <summary>
-        /// The legacy, Unity-based form sending.
-        /// </summary>
-        Unity
-#endif
     }
 }

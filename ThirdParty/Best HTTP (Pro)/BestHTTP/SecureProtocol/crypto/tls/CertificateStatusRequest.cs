@@ -1,9 +1,9 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.IO;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     public class CertificateStatusRequest
     {
@@ -90,10 +90,10 @@ namespace Org.BouncyCastle.Crypto.Tls
             case CertificateStatusType.ocsp:
                 return request is OcspStatusRequest;
             default:
-                throw new ArgumentException("unsupported value", "statusType");
+                throw new ArgumentException("unsupported CertificateStatusType", "statusType");
             }
         }
     }
 }
-
+#pragma warning restore
 #endif

@@ -1,9 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Asn1.Ocsp
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Ocsp
 {
     public class OcspResponse
         : Asn1Encodable
@@ -31,7 +32,7 @@ namespace Org.BouncyCastle.Asn1.Ocsp
 				return new OcspResponse((Asn1Sequence)obj);
 			}
 
-            throw new ArgumentException("unknown object in factory: " + Org.BouncyCastle.Utilities.Platform.GetTypeName(obj), "obj");
+            throw new ArgumentException("unknown object in factory: " + BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.GetTypeName(obj), "obj");
 		}
 
 		public OcspResponse(
@@ -79,15 +80,10 @@ namespace Org.BouncyCastle.Asn1.Ocsp
         public override Asn1Object ToAsn1Object()
         {
             Asn1EncodableVector v = new Asn1EncodableVector(responseStatus);
-
-			if (responseBytes != null)
-            {
-                v.Add(new DerTaggedObject(true, 0, responseBytes));
-            }
-
-			return new DerSequence(v);
+            v.AddOptionalTagged(true, 0, responseBytes);
+            return new DerSequence(v);
         }
     }
 }
-
+#pragma warning restore
 #endif

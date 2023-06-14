@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Crypto
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto
 {
     /**
      * interface that a public/private key pair generator should conform to.
@@ -24,5 +24,5 @@ namespace Org.BouncyCastle.Crypto
         AsymmetricCipherKeyPair GenerateKeyPair();
     }
 }
-
+#pragma warning restore
 #endif

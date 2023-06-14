@@ -14,6 +14,7 @@ namespace BestHTTP.SignalRCore.Encoders
             LitJson.JsonMapper.RegisterImporter<double, int>((input) => (int)(input + 0.5));
             LitJson.JsonMapper.RegisterImporter<string, DateTime>((input) => Convert.ToDateTime((string)input).ToUniversalTime());
             LitJson.JsonMapper.RegisterImporter<double, float>((input) => (float)input);
+            LitJson.JsonMapper.RegisterImporter<string, byte[]>((input) => Convert.FromBase64String(input));
         }
 
         public T DecodeAs<T>(string text)

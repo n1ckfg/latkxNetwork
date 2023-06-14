@@ -1,10 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Utilities.IO.Pem
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.IO.Pem
 {
-#if !(NETCF_1_0 || NETCF_2_0 || SILVERLIGHT || NETFX_CORE || PORTABLE)
+#if !(NETCF_1_0 || NETCF_2_0 || SILVERLIGHT || PORTABLE || NETFX_CORE)
     [Serializable]
 #endif
     public class PemGenerationException
@@ -29,5 +29,5 @@ namespace Org.BouncyCastle.Utilities.IO.Pem
 		}
 	}
 }
-
+#pragma warning restore
 #endif

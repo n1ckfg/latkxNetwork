@@ -1,19 +1,19 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 using System.IO;
 using System.Text;
 
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Asn1.Pkcs;
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Security.Certificates;
-using Org.BouncyCastle.Utilities;
-using Org.BouncyCastle.Utilities.Encoders;
-using Org.BouncyCastle.Utilities.IO;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Pkcs;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security.Certificates;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Encoders;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.IO;
 
-namespace Org.BouncyCastle.X509
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.X509
 {
 	/**
 	 * class for dealing with X509 certificates.
@@ -172,7 +172,7 @@ namespace Org.BouncyCastle.X509
 			Stream inStream)
 		{
 			X509Certificate cert;
-            IList certs = Org.BouncyCastle.Utilities.Platform.CreateArrayList();
+            IList certs = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList();
 
 			while ((cert = ReadCertificate(inStream)) != null)
 			{
@@ -183,5 +183,5 @@ namespace Org.BouncyCastle.X509
 		}
 	}
 }
-
+#pragma warning restore
 #endif

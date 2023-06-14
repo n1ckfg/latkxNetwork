@@ -1,17 +1,18 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
+using System;
 using System.IO;
 
-using Org.BouncyCastle.Utilities.IO;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.IO;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     internal class SignerInputBuffer
         : MemoryStream
     {
         internal void UpdateSigner(ISigner s)
         {
-            WriteTo(new SigStream(s));
+            Streams.WriteBufTo(this, new SigStream(s));
         }
 
         private class SigStream
@@ -36,5 +37,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         }
     }
 }
-
+#pragma warning restore
 #endif

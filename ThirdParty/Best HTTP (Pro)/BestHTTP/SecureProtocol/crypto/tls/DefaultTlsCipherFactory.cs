@@ -1,12 +1,12 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.IO;
 
-using Org.BouncyCastle.Crypto.Engines;
-using Org.BouncyCastle.Crypto.Modes;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Engines;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Modes;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     public class DefaultTlsCipherFactory
         :   AbstractTlsCipherFactory
@@ -149,7 +149,7 @@ namespace Org.BouncyCastle.Crypto.Tls
 
         protected virtual IBlockCipher CreateAesEngine()
         {
-            return new AesFastEngine();
+            return new AesEngine();
         }
 
         protected virtual IBlockCipher CreateCamelliaEngine()
@@ -227,5 +227,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         }
     }
 }
-
+#pragma warning restore
 #endif

@@ -1,10 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Security;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security;
 
-namespace Org.BouncyCastle.Crypto
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto
 {
     public interface IWrapper
     {
@@ -18,5 +18,5 @@ namespace Org.BouncyCastle.Crypto
         byte[] Unwrap(byte[] input, int inOff, int length);
     }
 }
-
+#pragma warning restore
 #endif

@@ -1,12 +1,12 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Security;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security;
 
-namespace Org.BouncyCastle.Crypto.Agreement
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Agreement
 {
     /**
      * a Diffie-Hellman key agreement class.
@@ -56,13 +56,21 @@ namespace Org.BouncyCastle.Crypto.Agreement
             DHPublicKeyParameters pub = (DHPublicKeyParameters)pubKey;
 
             if (!pub.Parameters.Equals(dhParams))
-            {
                 throw new ArgumentException("Diffie-Hellman public key has wrong parameters.");
-            }
 
-            return pub.Y.ModPow(key.X, dhParams.P);
+            BigInteger p = dhParams.P;
+
+            BigInteger peerY = pub.Y;
+            if (peerY == null || peerY.CompareTo(BigInteger.One) <= 0 || peerY.CompareTo(p.Subtract(BigInteger.One)) >= 0)
+                throw new ArgumentException("Diffie-Hellman public key is weak");
+
+            BigInteger result = peerY.ModPow(key.X, p);
+            if (result.Equals(BigInteger.One))
+                throw new InvalidOperationException("Shared key can't be 1");
+
+            return result;
         }
     }
 }
-
+#pragma warning restore
 #endif

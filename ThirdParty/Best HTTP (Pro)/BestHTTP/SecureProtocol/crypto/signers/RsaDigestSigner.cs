@@ -1,34 +1,34 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 using System.IO;
 using System.Text;
 
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Asn1.Nist;
-using Org.BouncyCastle.Asn1.Pkcs;
-using Org.BouncyCastle.Asn1.TeleTrust;
-using Org.BouncyCastle.Asn1.Utilities;
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Crypto.Encodings;
-using Org.BouncyCastle.Crypto.Engines;
-using Org.BouncyCastle.Crypto.Signers;
-using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Nist;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Pkcs;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.TeleTrust;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Encodings;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Engines;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Signers;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Signers
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Signers
 {
     public class RsaDigestSigner
         : ISigner
     {
-        private readonly IAsymmetricBlockCipher rsaEngine = new Pkcs1Encoding(new RsaBlindedEngine());
+        private readonly IAsymmetricBlockCipher rsaEngine;
         private readonly AlgorithmIdentifier algId;
         private readonly IDigest digest;
         private bool forSigning;
 
-        private static readonly IDictionary oidMap = Org.BouncyCastle.Utilities.Platform.CreateHashtable();
+        private static readonly IDictionary oidMap = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateHashtable();
 
         /// <summary>
         /// Load oid table.
@@ -61,7 +61,23 @@ namespace Org.BouncyCastle.Crypto.Signers
         }
 
         public RsaDigestSigner(IDigest digest, AlgorithmIdentifier algId)
+            :   this(new RsaCoreEngine(), digest, algId)
         {
+        }
+
+        public RsaDigestSigner(IRsa rsa, IDigest digest, DerObjectIdentifier digestOid)
+            :   this(rsa, digest, new AlgorithmIdentifier(digestOid, DerNull.Instance))
+        {
+        }
+
+        public RsaDigestSigner(IRsa rsa, IDigest digest, AlgorithmIdentifier algId)
+            :   this(new RsaBlindedEngine(rsa), digest, algId)
+        {
+        }
+
+        public RsaDigestSigner(IAsymmetricBlockCipher rsaEngine, IDigest digest, AlgorithmIdentifier algId)
+        {
+            this.rsaEngine = new Pkcs1Encoding(rsaEngine);
             this.digest = digest;
             this.algId = algId;
         }
@@ -217,5 +233,5 @@ namespace Org.BouncyCastle.Crypto.Signers
         }
     }
 }
-
+#pragma warning restore
 #endif

@@ -1,6 +1,6 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
-namespace Org.BouncyCastle.Crypto.Tls
+#pragma warning disable
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     public abstract class ClientCertificateType
     {
@@ -23,5 +23,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         public const byte ecdsa_fixed_ecdh = 66;
     }
 }
-
+#pragma warning restore
 #endif

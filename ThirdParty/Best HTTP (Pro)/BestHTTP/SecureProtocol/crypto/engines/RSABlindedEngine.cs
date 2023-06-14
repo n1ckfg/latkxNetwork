@@ -1,13 +1,13 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Engines
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Engines
 {
     /**
      * this does your basic RSA algorithm with blinding
@@ -15,9 +15,20 @@ namespace Org.BouncyCastle.Crypto.Engines
     public class RsaBlindedEngine
         : IAsymmetricBlockCipher
     {
-        private readonly RsaCoreEngine core = new RsaCoreEngine();
+        private readonly IRsa core;
+
         private RsaKeyParameters key;
         private SecureRandom random;
+
+        public RsaBlindedEngine()
+            : this(new RsaCoreEngine())
+        {
+        }
+
+        public RsaBlindedEngine(IRsa rsa)
+        {
+            this.core = rsa;
+        }
 
         public virtual string AlgorithmName
         {
@@ -40,13 +51,29 @@ namespace Org.BouncyCastle.Crypto.Engines
             {
                 ParametersWithRandom rParam = (ParametersWithRandom)param;
 
-                key = (RsaKeyParameters)rParam.Parameters;
-                random = rParam.Random;
+                this.key = (RsaKeyParameters)rParam.Parameters;
+
+                if (key is RsaPrivateCrtKeyParameters)
+                {
+                    this.random = rParam.Random;
+                }
+                else
+                {
+                    this.random = null;
+                }
             }
             else
             {
-                key = (RsaKeyParameters)param;
-                random = new SecureRandom();
+                this.key = (RsaKeyParameters)param;
+
+                if (key is RsaPrivateCrtKeyParameters)
+                {
+                    this.random = new SecureRandom();
+                }
+                else
+                {
+                    this.random = null;
+                }
             }
         }
 
@@ -110,7 +137,7 @@ namespace Org.BouncyCastle.Crypto.Engines
                     BigInteger rInv = r.ModInverse(m);
                     result = blindedResult.Multiply(rInv).Mod(m);
 
-                    // defence against Arjen Lenstra’s CRT attack
+                    // defence against Arjen Lenstraï¿½s CRT attack
                     if (!input.Equals(result.ModPow(e, m)))
                         throw new InvalidOperationException("RSA engine faulty decryption/signing detected");
                 }
@@ -128,5 +155,5 @@ namespace Org.BouncyCastle.Crypto.Engines
         }
     }
 }
-
+#pragma warning restore
 #endif

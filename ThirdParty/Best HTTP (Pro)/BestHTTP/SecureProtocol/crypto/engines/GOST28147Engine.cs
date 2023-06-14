@@ -1,12 +1,12 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Engines
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Engines
 {
 	/**
 	* implementation of GOST 28147-89
@@ -119,7 +119,7 @@ namespace Org.BouncyCastle.Crypto.Engines
 		//
 		// pre-defined sbox table
 		//
-		private static readonly IDictionary sBoxes = Org.BouncyCastle.Utilities.Platform.CreateHashtable();
+		private static readonly IDictionary sBoxes = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateHashtable();
 
 		static Gost28147Engine()
 		{
@@ -135,7 +135,7 @@ namespace Org.BouncyCastle.Crypto.Engines
 
 		private static void AddSBox(string sBoxName, byte[] sBox)
 		{
-			sBoxes.Add(Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(sBoxName), sBox);        
+			sBoxes.Add(BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(sBoxName), sBox);        
 		}
 
 		/**
@@ -186,7 +186,7 @@ namespace Org.BouncyCastle.Crypto.Engines
 			else if (parameters != null)
 			{
 				throw new ArgumentException("invalid parameter passed to Gost28147 init - "
-                    + Org.BouncyCastle.Utilities.Platform.GetTypeName(parameters));
+                    + BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.GetTypeName(parameters));
 			}
 		}
 
@@ -356,7 +356,7 @@ namespace Org.BouncyCastle.Crypto.Engines
 		public static byte[] GetSBox(
 			string sBoxName)
 		{
-			byte[] sBox = (byte[])sBoxes[Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(sBoxName)];
+			byte[] sBox = (byte[])sBoxes[BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.ToUpperInvariant(sBoxName)];
 
             if (sBox == null)
 			{
@@ -366,7 +366,21 @@ namespace Org.BouncyCastle.Crypto.Engines
 
 			return Arrays.Clone(sBox);
 		}
-	}
-}
 
+        public static string GetSBoxName(byte[] sBox)
+        {
+            foreach (string name in sBoxes.Keys)
+            {
+                byte[] sb = (byte[])sBoxes[name];
+                if (Arrays.AreEqual(sb, sBox))
+                {
+                    return name;
+                }
+            }
+
+            throw new ArgumentException("SBOX provided did not map to a known one");
+        }
+    }
+}
+#pragma warning restore
 #endif

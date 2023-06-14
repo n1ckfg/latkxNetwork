@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Math.EC.Custom.Sec
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC.Custom.Sec
 {
     internal class SecT163K1Point
         : AbstractF2mPoint
@@ -133,11 +133,9 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
                 ECFieldElement Y2 = L2;
                 ECFieldElement L = Y1.Add(Y2).Divide(X1);
 
-                //X3 = L.Square().Add(L).Add(X1).Add(curve.getA());
                 X3 = L.Square().Add(L).Add(X1).AddOne();
                 if (X3.IsZero)
                 {
-                    //return new SecT163K1Point(curve, X3, curve.B.sqrt(), IsCompressed);
                     return new SecT163K1Point(curve, X3, curve.B, IsCompressed);
                 }
 
@@ -155,7 +153,6 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
                 X3 = AU1.Multiply(AU2);
                 if (X3.IsZero)
                 {
-                    //return new SecT163K1Point(curve, X3, curve.B.sqrt(), IsCompressed);
                     return new SecT163K1Point(curve, X3, curve.B, IsCompressed);
                 }
 
@@ -201,7 +198,6 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
             ECFieldElement T = L1.Square().Add(L1Z1).Add(Z1Sq);
             if (T.IsZero)
             {
-                //return new SecT163K1Point(curve, T, curve.B.sqrt(), withCompression);
                 return new SecT163K1Point(curve, T, curve.B, IsCompressed);
             }
 
@@ -245,10 +241,7 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
             ECFieldElement Z1Sq = Z1.Square();
             ECFieldElement L1Z1 = L1.Multiply(Z1);
 
-            //ECFieldElement T = curve.getA().Multiply(Z1Sq).Add(L1Sq).Add(L1Z1);
             ECFieldElement T = Z1Sq.Add(L1Sq).Add(L1Z1);
-            ECFieldElement L2plus1 = L2.AddOne();
-            //ECFieldElement A = curve.getA().Add(L2plus1).Multiply(Z1Sq).Add(L1Sq).MultiplyPlusProduct(T, X1Sq, Z1Sq);
             ECFieldElement A = L2.Multiply(Z1Sq).Add(L1Sq).MultiplyPlusProduct(T, X1Sq, Z1Sq);
             ECFieldElement X2Z1Sq = X2.Multiply(Z1Sq);
             ECFieldElement B = X2Z1Sq.Add(T).Square();
@@ -263,13 +256,12 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
 
             if (A.IsZero)
             {
-                //return new SecT163K1Point(curve, A, curve.B.sqrt(), withCompression);
                 return new SecT163K1Point(curve, A, curve.B, IsCompressed);
             }
 
             ECFieldElement X3 = A.Square().Multiply(X2Z1Sq);
             ECFieldElement Z3 = A.Multiply(B).Multiply(Z1Sq);
-            ECFieldElement L3 = A.Add(B).Square().MultiplyPlusProduct(T, L2plus1, Z3);
+            ECFieldElement L3 = A.Add(B).Square().MultiplyPlusProduct(T, L2.AddOne(), Z3);
 
             return new SecT163K1Point(curve, X3, L3, new ECFieldElement[] { Z3 }, IsCompressed);
         }
@@ -289,5 +281,5 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
         }
     }
 }
-
+#pragma warning restore
 #endif

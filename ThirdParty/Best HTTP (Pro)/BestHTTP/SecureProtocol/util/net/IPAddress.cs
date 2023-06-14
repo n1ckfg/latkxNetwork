@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Globalization;
 
-using Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
 
-namespace Org.BouncyCastle.Utilities.Net
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Net
 {
 	public class IPAddress
 	{
@@ -197,5 +197,5 @@ namespace Org.BouncyCastle.Utilities.Net
 		}
 	}
 }
-
+#pragma warning restore
 #endif

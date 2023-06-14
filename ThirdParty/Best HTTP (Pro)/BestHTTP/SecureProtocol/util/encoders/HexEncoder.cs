@@ -1,9 +1,9 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.IO;
 
-namespace Org.BouncyCastle.Utilities.Encoders
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Encoders
 {
     public class HexEncoder
         : IEncoder
@@ -176,5 +176,5 @@ namespace Org.BouncyCastle.Utilities.Encoders
         }
     }
 }
-
+#pragma warning restore
 #endif

@@ -1,17 +1,17 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
 
-#if SILVERLIGHT || NETFX_CORE || UNITY_WP8 || PORTABLE
+#if SILVERLIGHT || PORTABLE || NETFX_CORE
 using System.Collections.Generic;
 #else
 using System.Collections;
 #endif
 
-namespace Org.BouncyCastle.Utilities
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities
 {
     internal abstract class Platform
     {
@@ -36,10 +36,14 @@ namespace Org.BouncyCastle.Utilities
 
         internal static bool EqualsIgnoreCase(string a, string b)
         {
-            return String.Compare(a, b, StringComparison.OrdinalIgnoreCase) == 0;
+#if PORTABLE || NETFX_CORE
+            return String.Equals(a, b, StringComparison.OrdinalIgnoreCase);
+#else
+            return ToUpperInvariant(a) == ToUpperInvariant(b);
+#endif
         }
 
-#if NETCF_1_0 || NETCF_2_0 || SILVERLIGHT || NETFX_CORE || PORTABLE
+#if NETCF_1_0 || NETCF_2_0 || SILVERLIGHT || (PORTABLE || NETFX_CORE && !DOTNET)
         internal static string GetEnvironmentVariable(
             string variable)
         {
@@ -83,7 +87,7 @@ namespace Org.BouncyCastle.Utilities
         }
 #endif
 
-#if SILVERLIGHT || NETFX_CORE || UNITY_WP8 || PORTABLE
+#if SILVERLIGHT || PORTABLE || NETFX_CORE
         internal static System.Collections.IList CreateArrayList()
         {
             return new List<object>();
@@ -165,8 +169,8 @@ namespace Org.BouncyCastle.Utilities
 
         internal static string ToLowerInvariant(string s)
         {
-#if NETFX_CORE || PORTABLE
-            return s.ToLower();
+#if PORTABLE || NETFX_CORE
+            return s.ToLowerInvariant();
 #else
             return s.ToLower(CultureInfo.InvariantCulture);
 #endif
@@ -174,8 +178,8 @@ namespace Org.BouncyCastle.Utilities
 
         internal static string ToUpperInvariant(string s)
         {
-#if NETFX_CORE || PORTABLE
-            return s.ToUpper();
+#if PORTABLE || NETFX_CORE
+            return s.ToUpperInvariant();
 #else
             return s.ToUpper(CultureInfo.InvariantCulture);
 #endif
@@ -225,5 +229,5 @@ namespace Org.BouncyCastle.Utilities
         }
     }
 }
-
+#pragma warning restore
 #endif

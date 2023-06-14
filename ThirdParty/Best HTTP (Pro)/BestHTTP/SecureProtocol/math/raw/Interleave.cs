@@ -1,13 +1,14 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Math.Raw
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.Raw
 {
     internal abstract class Interleave
     {
         private const ulong M32 = 0x55555555UL;
         private const ulong M64 = 0x5555555555555555UL;
+        private const ulong M64R = 0xAAAAAAAAAAAAAAAAUL;
 
         /*
          * This expands 8 bit indices into 16 bit contents (high bit 14), by inserting 0s between bits.
@@ -94,6 +95,65 @@ namespace Org.BouncyCastle.Math.Raw
             z[zOff + 1] = (x >> 1) & M64;
         }
 
+        internal static void Expand64To128Rev(ulong x, ulong[] z, int zOff)
+        {
+            // "shuffle" low half to even bits and high half to odd bits
+            ulong t;
+            t = (x ^ (x >> 16)) & 0x00000000FFFF0000UL; x ^= (t ^ (t << 16));
+            t = (x ^ (x >>  8)) & 0x0000FF000000FF00UL; x ^= (t ^ (t <<  8));
+            t = (x ^ (x >>  4)) & 0x00F000F000F000F0UL; x ^= (t ^ (t <<  4));
+            t = (x ^ (x >>  2)) & 0x0C0C0C0C0C0C0C0CUL; x ^= (t ^ (t <<  2));
+            t = (x ^ (x >>  1)) & 0x2222222222222222UL; x ^= (t ^ (t <<  1));
+
+            z[zOff]     = (x     ) & M64R;
+            z[zOff + 1] = (x << 1) & M64R;
+        }
+
+        internal static uint Shuffle(uint x)
+        {
+            // "shuffle" low half to even bits and high half to odd bits
+            uint t;
+            t = (x ^ (x >> 8)) & 0x0000FF00U; x ^= (t ^ (t << 8));
+            t = (x ^ (x >> 4)) & 0x00F000F0U; x ^= (t ^ (t << 4));
+            t = (x ^ (x >> 2)) & 0x0C0C0C0CU; x ^= (t ^ (t << 2));
+            t = (x ^ (x >> 1)) & 0x22222222U; x ^= (t ^ (t << 1));
+            return x;
+        }
+
+        internal static ulong Shuffle(ulong x)
+        {
+            // "shuffle" low half to even bits and high half to odd bits
+            ulong t;
+            t = (x ^ (x >> 16)) & 0x00000000FFFF0000UL; x ^= (t ^ (t << 16));
+            t = (x ^ (x >>  8)) & 0x0000FF000000FF00UL; x ^= (t ^ (t <<  8));
+            t = (x ^ (x >>  4)) & 0x00F000F000F000F0UL; x ^= (t ^ (t <<  4));
+            t = (x ^ (x >>  2)) & 0x0C0C0C0C0C0C0C0CUL; x ^= (t ^ (t <<  2));
+            t = (x ^ (x >>  1)) & 0x2222222222222222UL; x ^= (t ^ (t <<  1));
+            return x;
+        }
+
+        internal static uint Shuffle2(uint x)
+        {
+            // "shuffle" (twice) low half to even bits and high half to odd bits
+            uint t;
+            t = (x ^ (x >>  7)) & 0x00AA00AAU; x ^= (t ^ (t <<  7));
+            t = (x ^ (x >> 14)) & 0x0000CCCCU; x ^= (t ^ (t << 14));
+            t = (x ^ (x >>  4)) & 0x00F000F0U; x ^= (t ^ (t <<  4));
+            t = (x ^ (x >>  8)) & 0x0000FF00U; x ^= (t ^ (t <<  8));
+            return x;
+        }
+
+        internal static uint Unshuffle(uint x)
+        {
+            // "unshuffle" even bits to low half and odd bits to high half
+            uint t;
+            t = (x ^ (x >> 1)) & 0x22222222U; x ^= (t ^ (t << 1));
+            t = (x ^ (x >> 2)) & 0x0C0C0C0CU; x ^= (t ^ (t << 2));
+            t = (x ^ (x >> 4)) & 0x00F000F0U; x ^= (t ^ (t << 4));
+            t = (x ^ (x >> 8)) & 0x0000FF00U; x ^= (t ^ (t << 8));
+            return x;
+        }
+
         internal static ulong Unshuffle(ulong x)
         {
             // "unshuffle" even bits to low half and odd bits to high half
@@ -105,7 +165,18 @@ namespace Org.BouncyCastle.Math.Raw
             t = (x ^ (x >> 16)) & 0x00000000FFFF0000UL; x ^= (t ^ (t << 16));
             return x;
         }
+
+        internal static uint Unshuffle2(uint x)
+        {
+            // "unshuffle" (twice) even bits to low half and odd bits to high half
+            uint t;
+            t = (x ^ (x >>  8)) & 0x0000FF00U; x ^= (t ^ (t <<  8));
+            t = (x ^ (x >>  4)) & 0x00F000F0U; x ^= (t ^ (t <<  4));
+            t = (x ^ (x >> 14)) & 0x0000CCCCU; x ^= (t ^ (t << 14));
+            t = (x ^ (x >>  7)) & 0x00AA00AAU; x ^= (t ^ (t <<  7));
+            return x;
+        }
     }
 }
-
+#pragma warning restore
 #endif

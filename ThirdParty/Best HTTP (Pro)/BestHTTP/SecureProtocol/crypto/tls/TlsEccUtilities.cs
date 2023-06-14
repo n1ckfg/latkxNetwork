@@ -1,22 +1,22 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 using System.IO;
 
-using Org.BouncyCastle.Asn1.X9;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Agreement;
-using Org.BouncyCastle.Crypto.EC;
-using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Math.EC;
-using Org.BouncyCastle.Math.Field;
-using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X9;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Agreement;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.EC;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Generators;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math.Field;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     public abstract class TlsEccUtilities
     {
@@ -28,7 +28,7 @@ namespace Org.BouncyCastle.Crypto.Tls
 
         public static void AddSupportedEllipticCurvesExtension(IDictionary extensions, int[] namedCurves)
         {
-            extensions[ExtensionType.elliptic_curves] = CreateSupportedEllipticCurvesExtension(namedCurves);
+            extensions[ExtensionType.supported_groups] = CreateSupportedEllipticCurvesExtension(namedCurves);
         }
 
         public static void AddSupportedPointFormatsExtension(IDictionary extensions, byte[] ecPointFormats)
@@ -38,7 +38,7 @@ namespace Org.BouncyCastle.Crypto.Tls
 
         public static int[] GetSupportedEllipticCurvesExtension(IDictionary extensions)
         {
-            byte[] extensionData = TlsUtilities.GetExtensionData(extensions, ExtensionType.elliptic_curves);
+            byte[] extensionData = TlsUtilities.GetExtensionData(extensions, ExtensionType.supported_groups);
             return extensionData == null ? null : ReadSupportedEllipticCurvesExtension(extensionData);
         }
 
@@ -92,19 +92,7 @@ namespace Org.BouncyCastle.Crypto.Tls
 
         public static byte[] ReadSupportedPointFormatsExtension(byte[] extensionData)
         {
-            if (extensionData == null)
-                throw new ArgumentNullException("extensionData");
-
-            MemoryStream buf = new MemoryStream(extensionData, false);
-
-            byte length = TlsUtilities.ReadUint8(buf);
-            if (length < 1)
-                throw new TlsFatalAlert(AlertDescription.decode_error);
-
-            byte[] ecPointFormats = TlsUtilities.ReadUint8Array(length, buf);
-
-            TlsProtocol.AssertEmpty(buf);
-
+            byte[] ecPointFormats = TlsUtilities.DecodeUint8ArrayWithUint8Length(extensionData);
             if (!Arrays.Contains(ecPointFormats, ECPointFormat.uncompressed))
             {
                 /*
@@ -113,7 +101,6 @@ namespace Org.BouncyCastle.Crypto.Tls
                  */
                 throw new TlsFatalAlert(AlertDescription.illegal_parameter);
             }
-
             return ecPointFormats;
         }
 
@@ -718,5 +705,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         }
     }
 }
-
+#pragma warning restore
 #endif

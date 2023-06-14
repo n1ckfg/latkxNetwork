@@ -1,9 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
 
-namespace Org.BouncyCastle.Asn1.X9
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X9
 {
     /**
      * ASN.1 def for Elliptic-Curve Field ID structure. See
@@ -131,5 +132,5 @@ namespace Org.BouncyCastle.Asn1.X9
         }
     }
 }
-
+#pragma warning restore
 #endif

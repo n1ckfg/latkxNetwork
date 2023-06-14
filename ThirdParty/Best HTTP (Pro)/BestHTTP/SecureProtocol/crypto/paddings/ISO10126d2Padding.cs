@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Security;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security;
 
 
-namespace Org.BouncyCastle.Crypto.Paddings
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Paddings
 {
 
     /**
@@ -76,5 +76,5 @@ namespace Org.BouncyCastle.Crypto.Paddings
     }
 
 }
-
+#pragma warning restore
 #endif

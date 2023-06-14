@@ -1,7 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Crypto
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto
 {
     /// <summary>
     /// Base interface for operators that serve as stream-based signature verifiers.
@@ -20,5 +21,5 @@ namespace Org.BouncyCastle.Crypto
         IStreamCalculator CreateCalculator();
     }
 }
-
+#pragma warning restore
 #endif

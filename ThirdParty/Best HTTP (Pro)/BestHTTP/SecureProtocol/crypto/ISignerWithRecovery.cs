@@ -1,9 +1,9 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Text;
 
-namespace Org.BouncyCastle.Crypto
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto
 {
     /**
      * Signer with message recovery.
@@ -37,5 +37,5 @@ namespace Org.BouncyCastle.Crypto
 		void UpdateWithRecoveredMessage(byte[] signature);
 	}
 }
-
+#pragma warning restore
 #endif

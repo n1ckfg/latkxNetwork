@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Diagnostics;
 
-using Org.BouncyCastle.Math.Raw;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math.Raw;
 
-namespace Org.BouncyCastle.Math.EC.Custom.Sec
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC.Custom.Sec
 {
     internal class SecT113Field
     {
@@ -32,11 +32,30 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
             z[1] = x[1];
         }
 
+        private static void AddTo(ulong[] x, ulong[] z)
+        {
+            z[0] ^= x[0];
+            z[1] ^= x[1];
+        }
+
         public static ulong[] FromBigInteger(BigInteger x)
         {
-            ulong[] z = Nat128.FromBigInteger64(x);
-            Reduce15(z, 0);
-            return z;
+            return Nat.FromBigInteger64(113, x);
+        }
+
+        public static void HalfTrace(ulong[] x, ulong[] z)
+        {
+            ulong[] tt = Nat128.CreateExt64();
+
+            Nat128.Copy64(x, z);
+            for (int i = 1; i < 113; i += 2)
+            {
+                ImplSquare(z, tt);
+                Reduce(tt, z);
+                ImplSquare(z, tt);
+                Reduce(tt, z);
+                AddTo(x, z);
+            }
         }
 
         public static void Invert(ulong[] x, ulong[] z)
@@ -225,5 +244,5 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
         }
     }
 }
-
+#pragma warning restore
 #endif

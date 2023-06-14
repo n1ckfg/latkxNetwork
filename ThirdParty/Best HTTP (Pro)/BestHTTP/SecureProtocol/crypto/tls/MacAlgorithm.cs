@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     /// <summary>RFC 2246</summary>
     /// <remarks>
@@ -25,5 +25,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         public const int hmac_sha512 = 5;
     }
 }
-
+#pragma warning restore
 #endif

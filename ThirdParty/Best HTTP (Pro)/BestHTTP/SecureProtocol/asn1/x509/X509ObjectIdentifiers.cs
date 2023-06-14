@@ -1,5 +1,6 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-namespace Org.BouncyCastle.Asn1.X509
+#pragma warning disable
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509
 {
     public abstract class X509ObjectIdentifiers
     {
@@ -18,7 +19,9 @@ namespace Org.BouncyCastle.Asn1.X509
 		public static readonly DerObjectIdentifier id_at_telephoneNumber   = new DerObjectIdentifier(ID + ".20");
 		public static readonly DerObjectIdentifier id_at_name              = new DerObjectIdentifier(ID + ".41");
 
-		// id-SHA1 OBJECT IDENTIFIER ::=
+        public static readonly DerObjectIdentifier id_at_organizationIdentifier = new DerObjectIdentifier("2.5.4.97");
+
+        // id-SHA1 OBJECT IDENTIFIER ::=
         //   {iso(1) identified-organization(3) oiw(14) secsig(3) algorithms(2) 26 }    //
         public static readonly DerObjectIdentifier IdSha1 = new DerObjectIdentifier("1.3.14.3.2.26");
 
@@ -58,5 +61,5 @@ namespace Org.BouncyCastle.Asn1.X509
 		public static readonly DerObjectIdentifier CrlAccessMethod = IdADCAIssuers;
     }
 }
-
+#pragma warning restore
 #endif

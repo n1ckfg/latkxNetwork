@@ -1,12 +1,12 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Crypto.Modes;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Security;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Modes;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security;
 
-namespace Org.BouncyCastle.Crypto.Engines
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Engines
 {
 	/**
 	 * an implementation of the RFC 3211 Key Wrap
@@ -34,10 +34,10 @@ namespace Org.BouncyCastle.Crypto.Engines
 
 			if (param is ParametersWithRandom)
 			{
-				ParametersWithRandom p = (ParametersWithRandom) param;
+				ParametersWithRandom p = (ParametersWithRandom)param;
 
-				this.rand = p.Random;
-				this.param = (ParametersWithIV) p.Parameters;
+                this.rand = p.Random;
+                this.param = p.Parameters as ParametersWithIV;
 			}
 			else
 			{
@@ -46,9 +46,12 @@ namespace Org.BouncyCastle.Crypto.Engines
 					rand = new SecureRandom();
 				}
 
-				this.param = (ParametersWithIV) param;
-			}
-		}
+                this.param = param as ParametersWithIV;
+            }
+
+            if (null == this.param)
+                throw new ArgumentException("RFC3211Wrap requires an IV", "param");
+        }
 
         public virtual string AlgorithmName
 		{
@@ -61,11 +64,11 @@ namespace Org.BouncyCastle.Crypto.Engines
 			int		inLen)
 		{
 			if (!forWrapping)
-			{
 				throw new InvalidOperationException("not set for wrapping");
-			}
+            if (inLen > 255 || inLen < 0)
+                throw new ArgumentException("input must be from 0 to 255 bytes", "inLen");
 
-			engine.Init(true, param);
+            engine.Init(true, param);
 
 			int blockSize = engine.GetBlockSize();
 			byte[] cekBlock;
@@ -80,15 +83,16 @@ namespace Org.BouncyCastle.Crypto.Engines
 			}
 
 			cekBlock[0] = (byte)inLen;
-			cekBlock[1] = (byte)~inBytes[inOff];
-			cekBlock[2] = (byte)~inBytes[inOff + 1];
-			cekBlock[3] = (byte)~inBytes[inOff + 2];
 
 			Array.Copy(inBytes, inOff, cekBlock, 4, inLen);
 
 			rand.NextBytes(cekBlock, inLen + 4, cekBlock.Length - inLen - 4);
 
-			for (int i = 0; i < cekBlock.Length; i += blockSize)
+            cekBlock[1] = (byte)~cekBlock[4];
+            cekBlock[2] = (byte)~cekBlock[4 + 1];
+            cekBlock[3] = (byte)~cekBlock[4 + 2];
+
+            for (int i = 0; i < cekBlock.Length; i += blockSize)
 			{
 				engine.ProcessBlock(cekBlock, i, cekBlock, i);
 			}
@@ -144,29 +148,36 @@ namespace Org.BouncyCastle.Crypto.Engines
 				engine.ProcessBlock(cekBlock, i, cekBlock, i);
 			}
 
-			if ((cekBlock[0] & 0xff) > cekBlock.Length - 4)
-			{
-				throw new InvalidCipherTextException("wrapped key corrupted");
-			}
+            bool invalidLength = (int)cekBlock[0] > (cekBlock.Length - 4);
 
-			byte[] key = new byte[cekBlock[0] & 0xff];
+            byte[] key;
+            if (invalidLength)
+            {
+                key = new byte[cekBlock.Length - 4];
+            }
+            else
+            {
+                key = new byte[cekBlock[0]];
+            }
 
-			Array.Copy(cekBlock, 4, key, 0, cekBlock[0]);
+            Array.Copy(cekBlock, 4, key, 0, key.Length);
 
 			// Note: Using constant time comparison
 			int nonEqual = 0;
 			for (int i = 0; i != 3; i++)
 			{
 				byte check = (byte)~cekBlock[1 + i];
-				nonEqual |= (check ^ key[i]);
-			}
+                nonEqual |= (check ^ cekBlock[4 + i]);
+            }
 
-			if (nonEqual != 0)
-				throw new InvalidCipherTextException("wrapped key fails checksum");
+            Array.Clear(cekBlock, 0, cekBlock.Length);
 
-			return key;
+            if (nonEqual != 0 | invalidLength)
+                throw new InvalidCipherTextException("wrapped key corrupted");
+
+            return key;
 		}
 	}
 }
-
+#pragma warning restore
 #endif

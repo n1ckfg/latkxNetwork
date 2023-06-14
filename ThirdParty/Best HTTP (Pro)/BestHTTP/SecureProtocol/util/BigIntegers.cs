@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Security;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security;
 
-namespace Org.BouncyCastle.Utilities
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities
 {
     /**
      * BigInteger utilities.
@@ -48,6 +48,17 @@ namespace Org.BouncyCastle.Utilities
             return tmp;
         }
 
+        /// <summary>
+        /// Creates a Random BigInteger from the secure random of a given bit length.
+        /// </summary>
+        /// <param name="bitLength"></param>
+        /// <param name="secureRandom"></param>
+        /// <returns></returns>
+        public static BigInteger CreateRandomBigInteger(int bitLength, SecureRandom secureRandom)
+        {
+            return new BigInteger(bitLength, secureRandom);
+        }
+
         /**
         * Return a random BigInteger not less than 'min' and not greater than 'max'
         * 
@@ -88,7 +99,12 @@ namespace Org.BouncyCastle.Utilities
             // fall back to a faster (restricted) method
             return new BigInteger(max.Subtract(min).BitLength - 1, random).Add(min);
         }
+
+        public static int GetUnsignedByteLength(BigInteger n)
+        {
+            return (n.BitLength + 7) / 8;
+        }
     }
 }
-
+#pragma warning restore
 #endif

@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     /**
      * RFC 5246 7.4.1.4.1 (in RFC 2246, there were no specific values assigned)
@@ -15,5 +15,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         public const byte ecdsa = 3;
     }
 }
-
+#pragma warning restore
 #endif

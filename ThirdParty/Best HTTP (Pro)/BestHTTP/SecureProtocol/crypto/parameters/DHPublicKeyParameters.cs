@@ -1,15 +1,34 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
 
-namespace Org.BouncyCastle.Crypto.Parameters
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters
 {
     public class DHPublicKeyParameters
 		: DHKeyParameters
     {
+        private static BigInteger Validate(BigInteger y, DHParameters dhParams)
+        {
+            if (y == null)
+                throw new ArgumentNullException("y");
+
+            // TLS check
+            if (y.CompareTo(BigInteger.Two) < 0 || y.CompareTo(dhParams.P.Subtract(BigInteger.Two)) > 0)
+                throw new ArgumentException("invalid DH public key", "y");
+
+            // we can't validate without Q.
+            if (dhParams.Q != null
+                && !y.ModPow(dhParams.Q, dhParams.P).Equals(BigInteger.One))
+            {
+                throw new ArgumentException("y value does not appear to be in correct group", "y");
+            }
+
+            return y;
+        }
+
         private readonly BigInteger y;
 
 		public DHPublicKeyParameters(
@@ -17,10 +36,7 @@ namespace Org.BouncyCastle.Crypto.Parameters
             DHParameters	parameters)
 			: base(false, parameters)
         {
-			if (y == null)
-				throw new ArgumentNullException("y");
-
-			this.y = y;
+			this.y = Validate(y, parameters);
         }
 
 		public DHPublicKeyParameters(
@@ -29,13 +45,10 @@ namespace Org.BouncyCastle.Crypto.Parameters
 		    DerObjectIdentifier	algorithmOid)
 			: base(false, parameters, algorithmOid)
         {
-			if (y == null)
-				throw new ArgumentNullException("y");
-
-			this.y = y;
+            this.y = Validate(y, parameters);
         }
 
-        public BigInteger Y
+        public virtual BigInteger Y
         {
             get { return y; }
         }
@@ -66,5 +79,5 @@ namespace Org.BouncyCastle.Crypto.Parameters
         }
     }
 }
-
+#pragma warning restore
 #endif

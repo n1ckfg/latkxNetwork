@@ -1,6 +1,6 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
-namespace Org.BouncyCastle.Math.EC.Multiplier
+#pragma warning disable
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC.Multiplier
 {
     /**
     * Interface for classes encapsulating a point multiplication algorithm
@@ -18,5 +18,5 @@ namespace Org.BouncyCastle.Math.EC.Multiplier
         ECPoint Multiply(ECPoint p, BigInteger k);
     }
 }
-
+#pragma warning restore
 #endif

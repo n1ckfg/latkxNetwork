@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
 
-namespace Org.BouncyCastle.Crypto.Modes
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Modes
 {
 	/**
 	* implements the GOST 28147 OFB counter mode (GCTR).
@@ -171,7 +171,14 @@ namespace Org.BouncyCastle.Crypto.Modes
 			}
 			N3 += C2;
 			N4 += C1;
-			intTobytes(N3, ofbV, 0);
+            if (N4 < C1)  // addition is mod (2**32 - 1)
+            {
+                if (N4 > 0)
+                {
+                    N4++;
+                }
+            }
+            intTobytes(N3, ofbV, 0);
 			intTobytes(N4, ofbV, 4);
 
 			cipher.ProcessBlock(ofbV, 0, ofbOutV, 0);
@@ -227,5 +234,5 @@ namespace Org.BouncyCastle.Crypto.Modes
 		}
 	}
 }
-
+#pragma warning restore
 #endif

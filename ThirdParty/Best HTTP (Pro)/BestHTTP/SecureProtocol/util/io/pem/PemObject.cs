@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 
-using Org.BouncyCastle.Utilities.Collections;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Collections;
 
-namespace Org.BouncyCastle.Utilities.IO.Pem
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.IO.Pem
 {
 	public class PemObject
 		: PemObjectGenerator
@@ -15,14 +15,14 @@ namespace Org.BouncyCastle.Utilities.IO.Pem
 		private byte[]		content;
 
 		public PemObject(string type, byte[] content)
-			: this(type, Org.BouncyCastle.Utilities.Platform.CreateArrayList(), content)
+			: this(type, BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList(), content)
 		{
 		}
 
 		public PemObject(String type, IList headers, byte[] content)
 		{
 			this.type = type;
-            this.headers = Org.BouncyCastle.Utilities.Platform.CreateArrayList(headers);
+            this.headers = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList(headers);
 			this.content = content;
 		}
 
@@ -47,5 +47,5 @@ namespace Org.BouncyCastle.Utilities.IO.Pem
 		}
 	}
 }
-
+#pragma warning restore
 #endif

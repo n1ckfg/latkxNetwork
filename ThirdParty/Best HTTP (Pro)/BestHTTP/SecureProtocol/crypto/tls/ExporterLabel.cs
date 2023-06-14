@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     /// <summary>RFC 5705</summary>
     public abstract class ExporterLabel
@@ -32,10 +32,10 @@ namespace Org.BouncyCastle.Crypto.Tls
         public const string dtls_srtp = "EXTRACTOR-dtls_srtp";
 
         /*
-         * draft-ietf-tls-session-hash-04
+         * RFC 7627
          */
         public static readonly string extended_master_secret = "extended master secret";
     }
 }
-
+#pragma warning restore
 #endif

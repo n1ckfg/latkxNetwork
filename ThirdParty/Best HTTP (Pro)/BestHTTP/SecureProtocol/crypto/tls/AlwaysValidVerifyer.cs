@@ -2,7 +2,7 @@
 
 using System;
 
-using Org.BouncyCastle.Asn1.X509;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509;
 
 namespace Org.BouncyCastle.Crypto.Tls
 {
@@ -12,7 +12,6 @@ namespace Org.BouncyCastle.Crypto.Tls
 	/// DO NOT USE THIS FILE UNLESS YOU KNOW EXACTLY WHAT YOU ARE DOING.
 	/// </pre>
 	/// </remarks>
-	//[Obsolete("Perform certificate verification in TlsAuthentication implementation")]
 	public class AlwaysValidVerifyer : ICertificateVerifyer
 	{
 		/// <summary>Return true.</summary>

@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Parameters
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters
 {
     public class DHParameters
 		: ICipherParameters
@@ -169,7 +169,7 @@ namespace Org.BouncyCastle.Crypto.Parameters
 		{
 			return p.Equals(other.p)
 				&& g.Equals(other.g)
-				&& Org.BouncyCastle.Utilities.Platform.Equals(q, other.q);
+				&& BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.Equals(q, other.q);
 		}
 
 		public override int GetHashCode()
@@ -185,5 +185,5 @@ namespace Org.BouncyCastle.Crypto.Parameters
         }
     }
 }
-
+#pragma warning restore
 #endif

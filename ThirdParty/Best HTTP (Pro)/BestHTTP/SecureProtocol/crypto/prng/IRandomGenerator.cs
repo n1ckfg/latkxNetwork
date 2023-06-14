@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Crypto.Prng
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Prng
 {
 	/// <remarks>Generic interface for objects generating random bytes.</remarks>
 	public interface IRandomGenerator
@@ -26,5 +26,5 @@ namespace Org.BouncyCastle.Crypto.Prng
 		void NextBytes(byte[] bytes, int start, int len);
 	}
 }
-
+#pragma warning restore
 #endif

@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.IO;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     public class ServerName
     {
@@ -100,10 +100,10 @@ namespace Org.BouncyCastle.Crypto.Tls
             case Tls.NameType.host_name:
                 return name is string;
             default:
-                throw new ArgumentException("unsupported value", "name");
+                throw new ArgumentException("unsupported NameType", "nameType");
             }
         }
     }
 }
-
+#pragma warning restore
 #endif

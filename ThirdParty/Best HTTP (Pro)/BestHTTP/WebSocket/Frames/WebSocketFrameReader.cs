@@ -12,7 +12,7 @@ namespace BestHTTP.WebSocket.Frames
     /// <summary>
     /// Represents an incoming WebSocket Frame.
     /// </summary>
-    public sealed class WebSocketFrameReader
+    public struct WebSocketFrameReader
     {
 #region Properties
 
@@ -37,11 +37,6 @@ namespace BestHTTP.WebSocket.Frames
         /// The length of the Data.
         /// </summary>
         public UInt64 Length { get; private set; }
-
-        /// <summary>
-        /// The sent byte array as a mask to decode the data.
-        /// </summary>
-        public byte[] Mask { get; private set; }
 
         /// <summary>
         /// The decoded array of bytes.
@@ -79,57 +74,76 @@ namespace BestHTTP.WebSocket.Frames
             // If 126, the following 2 bytes interpreted as a 16-bit unsigned integer are the payload length.
             if (Length == 126)
             {
-                byte[] rawLen = new byte[2];
-                stream.ReadBuffer(rawLen);
+                byte[] rawLen = VariableSizedBufferPool.Get(2, true);
+
+                stream.ReadBuffer(rawLen, 2);
 
                 if (BitConverter.IsLittleEndian)
-                    Array.Reverse(rawLen, 0, rawLen.Length);
+                    Array.Reverse(rawLen, 0, 2);
 
                 Length = (UInt64)BitConverter.ToUInt16(rawLen, 0);
+
+                VariableSizedBufferPool.Release(rawLen);
             }
             else if (Length == 127)
             {
                 // If 127, the following 8 bytes interpreted as a 64-bit unsigned integer (the
                 // most significant bit MUST be 0) are the payload length.
 
-                byte[] rawLen = new byte[8];
-                stream.ReadBuffer(rawLen);
+                byte[] rawLen = VariableSizedBufferPool.Get(8, true);
+
+                stream.ReadBuffer(rawLen, 8);
 
                 if (BitConverter.IsLittleEndian)
-                    Array.Reverse(rawLen, 0, rawLen.Length);
+                    Array.Reverse(rawLen, 0, 8);
 
                 Length = (UInt64)BitConverter.ToUInt64(rawLen, 0);
+
+                VariableSizedBufferPool.Release(rawLen);
             }
+
+            // The sent byte array as a mask to decode the data.
+            byte[] mask = null;
 
             // Read the Mask, if has any
             if (HasMask)
             {
-                Mask = new byte[4];
-                if (stream.Read(Mask, 0, 4) < Mask.Length)
+                mask = VariableSizedBufferPool.Get(4, true);
+                if (stream.Read(mask, 0, 4) < mask.Length)
                     throw ExceptionHelper.ServerClosedTCPStream();
             }
 
-            Data = new byte[Length];
+            if (Type == WebSocketFrameTypes.Text || Type == WebSocketFrameTypes.Continuation)
+                Data = VariableSizedBufferPool.Get((long)Length, true);
+            else
+                if (Length == 0)
+                    Data = VariableSizedBufferPool.NoData;
+                else
+                    Data = new byte[Length];
+            //Data = Type == WebSocketFrameTypes.Text ? VariableSizedBufferPool.Get((long)Length, true) : new byte[Length];
 
             if (Length == 0L)
                 return;
 
-            int readLength = 0;
+            uint readLength = 0;
 
             do
             {
-                int read = stream.Read(Data, readLength, Data.Length - readLength);
+                int read = stream.Read(Data, (int)readLength, (int)(Length - readLength));
 
                 if (read <= 0)
                     throw ExceptionHelper.ServerClosedTCPStream();
 
-                readLength += read;
-            } while (readLength < Data.Length);
+                readLength += (uint)read;
+            } while (readLength < Length);
 
-            // It would be great to speed this up with SSE
             if (HasMask)
-                for (int i = 0; i < Data.Length; ++i)
-                    Data[i] = (byte)(Data[i] ^ Mask[i % 4]);
+            {
+                for (uint i = 0; i < Length; ++i)
+                    Data[i] = (byte)(Data[i] ^ mask[i % 4]);
+
+                VariableSizedBufferPool.Release(mask);
+            }
         }
 
         private byte ReadByte(Stream stream)
@@ -142,9 +156,9 @@ namespace BestHTTP.WebSocket.Frames
             return (byte)read;
         }
 
-        #endregion
+#endregion
 
-        #region Public Functions
+#region Public Functions
 
         /// <summary>
         /// Assembles all fragments into a final frame. Call this on the last fragment of a frame.
@@ -159,11 +173,13 @@ namespace BestHTTP.WebSocket.Frames
             for (int i = 0; i < fragments.Count; ++i)
                 finalLength += fragments[i].Length;
 
-            byte[] buffer = new byte[finalLength];
+            byte[] buffer = fragments[0].Type == WebSocketFrameTypes.Text ? VariableSizedBufferPool.Get((long)finalLength, true) : new byte[finalLength];
             UInt64 pos = 0;
             for (int i = 0; i < fragments.Count; ++i)
             {
                 Array.Copy(fragments[i].Data, 0, buffer, (int)pos, (int)fragments[i].Length);
+                VariableSizedBufferPool.Release(fragments[i].Data);
+
                 pos += fragments[i].Length;
             }
 
@@ -187,14 +203,26 @@ namespace BestHTTP.WebSocket.Frames
                 {
                     var ext = webSocket.Extensions[i];
                     if (ext != null)
-                        this.Data = ext.Decode(this.Header, this.Data);
+                    {
+                        var newData = ext.Decode(this.Header, this.Data, (int)this.Length);
+                        if (this.Data != newData)
+                        {
+                            VariableSizedBufferPool.Release(this.Data);
+                            this.Data = newData;
+                            this.Length = (ulong)newData.Length;
+                        }
+                    }
                 }
 
             if (this.Type == WebSocketFrameTypes.Text && this.Data != null)
-                this.DataAsText = System.Text.Encoding.UTF8.GetString(this.Data, 0, this.Data.Length);
+            {
+                this.DataAsText = System.Text.Encoding.UTF8.GetString(this.Data, 0, (int)this.Length);
+                VariableSizedBufferPool.Release(this.Data);
+                this.Data = null;
+            }
         }
 
-        #endregion
+#endregion
     }
 }
 

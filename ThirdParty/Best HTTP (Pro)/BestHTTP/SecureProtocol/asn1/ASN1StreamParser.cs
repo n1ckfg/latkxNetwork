@@ -1,8 +1,9 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.IO;
 
-namespace Org.BouncyCastle.Asn1
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1
 {
 	public class Asn1StreamParser
 	{
@@ -219,19 +220,21 @@ namespace Org.BouncyCastle.Asn1
 			}
 		}
 
-		internal Asn1EncodableVector ReadVector()
-		{
-			Asn1EncodableVector v = new Asn1EncodableVector();
+        internal Asn1EncodableVector ReadVector()
+        {
+            IAsn1Convertible obj = ReadObject();
+            if (null == obj)
+                return new Asn1EncodableVector(0);
 
-			IAsn1Convertible obj;
-			while ((obj = ReadObject()) != null)
-			{
-				v.Add(obj.ToAsn1Object());
-			}
-
-			return v;
-		}
+            Asn1EncodableVector v = new Asn1EncodableVector();
+            do
+            {
+                v.Add(obj.ToAsn1Object());
+            }
+            while ((obj = ReadObject()) != null);
+            return v;
+        }
 	}
 }
-
+#pragma warning restore
 #endif

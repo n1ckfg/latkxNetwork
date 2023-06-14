@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Math.EC.Endo
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC.Endo
 {
     public interface ECEndomorphism
     {
@@ -11,5 +11,5 @@ namespace Org.BouncyCastle.Math.EC.Endo
         bool HasEfficientPointMap { get; }
     }
 }
-
+#pragma warning restore
 #endif

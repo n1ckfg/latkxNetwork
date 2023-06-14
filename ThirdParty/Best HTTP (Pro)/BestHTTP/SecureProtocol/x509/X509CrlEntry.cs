@@ -1,19 +1,18 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
-using System.IO;
 using System.Text;
 
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Asn1.Utilities;
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Security.Certificates;
-using Org.BouncyCastle.Utilities;
-using Org.BouncyCastle.X509.Extension;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security.Certificates;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.X509.Extension;
 
-namespace Org.BouncyCastle.X509
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.X509
 {
 	/**
 	 * The following extensions are listed in RFC 2459 as relevant to CRL Entries
@@ -28,6 +27,9 @@ namespace Org.BouncyCastle.X509
 		private bool		isIndirect;
 		private X509Name	previousCertificateIssuer;
 		private X509Name	certificateIssuer;
+
+        private volatile bool hashValueSet;
+        private volatile int hashValue;
 
 		public X509CrlEntry(
 			CrlEntry c)
@@ -134,10 +136,39 @@ namespace Org.BouncyCastle.X509
 			get { return c.Extensions != null; }
 		}
 
+        public override bool Equals(object other)
+        {
+            if (this == other)
+                return true;
+
+            X509CrlEntry that = other as X509CrlEntry;
+            if (null == that)
+                return false;
+
+            if (this.hashValueSet && that.hashValueSet)
+            {
+                if (this.hashValue != that.hashValue)
+                    return false;
+            }
+
+            return this.c.Equals(that.c);
+        }
+
+        public override int GetHashCode()
+        {
+            if (!hashValueSet)
+            {
+                hashValue = this.c.GetHashCode();
+                hashValueSet = true;
+            }
+
+            return hashValue;
+        }
+
 		public override string ToString()
 		{
 			StringBuilder buf = new StringBuilder();
-			string nl = Org.BouncyCastle.Utilities.Platform.NewLine;
+			string nl = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.NewLine;
 
 			buf.Append("        userCertificate: ").Append(this.SerialNumber).Append(nl);
 			buf.Append("         revocationDate: ").Append(this.RevocationDate).Append(nl);
@@ -201,5 +232,5 @@ namespace Org.BouncyCastle.X509
 		}
 	}
 }
-
+#pragma warning restore
 #endif

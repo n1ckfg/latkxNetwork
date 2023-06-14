@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Utilities
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities
 {
     /**
      * Exception to be thrown on a failure to reset an object implementing Memoable.
@@ -27,5 +27,5 @@ namespace Org.BouncyCastle.Utilities
 
 }
 
-
+#pragma warning restore
 #endif

@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     public interface TlsSigner
     {
@@ -29,5 +29,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         bool IsValidPublicKey(AsymmetricKeyParameter publicKey);
     }
 }
-
+#pragma warning restore
 #endif

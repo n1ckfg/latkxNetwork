@@ -1,24 +1,24 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 using System.IO;
 using System.Text;
 
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Asn1.Misc;
-using Org.BouncyCastle.Asn1.Utilities;
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Security.Certificates;
-using Org.BouncyCastle.Utilities;
-using Org.BouncyCastle.Utilities.Encoders;
-using Org.BouncyCastle.X509.Extension;
-using Org.BouncyCastle.Crypto.Operators;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Misc;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Operators;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security.Certificates;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Encoders;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.X509.Extension;
 
-namespace Org.BouncyCastle.X509
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.X509
 {
     /// <summary>
     /// An Object representing an X509 Certificate.
@@ -29,13 +29,16 @@ namespace Org.BouncyCastle.X509
 //		, PKCS12BagAttributeCarrier
     {
         private readonly X509CertificateStructure c;
-//        private Hashtable pkcs12Attributes = new Hashtable();
-//        private ArrayList pkcs12Ordering = new ArrayList();
+        //private Hashtable pkcs12Attributes = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateHashtable();
+        //private ArrayList pkcs12Ordering = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList();
 		private readonly BasicConstraints basicConstraints;
 		private readonly bool[] keyUsage;
 
-		private bool hashValueSet;
-		private int hashValue;
+        private readonly object cacheLock = new object();
+        private AsymmetricKeyParameter publicKeyValue;
+
+		private volatile bool hashValueSet;
+        private volatile int hashValue;
 
 		protected X509Certificate()
 		{
@@ -176,7 +179,7 @@ namespace Org.BouncyCastle.X509
         }
 
 		/// <summary>
-        /// Return a <see cref="Org.BouncyCastle.Math.BigInteger">BigInteger</see> containing the serial number.
+        /// Return a <see cref="BestHTTP.SecureProtocol.Org.BouncyCastle.Math.BigInteger">BigInteger</see> containing the serial number.
         /// </summary>
         /// <returns>The Serial number.</returns>
         public virtual BigInteger SerialNumber
@@ -313,7 +316,7 @@ namespace Org.BouncyCastle.X509
 				Asn1Sequence seq = Asn1Sequence.GetInstance(
 					X509ExtensionUtilities.FromExtensionValue(str));
 
-                IList list = Org.BouncyCastle.Utilities.Platform.CreateArrayList();
+                IList list = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList();
 
 				foreach (DerObjectIdentifier oid in seq)
 				{
@@ -365,10 +368,10 @@ namespace Org.BouncyCastle.X509
 
 			GeneralNames gns = GeneralNames.GetInstance(asn1Object);
 
-            IList result = Org.BouncyCastle.Utilities.Platform.CreateArrayList();
+            IList result = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList();
 			foreach (GeneralName gn in gns.GetNames())
 			{
-                IList entry = Org.BouncyCastle.Utilities.Platform.CreateArrayList();
+                IList entry = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList();
 				entry.Add(gn.TagNo);
 				entry.Add(gn.Name.ToString());
 				result.Add(entry);
@@ -389,7 +392,24 @@ namespace Org.BouncyCastle.X509
 		/// <returns>The public key parameters.</returns>
 		public virtual AsymmetricKeyParameter GetPublicKey()
 		{
-			return PublicKeyFactory.CreateKey(c.SubjectPublicKeyInfo);
+            // Cache the public key to support repeated-use optimizations
+            lock (cacheLock)
+            {
+                if (null != publicKeyValue)
+                    return publicKeyValue;
+            }
+
+			AsymmetricKeyParameter temp = PublicKeyFactory.CreateKey(c.SubjectPublicKeyInfo);
+
+            lock (cacheLock)
+            {
+                if (null == publicKeyValue)
+                {
+                    publicKeyValue = temp;
+                }
+
+                return publicKeyValue;
+            }
 		}
 
 		/// <summary>
@@ -401,35 +421,40 @@ namespace Org.BouncyCastle.X509
 			return c.GetDerEncoded();
 		}
 
-		public override bool Equals(
-			object obj)
+        public override bool Equals(object other)
 		{
-			if (obj == this)
+			if (this == other)
 				return true;
 
-			X509Certificate other = obj as X509Certificate;
-
-			if (other == null)
+			X509Certificate that = other as X509Certificate;
+			if (null == that)
 				return false;
 
-			return c.Equals(other.c);
+            if (this.hashValueSet && that.hashValueSet)
+            {
+                if (this.hashValue != that.hashValue)
+                    return false;
+            }
+            else if (!this.c.Signature.Equals(that.c.Signature))
+            {
+                return false;
+            }
+
+			return this.c.Equals(that.c);
 
 			// NB: May prefer this implementation of Equals if more than one certificate implementation in play
-//			return Arrays.AreEqual(this.GetEncoded(), other.GetEncoded());
+            //return Arrays.AreEqual(this.GetEncoded(), that.GetEncoded());
 		}
 
 		public override int GetHashCode()
 		{
-			lock (this)
+			if (!hashValueSet)
 			{
-				if (!hashValueSet)
-				{
-					hashValue = c.GetHashCode();
-					hashValueSet = true;
-				}
+				hashValue = this.c.GetHashCode();
+				hashValueSet = true;
 			}
 
-			return hashValue;
+            return hashValue;
 		}
 
 //		public void setBagAttribute(
@@ -454,7 +479,7 @@ namespace Org.BouncyCastle.X509
 		public override string ToString()
 		{
 			StringBuilder buf = new StringBuilder();
-			string nl = Org.BouncyCastle.Utilities.Platform.NewLine;
+			string nl = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.NewLine;
 
 			buf.Append("  [0]         Version: ").Append(this.Version).Append(nl);
 			buf.Append("         SerialNumber: ").Append(this.SerialNumber).Append(nl);
@@ -570,7 +595,7 @@ namespace Org.BouncyCastle.X509
 			if (!IsAlgIDEqual(c.SignatureAlgorithm, c.TbsCertificate.Signature))
 				throw new CertificateException("signature algorithm in TBS cert not same as outer cert");
 
-			//Asn1Encodable parameters = c.SignatureAlgorithm.Parameters;
+			Asn1Encodable parameters = c.SignatureAlgorithm.Parameters;
 
             IStreamCalculator streamCalculator = verifier.CreateCalculator();
 
@@ -578,7 +603,7 @@ namespace Org.BouncyCastle.X509
 
 			streamCalculator.Stream.Write(b, 0, b.Length);
 
-            Org.BouncyCastle.Utilities.Platform.Dispose(streamCalculator.Stream);
+            BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.Dispose(streamCalculator.Stream);
 
             if (!((IVerifier)streamCalculator.GetResult()).IsVerified(this.GetSignature()))
 			{
@@ -595,7 +620,7 @@ namespace Org.BouncyCastle.X509
 			Asn1Encodable p2 = id2.Parameters;
 
 			if ((p1 == null) == (p2 == null))
-				return Org.BouncyCastle.Utilities.Platform.Equals(p1, p2);
+				return BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.Equals(p1, p2);
 
 			// Exactly one of p1, p2 is null at this point
 			return p1 == null
@@ -604,5 +629,5 @@ namespace Org.BouncyCastle.X509
 		}
 	}
 }
-
+#pragma warning restore
 #endif

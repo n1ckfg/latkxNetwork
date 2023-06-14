@@ -1,12 +1,12 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Globalization;
 
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Math.EC;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC;
 
-namespace Org.BouncyCastle.Crypto.Parameters
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters
 {
     public class ECPublicKeyParameters
         : ECKeyParameters
@@ -26,10 +26,7 @@ namespace Org.BouncyCastle.Crypto.Parameters
             DerObjectIdentifier publicKeyParamSet)
             : base("ECGOST3410", false, publicKeyParamSet)
         {
-            if (q == null)
-                throw new ArgumentNullException("q");
-
-            this.q = q.Normalize();
+            this.q = ECDomainParameters.ValidatePublicPoint(Parameters.Curve, q);
         }
 
         public ECPublicKeyParameters(
@@ -38,10 +35,7 @@ namespace Org.BouncyCastle.Crypto.Parameters
             ECDomainParameters	parameters)
             : base(algorithm, false, parameters)
         {
-            if (q == null)
-                throw new ArgumentNullException("q");
-
-            this.q = q.Normalize();
+            this.q = ECDomainParameters.ValidatePublicPoint(Parameters.Curve, q);
         }
 
         public ECPublicKeyParameters(
@@ -50,10 +44,7 @@ namespace Org.BouncyCastle.Crypto.Parameters
             DerObjectIdentifier publicKeyParamSet)
             : base(algorithm, false, publicKeyParamSet)
         {
-            if (q == null)
-                throw new ArgumentNullException("q");
-
-            this.q = q.Normalize();
+            this.q = ECDomainParameters.ValidatePublicPoint(Parameters.Curve, q);
         }
 
         public ECPoint Q
@@ -86,5 +77,5 @@ namespace Org.BouncyCastle.Crypto.Parameters
         }
     }
 }
-
+#pragma warning restore
 #endif

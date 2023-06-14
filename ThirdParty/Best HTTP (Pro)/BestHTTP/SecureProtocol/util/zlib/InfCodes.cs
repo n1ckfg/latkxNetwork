@@ -1,5 +1,5 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 /*
  * $Id: InfCodes.cs,v 1.2 2008-05-10 09:35:40 bouncy Exp $
@@ -36,7 +36,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * and contributors of zlib.
  */
 
-namespace Org.BouncyCastle.Utilities.Zlib {
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Zlib {
 
     internal sealed class InfCodes{
 
@@ -611,5 +611,5 @@ namespace Org.BouncyCastle.Utilities.Zlib {
         }
     }
 }
-
+#pragma warning restore
 #endif

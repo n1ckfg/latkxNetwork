@@ -5,6 +5,8 @@ namespace BestHTTP.Examples
 {
     public static class GUIHelper
     {
+        public static string BaseURL = "https://besthttpdemosite.azurewebsites.net";
+
         private static GUIStyle centerAlignedLabel;
         private static GUIStyle rightAlignedLabel;
 

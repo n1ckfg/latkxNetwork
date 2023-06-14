@@ -1,9 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
 
-namespace Org.BouncyCastle.Asn1.CryptoPro
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.CryptoPro
 {
     public abstract class CryptoProObjectIdentifiers
     {
@@ -50,5 +51,5 @@ namespace Org.BouncyCastle.Asn1.CryptoPro
         public static readonly DerObjectIdentifier GostElSgDH3410x1 = new DerObjectIdentifier(GostID + ".36.1");
     }
 }
-
+#pragma warning restore
 #endif

@@ -1,15 +1,16 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 using System.IO;
 
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Asn1.Ocsp;
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.Ocsp;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.IO;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     /**
      * RFC 3546 3.6
@@ -73,7 +74,7 @@ namespace Org.BouncyCastle.Crypto.Tls
                 }
                 TlsUtilities.CheckUint16(buf.Length);
                 TlsUtilities.WriteUint16((int)buf.Length, output);
-                buf.WriteTo(output);
+                Streams.WriteBufTo(buf, output);
             }
 
             if (mRequestExtensions == null)
@@ -99,7 +100,7 @@ namespace Org.BouncyCastle.Crypto.Tls
          */
         public static OcspStatusRequest Parse(Stream input)
         {
-            IList responderIDList = Org.BouncyCastle.Utilities.Platform.CreateArrayList();
+            IList responderIDList = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList();
             {
                 int length = TlsUtilities.ReadUint16(input);
                 if (length > 0)
@@ -130,5 +131,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         }
     }
 }
-
+#pragma warning restore
 #endif

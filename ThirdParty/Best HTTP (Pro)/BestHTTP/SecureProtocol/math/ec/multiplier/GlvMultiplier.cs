@@ -1,10 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Math.EC.Endo;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC.Endo;
 
-namespace Org.BouncyCastle.Math.EC.Multiplier
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC.Multiplier
 {
     public class GlvMultiplier
         :   AbstractECMultiplier
@@ -30,15 +30,16 @@ namespace Org.BouncyCastle.Math.EC.Multiplier
             BigInteger[] ab = glvEndomorphism.DecomposeScalar(k.Mod(n));
             BigInteger a = ab[0], b = ab[1];
 
-            ECPointMap pointMap = glvEndomorphism.PointMap;
             if (glvEndomorphism.HasEfficientPointMap)
             {
-                return ECAlgorithms.ImplShamirsTrickWNaf(p, a, pointMap, b);
+                return ECAlgorithms.ImplShamirsTrickWNaf(glvEndomorphism, p, a, b);
             }
 
-            return ECAlgorithms.ImplShamirsTrickWNaf(p, a, pointMap.Map(p), b);
+            ECPoint q = EndoUtilities.MapPoint(glvEndomorphism, p);
+
+            return ECAlgorithms.ImplShamirsTrickWNaf(p, a, q, b);
         }
     }
 }
-
+#pragma warning restore
 #endif

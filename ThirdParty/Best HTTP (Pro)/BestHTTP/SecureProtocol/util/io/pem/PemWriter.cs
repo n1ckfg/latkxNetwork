@@ -1,12 +1,12 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 using System.IO;
 
-using Org.BouncyCastle.Utilities.Encoders;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Encoders;
 
-namespace Org.BouncyCastle.Utilities.IO.Pem
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.IO.Pem
 {
 	/**
 	* A generic PEM writer, based on RFC 1421
@@ -30,7 +30,7 @@ namespace Org.BouncyCastle.Utilities.IO.Pem
 				throw new ArgumentNullException("writer");
 
 			this.writer = writer;
-			this.nlLength = Org.BouncyCastle.Utilities.Platform.NewLine.Length;
+			this.nlLength = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.NewLine.Length;
 		}
 
 		public TextWriter Writer
@@ -120,5 +120,5 @@ namespace Org.BouncyCastle.Utilities.IO.Pem
 		}
 	}
 }
-
+#pragma warning restore
 #endif

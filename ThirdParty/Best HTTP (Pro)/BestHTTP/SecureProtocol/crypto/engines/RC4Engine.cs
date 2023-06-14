@@ -1,11 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Engines
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Engines
 {
     public class RC4Engine
 		: IStreamCipher
@@ -47,7 +47,7 @@ namespace Org.BouncyCastle.Crypto.Engines
                 return;
             }
 
-            throw new ArgumentException("invalid parameter passed to RC4 init - " + Org.BouncyCastle.Utilities.Platform.GetTypeName(parameters));
+            throw new ArgumentException("invalid parameter passed to RC4 init - " + BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.GetTypeName(parameters));
         }
 
         public virtual string AlgorithmName
@@ -139,5 +139,5 @@ namespace Org.BouncyCastle.Crypto.Engines
         }
     }
 }
-
+#pragma warning restore
 #endif

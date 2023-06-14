@@ -1,13 +1,13 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.IO;
 
-using Org.BouncyCastle.Crypto.Engines;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Engines;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto
 {
 	public class BufferedIesCipher
 		: BufferedCipherBase
@@ -38,7 +38,7 @@ namespace Org.BouncyCastle.Crypto
 			this.forEncryption = forEncryption;
 
 			// TODO
-			throw Org.BouncyCastle.Utilities.Platform.CreateNotImplementedException("IES");
+			throw BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateNotImplementedException("IES");
 		}
 
 		public override int GetBlockSize()
@@ -113,5 +113,5 @@ namespace Org.BouncyCastle.Crypto
 		}
 	}
 }
-
+#pragma warning restore
 #endif

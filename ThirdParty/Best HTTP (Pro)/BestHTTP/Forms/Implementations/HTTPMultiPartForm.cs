@@ -31,7 +31,7 @@ namespace BestHTTP.Forms
         public override void PrepareRequest(HTTPRequest request)
         {
             // Set up Content-Type header for the request
-            request.SetHeader("Content-Type", "multipart/form-data; boundary=\"" + Boundary + "\"");
+            request.SetHeader("Content-Type", "multipart/form-data; boundary=" + Boundary);
         }
 
         public override byte[] GetData()
@@ -39,7 +39,7 @@ namespace BestHTTP.Forms
             if (CachedData != null)
                 return CachedData;
 
-            using (System.IO.MemoryStream ms = new System.IO.MemoryStream())
+            using (var ms = new Extensions.BufferPoolMemoryStream())
             {
                 for (int i = 0; i < Fields.Count; ++i)
                 {

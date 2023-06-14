@@ -1,14 +1,30 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
 
-namespace Org.BouncyCastle.Crypto.Parameters
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters
 {
     public class DsaPublicKeyParameters
 		: DsaKeyParameters
     {
+        private static BigInteger Validate(BigInteger y, DsaParameters parameters)
+        {
+            // we can't validate without params, fortunately we can't use the key either...
+            if (parameters != null)
+            {
+                if (y.CompareTo(BigInteger.Two) < 0
+                    || y.CompareTo(parameters.P.Subtract(BigInteger.Two)) > 0
+                    || !y.ModPow(parameters.Q, parameters.P).Equals(BigInteger.One))
+                {
+                    throw new ArgumentException("y value does not appear to be in correct group");
+                }
+            }
+
+            return y;
+        }
+
         private readonly BigInteger y;
 
 		public DsaPublicKeyParameters(
@@ -19,7 +35,7 @@ namespace Org.BouncyCastle.Crypto.Parameters
 			if (y == null)
 				throw new ArgumentNullException("y");
 
-			this.y = y;
+			this.y = Validate(y, parameters);
         }
 
 		public BigInteger Y
@@ -52,5 +68,5 @@ namespace Org.BouncyCastle.Crypto.Parameters
         }
     }
 }
-
+#pragma warning restore
 #endif

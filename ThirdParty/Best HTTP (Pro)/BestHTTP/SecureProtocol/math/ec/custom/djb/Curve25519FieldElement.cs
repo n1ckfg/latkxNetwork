@@ -1,14 +1,14 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Math.Raw;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math.Raw;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Math.EC.Custom.Djb
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC.Custom.Djb
 {
     internal class Curve25519FieldElement
-        :   ECFieldElement
+        : AbstractFpFieldElement
     {
         public static readonly BigInteger Q = Curve25519.q;
 
@@ -233,5 +233,5 @@ namespace Org.BouncyCastle.Math.EC.Custom.Djb
         }
     }
 }
-
+#pragma warning restore
 #endif

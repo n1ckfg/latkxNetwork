@@ -1,14 +1,15 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.Collections;
 using System.Globalization;
 using System.IO;
 using System.Text;
 
-using Org.BouncyCastle.Utilities;
-using NetUtils = Org.BouncyCastle.Utilities.Net;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
+using NetUtils = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Net;
 
-namespace Org.BouncyCastle.Asn1.X509
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509
 {
     /**
      * The GeneralName object.
@@ -171,24 +172,25 @@ namespace Org.BouncyCastle.Asn1.X509
 
 				switch (tag)
 				{
-					case OtherName:
-						return new GeneralName(tag, Asn1Sequence.GetInstance(tagObj, false));
-					case Rfc822Name:
-						return new GeneralName(tag, DerIA5String.GetInstance(tagObj, false));
-					case DnsName:
-						return new GeneralName(tag, DerIA5String.GetInstance(tagObj, false));
-					case X400Address:
-						throw new ArgumentException("unknown tag: " + tag);
+                    case EdiPartyName:
+                    case OtherName:
+                    case X400Address:
+                        return new GeneralName(tag, Asn1Sequence.GetInstance(tagObj, false));
+
+                    case DnsName:
+                    case Rfc822Name:
+                    case UniformResourceIdentifier:
+                        return new GeneralName(tag, DerIA5String.GetInstance(tagObj, false));
+
 					case DirectoryName:
 						return new GeneralName(tag, X509Name.GetInstance(tagObj, true));
-					case EdiPartyName:
-						return new GeneralName(tag, Asn1Sequence.GetInstance(tagObj, false));
-					case UniformResourceIdentifier:
-						return new GeneralName(tag, DerIA5String.GetInstance(tagObj, false));
 					case IPAddress:
 						return new GeneralName(tag, Asn1OctetString.GetInstance(tagObj, false));
 					case RegisteredID:
 						return new GeneralName(tag, DerObjectIdentifier.GetInstance(tagObj, false));
+
+                    default:
+                        throw new ArgumentException("unknown tag: " + tag);
 				}
 	        }
 
@@ -204,7 +206,7 @@ namespace Org.BouncyCastle.Asn1.X509
 	            }
 	        }
 
-			throw new ArgumentException("unknown object in GetInstance: " + Org.BouncyCastle.Utilities.Platform.GetTypeName(obj), "obj");
+			throw new ArgumentException("unknown object in GetInstance: " + BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.GetTypeName(obj), "obj");
 		}
 
 		public static GeneralName GetInstance(
@@ -358,11 +360,11 @@ namespace Org.BouncyCastle.Asn1.X509
 
 		private int[] parseIPv6(string ip)
 		{
-			if (Org.BouncyCastle.Utilities.Platform.StartsWith(ip, "::"))
+			if (BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.StartsWith(ip, "::"))
 			{
 				ip = ip.Substring(1);
 			}
-			else if (Org.BouncyCastle.Utilities.Platform.EndsWith(ip, "::"))
+			else if (BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.EndsWith(ip, "::"))
 			{
 				ip = ip.Substring(0, ip.Length - 1);
 			}
@@ -413,10 +415,12 @@ namespace Org.BouncyCastle.Asn1.X509
 
 		public override Asn1Object ToAsn1Object()
         {
-			// Explicitly tagged if DirectoryName
-			return new DerTaggedObject(tag == DirectoryName, tag, obj);
+            // directoryName is explicitly tagged as it is a CHOICE
+            bool isExplicit = (tag == DirectoryName);
+
+            return new DerTaggedObject(isExplicit, tag, obj);
         }
     }
 }
-
+#pragma warning restore
 #endif

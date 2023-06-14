@@ -1,16 +1,16 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Math.Raw;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math.Raw;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Math.EC.Custom.Sec
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC.Custom.Sec
 {
     internal class SecT409FieldElement
-        : ECFieldElement
+        : AbstractF2mFieldElement
     {
-        protected ulong[] x;
+        protected internal readonly ulong[] x;
 
         public SecT409FieldElement(BigInteger x)
         {
@@ -152,6 +152,23 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
             return new SecT409FieldElement(z);
         }
 
+        public override ECFieldElement HalfTrace()
+        {
+            ulong[] z = Nat448.Create64();
+            SecT409Field.HalfTrace(x, z);
+            return new SecT409FieldElement(z);
+        }
+
+        public override bool HasFastTrace
+        {
+            get { return true; }
+        }
+
+        public override int Trace()
+        {
+            return (int)SecT409Field.Trace(x);
+        }
+
         public override ECFieldElement Invert()
         {
             ulong[] z = Nat448.Create64();
@@ -216,5 +233,5 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
         }
     }
 }
-
+#pragma warning restore
 #endif

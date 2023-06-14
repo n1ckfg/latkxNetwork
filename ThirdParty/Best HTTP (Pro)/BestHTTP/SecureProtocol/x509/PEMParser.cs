@@ -1,14 +1,14 @@
-#if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR) && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.IO;
 using System.Text;
 
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Utilities;
-using Org.BouncyCastle.Utilities.Encoders;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Encoders;
 
-namespace Org.BouncyCastle.X509
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.X509
 {
 	class PemParser
 	{
@@ -62,7 +62,7 @@ namespace Org.BouncyCastle.X509
 
 			while ((line = ReadLine(inStream)) != null)
 			{
-                if (Org.BouncyCastle.Utilities.Platform.StartsWith(line, _header1) || Org.BouncyCastle.Utilities.Platform.StartsWith(line, _header2))
+                if (BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.StartsWith(line, _header1) || BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.StartsWith(line, _header2))
 				{
 					break;
 				}
@@ -70,7 +70,7 @@ namespace Org.BouncyCastle.X509
 
 			while ((line = ReadLine(inStream)) != null)
 			{
-                if (Org.BouncyCastle.Utilities.Platform.StartsWith(line, _footer1) || Org.BouncyCastle.Utilities.Platform.StartsWith(line, _footer2))
+                if (BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.StartsWith(line, _footer1) || BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.StartsWith(line, _footer2))
 				{
 					break;
 				}
@@ -95,5 +95,5 @@ namespace Org.BouncyCastle.X509
 	}
 }
 
-
+#pragma warning restore
 #endif

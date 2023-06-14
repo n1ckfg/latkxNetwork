@@ -1,14 +1,23 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Asn1
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1
 {
     public class DerInteger
         : Asn1Object
     {
+        public const string AllowUnsafeProperty = "BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.AllowUnsafeInteger";
+
+        internal static bool AllowUnsafe()
+        {
+            string allowUnsafeValue = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.GetEnvironmentVariable(AllowUnsafeProperty);
+            return allowUnsafeValue != null && BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.EqualsIgnoreCase("true", allowUnsafeValue);
+        }
+
         private readonly byte[] bytes;
 
         /**
@@ -24,7 +33,7 @@ namespace Org.BouncyCastle.Asn1
                 return (DerInteger)obj;
             }
 
-            throw new ArgumentException("illegal object in GetInstance: " + Org.BouncyCastle.Utilities.Platform.GetTypeName(obj));
+            throw new ArgumentException("illegal object in GetInstance: " + BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.GetTypeName(obj));
         }
 
         /**
@@ -71,7 +80,16 @@ namespace Org.BouncyCastle.Asn1
 		public DerInteger(
             byte[] bytes)
         {
-            this.bytes = bytes;
+            if (bytes.Length > 1)
+            {
+                if ((bytes[0] == 0 && (bytes[1] & 0x80) == 0)
+                    || (bytes[0] == (byte)0xff && (bytes[1] & 0x80) != 0))
+                {
+                    if (!AllowUnsafe())
+                        throw new ArgumentException("malformed integer");
+                }
+            }
+            this.bytes = Arrays.Clone(bytes);
         }
 
 		public BigInteger Value
@@ -116,5 +134,5 @@ namespace Org.BouncyCastle.Asn1
 		}
 	}
 }
-
+#pragma warning restore
 #endif

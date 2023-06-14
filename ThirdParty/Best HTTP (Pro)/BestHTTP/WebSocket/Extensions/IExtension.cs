@@ -34,7 +34,7 @@ namespace BestHTTP.WebSocket.Extensions
         /// <summary>
         /// This function can be used the decode the server-sent data.
         /// </summary>
-        byte[] Decode(byte header, byte[] data);
+        byte[] Decode(byte header, byte[] data, int length);
     }
 }
 

@@ -1,9 +1,9 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.IO;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     /// <summary>
     /// A generic interface for key exchange implementations in (D)TLS.
@@ -54,5 +54,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         byte[] GeneratePremasterSecret();
     }
 }
-
+#pragma warning restore
 #endif

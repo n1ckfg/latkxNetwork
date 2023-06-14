@@ -1,12 +1,12 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Crypto.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Generators;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Macs
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Macs
 {
 
     /// <summary>
@@ -21,7 +21,7 @@ namespace Org.BouncyCastle.Crypto.Macs
     /// href="https://github.com/floodyberry/poly1305-donna">poly1305-donna-unrolled</a> C implementation
     /// by Andrew M (@floodyberry).
     /// </remarks>
-    /// <seealso cref="Org.BouncyCastle.Crypto.Generators.Poly1305KeyGenerator"/>
+    /// <seealso cref="BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Generators.Poly1305KeyGenerator"/>
     public class Poly1305
         : IMac
     {
@@ -221,13 +221,13 @@ namespace Org.BouncyCastle.Crypto.Macs
             ulong tp3 = mul32x32_64(h0,r3) + mul32x32_64(h1,r2) + mul32x32_64(h2,r1) + mul32x32_64(h3,r0) + mul32x32_64(h4,s4);
             ulong tp4 = mul32x32_64(h0,r4) + mul32x32_64(h1,r3) + mul32x32_64(h2,r2) + mul32x32_64(h3,r1) + mul32x32_64(h4,r0);
 
-            ulong b;
-            h0 = (uint)tp0 & 0x3ffffff; b = (tp0 >> 26);
-            tp1 += b; h1 = (uint)tp1 & 0x3ffffff; b = (tp1 >> 26);
-            tp2 += b; h2 = (uint)tp2 & 0x3ffffff; b = (tp2 >> 26);
-            tp3 += b; h3 = (uint)tp3 & 0x3ffffff; b = (tp3 >> 26);
-            tp4 += b; h4 = (uint)tp4 & 0x3ffffff; b = (tp4 >> 26);
-            h0 += (uint)(b * 5);
+            h0 = (uint)tp0 & 0x3ffffff; tp1 += (tp0 >> 26);
+            h1 = (uint)tp1 & 0x3ffffff; tp2 += (tp1 >> 26);
+            h2 = (uint)tp2 & 0x3ffffff; tp3 += (tp2 >> 26);
+            h3 = (uint)tp3 & 0x3ffffff; tp4 += (tp3 >> 26);
+            h4 = (uint)tp4 & 0x3ffffff;
+            h0 += (uint)(tp4 >> 26) * 5;
+            h1 += (h0 >> 26); h0 &= 0x3ffffff;
         }
 
         public int DoFinal(byte[] output, int outOff)
@@ -240,17 +240,14 @@ namespace Org.BouncyCastle.Crypto.Macs
                 ProcessBlock();
             }
 
-            ulong f0, f1, f2, f3;
+            h1 += (h0 >> 26); h0 &= 0x3ffffff;
+            h2 += (h1 >> 26); h1 &= 0x3ffffff;
+            h3 += (h2 >> 26); h2 &= 0x3ffffff;
+            h4 += (h3 >> 26); h3 &= 0x3ffffff;
+            h0 += (h4 >> 26) * 5; h4 &= 0x3ffffff;
+            h1 += (h0 >> 26); h0 &= 0x3ffffff;
 
-            uint b = h0 >> 26;
-            h0 = h0 & 0x3ffffff;
-            h1 += b; b = h1 >> 26; h1 = h1 & 0x3ffffff;
-            h2 += b; b = h2 >> 26; h2 = h2 & 0x3ffffff;
-            h3 += b; b = h3 >> 26; h3 = h3 & 0x3ffffff;
-            h4 += b; b = h4 >> 26; h4 = h4 & 0x3ffffff;
-            h0 += b * 5;
-
-            uint g0, g1, g2, g3, g4;
+            uint g0, g1, g2, g3, g4, b;
             g0 = h0 + 5; b = g0 >> 26; g0 &= 0x3ffffff;
             g1 = h1 + b; b = g1 >> 26; g1 &= 0x3ffffff;
             g2 = h2 + b; b = g2 >> 26; g2 &= 0x3ffffff;
@@ -265,6 +262,7 @@ namespace Org.BouncyCastle.Crypto.Macs
             h3 = (h3 & nb) | (g3 & b);
             h4 = (h4 & nb) | (g4 & b);
 
+            ulong f0, f1, f2, f3;
             f0 = ((h0      ) | (h1 << 26)) + (ulong)k0;
             f1 = ((h1 >> 6 ) | (h2 << 20)) + (ulong)k1;
             f2 = ((h2 >> 12) | (h3 << 14)) + (ulong)k2;
@@ -295,5 +293,5 @@ namespace Org.BouncyCastle.Crypto.Macs
         }
     }
 }
-
+#pragma warning restore
 #endif

@@ -1,10 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Utilities.Encoders;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math.Raw;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Encoders;
 
-namespace Org.BouncyCastle.Math.EC.Custom.Sec
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC.Custom.Sec
 {
     internal class SecP160K1Curve
         : AbstractFpCurve
@@ -12,6 +13,7 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
         public static readonly BigInteger q = SecP160R2Curve.q;
 
         private const int SECP160K1_DEFAULT_COORDS = COORD_JACOBIAN;
+        private const int SECP160K1_FE_INTS = 5;
 
         protected readonly SecP160K1Point m_infinity;
 
@@ -72,7 +74,64 @@ namespace Org.BouncyCastle.Math.EC.Custom.Sec
         {
             return new SecP160K1Point(this, x, y, zs, withCompression);
         }
+
+        public override ECLookupTable CreateCacheSafeLookupTable(ECPoint[] points, int off, int len)
+        {
+            uint[] table = new uint[len * SECP160K1_FE_INTS * 2];
+            {
+                int pos = 0;
+                for (int i = 0; i < len; ++i)
+                {
+                    ECPoint p = points[off + i];
+                    Nat160.Copy(((SecP160R2FieldElement)p.RawXCoord).x, 0, table, pos); pos += SECP160K1_FE_INTS;
+                    Nat160.Copy(((SecP160R2FieldElement)p.RawYCoord).x, 0, table, pos); pos += SECP160K1_FE_INTS;
+                }
+            }
+
+            return new SecP160K1LookupTable(this, table, len);
+        }
+
+        private class SecP160K1LookupTable
+            : ECLookupTable
+        {
+            private readonly SecP160K1Curve m_outer;
+            private readonly uint[] m_table;
+            private readonly int m_size;
+
+            internal SecP160K1LookupTable(SecP160K1Curve outer, uint[] table, int size)
+            {
+                this.m_outer = outer;
+                this.m_table = table;
+                this.m_size = size;
+            }
+
+            public virtual int Size
+            {
+                get { return m_size; }
+            }
+
+            public virtual ECPoint Lookup(int index)
+            {
+                uint[] x = Nat256.Create(), y = Nat256.Create();
+                int pos = 0;
+
+                for (int i = 0; i < m_size; ++i)
+                {
+                    uint MASK = (uint)(((i ^ index) - 1) >> 31);
+
+                    for (int j = 0; j < SECP160K1_FE_INTS; ++j)
+                    {
+                        x[j] ^= m_table[pos + j] & MASK;
+                        y[j] ^= m_table[pos + SECP160K1_FE_INTS + j] & MASK;
+                    }
+
+                    pos += (SECP160K1_FE_INTS * 2);
+                }
+
+                return m_outer.CreateRawPoint(new SecP160R2FieldElement(x), new SecP160R2FieldElement(y), false);
+            }
+        }
     }
 }
-
+#pragma warning restore
 #endif

@@ -1,12 +1,13 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
 
-using Org.BouncyCastle.Utilities.Encoders;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Encoders;
 
-namespace Org.BouncyCastle.Asn1.X509
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509
 {
     /**
      * It turns out that the number of standard ways the fields in a DN should be
@@ -88,5 +89,5 @@ namespace Org.BouncyCastle.Asn1.X509
         public abstract Asn1Object GetConvertedValue(DerObjectIdentifier oid, string value);
     }
 }
-
+#pragma warning restore
 #endif

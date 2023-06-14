@@ -1,8 +1,8 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-namespace Org.BouncyCastle.Math.EC.Abc
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Math.EC.Abc
 {
     /**
     * Class holding methods for point multiplication based on the window
@@ -845,5 +845,5 @@ namespace Org.BouncyCastle.Math.EC.Abc
         }
     }
 }
-
+#pragma warning restore
 #endif

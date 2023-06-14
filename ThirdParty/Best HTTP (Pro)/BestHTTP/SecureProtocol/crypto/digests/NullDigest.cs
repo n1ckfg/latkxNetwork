@@ -1,9 +1,11 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.IO;
 
-namespace Org.BouncyCastle.Crypto.Digests
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.IO;
+
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Digests
 {
 	public class NullDigest : IDigest
 	{
@@ -22,7 +24,7 @@ namespace Org.BouncyCastle.Crypto.Digests
 
 		public int GetDigestSize()
 		{
-			return (int) bOut.Length;
+			return (int)bOut.Length;
 		}
 
 		public void Update(byte b)
@@ -35,19 +37,23 @@ namespace Org.BouncyCastle.Crypto.Digests
 			bOut.Write(inBytes, inOff, len);
 		}
 
-		public int DoFinal(byte[] outBytes, int outOff)
+        public int DoFinal(byte[] outBytes, int outOff)
 		{
-			byte[] res = bOut.ToArray();
-			res.CopyTo(outBytes, outOff);
-			Reset();
-			return res.Length;
-		}
+            try
+            {
+                return Streams.WriteBufTo(bOut, outBytes, outOff);
+            }
+            finally
+            {
+                Reset();
+            }
+        }
 
-		public void Reset()
+        public void Reset()
 		{
 			bOut.SetLength(0);
 		}
 	}
 }
-
+#pragma warning restore
 #endif

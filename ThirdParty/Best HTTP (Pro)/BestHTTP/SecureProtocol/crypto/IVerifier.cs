@@ -1,5 +1,6 @@
-﻿#if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-namespace Org.BouncyCastle.Crypto
+#if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto
 {
     /// <summary>
     /// Operators that reduce their input to the validation of a signature produce this type.
@@ -24,5 +25,5 @@ namespace Org.BouncyCastle.Crypto
         bool IsVerified(byte[] source, int off, int length);
     }
 }
-
+#pragma warning restore
 #endif

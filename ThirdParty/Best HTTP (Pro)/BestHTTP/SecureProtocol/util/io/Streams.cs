@@ -1,9 +1,9 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.IO;
 
-namespace Org.BouncyCastle.Utilities.IO
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.IO
 {
 	public sealed class Streams
 	{
@@ -92,7 +92,38 @@ namespace Org.BouncyCastle.Utilities.IO
 			}
 			return total;
 		}
-	}
-}
 
+        /// <exception cref="IOException"></exception>
+        public static void WriteBufTo(MemoryStream buf, Stream output)
+        {
+            buf.WriteTo(output);
+        }
+
+        /// <exception cref="IOException"></exception>
+        public static int WriteBufTo(MemoryStream buf, byte[] output, int offset)
+        {
+#if PORTABLE || NETFX_CORE
+            byte[] bytes = buf.ToArray();
+            bytes.CopyTo(output, offset);
+            return bytes.Length;
+#else
+            int size = (int)buf.Length;
+            buf.WriteTo(new MemoryStream(output, offset, size, true));
+            return size;
+#endif
+        }
+
+        public static void WriteZeroes(Stream outStr, long count)
+        {
+            byte[] zeroes = new byte[BufferSize];
+            while (count > BufferSize)
+            {
+                outStr.Write(zeroes, 0, BufferSize);
+                count -= BufferSize;
+            }
+            outStr.Write(zeroes, 0, (int)count);
+        }
+    }
+}
+#pragma warning restore
 #endif

@@ -1,5 +1,6 @@
 ﻿#if !BESTHTTP_DISABLE_SIGNALR_CORE && !BESTHTTP_DISABLE_WEBSOCKET
 using BestHTTP.Futures;
+using BestHTTP.SignalRCore.Authentication;
 using BestHTTP.SignalRCore.Messages;
 using System;
 using System.Collections.Generic;
@@ -19,15 +20,21 @@ namespace BestHTTP.SignalRCore
         public TransportTypes PreferedTransport { get; set; }
 
         /// <summary>
-        /// A ping message is only sent if the interval has elapsed without a message being sent. Its default valu is 15 seconds.
+        /// A ping message is only sent if the interval has elapsed without a message being sent. Its default value is 15 seconds.
         /// </summary>
         public TimeSpan PingInterval { get; set; }
+
+        /// <summary>
+        /// The maximum count of redirect negoitiation result that the plugin will follow. Its default value is 100.
+        /// </summary>
+        public int MaxRedirects { get; set; }
 
         public HubOptions()
         {
             this.SkipNegotiation = false;
             this.PreferedTransport = TransportTypes.WebSocket;
             this.PingInterval = TimeSpan.FromSeconds(15);
+            this.MaxRedirects = 100;
         }
     }
 
@@ -54,6 +61,11 @@ namespace BestHTTP.SignalRCore
         /// The IProtocol implementation that will parse, encode and decode messages.
         /// </summary>
         public IProtocol Protocol { get; private set; }
+
+        /// <summary>
+        /// This event is called when the connection is redirected to a new uri.
+        /// </summary>
+        public event Action<HubConnection, Uri, Uri> OnRedirected;
 
         /// <summary>
         /// This event is called when successfully connected to the hub.
@@ -92,9 +104,16 @@ namespace BestHTTP.SignalRCore
         public HubOptions Options { get; private set; }
 
         /// <summary>
+        /// How many times this connection is redirected.
+        /// </summary>
+        public int RedirectCount { get; private set; }
+
+        /// <summary>
         /// This will be increment to add a unique id to every message the plugin will send.
         /// </summary>
         private long lastInvocationId = 0;
+
+        private int lastStreamId = 0;
 
         /// <summary>
         ///  Store the callback for all sent message that expect a return value from the server. All sent message has
@@ -124,12 +143,16 @@ namespace BestHTTP.SignalRCore
             this.Options = options;
             this.Protocol = protocol;
             this.Protocol.Connection = this;
+            this.AuthenticationProvider = new DefaultAccessTokenAuthenticator(this);
         }
 
         public void StartConnect()
         {
-            if (this.State != ConnectionStates.Initial)
+            if (this.State != ConnectionStates.Initial && this.State != ConnectionStates.Redirected)
+            {
+                HTTPManager.Logger.Warning("HubConnection", "StartConnect - Expected Initial or Redirected state, got " + this.State.ToString());
                 return;
+            }
 
             HTTPManager.Logger.Verbose("HubConnection", "StartConnect");
 
@@ -172,6 +195,12 @@ namespace BestHTTP.SignalRCore
         {
             HTTPManager.Logger.Verbose("HubConnection", "StartNegotiation");
 
+            if (this.State == ConnectionStates.CloseInitiated)
+            {
+                SetState(ConnectionStates.Closed);
+                return;
+            }
+
             if (this.Options.SkipNegotiation)
             {
                 HTTPManager.Logger.Verbose("HubConnection", "Skipping negotiation");
@@ -180,23 +209,22 @@ namespace BestHTTP.SignalRCore
                 return;
             }
 
-            if (this.State == ConnectionStates.CloseInitiated)
-            {
-                SetState(ConnectionStates.Closed);
-                return;
-            }
-
             SetState(ConnectionStates.Negotiating);
 
             // https://github.com/aspnet/SignalR/blob/dev/specs/TransportProtocols.md#post-endpoint-basenegotiate-request
             // Send out a negotiation request. While we could skip it and connect right with the websocket transport
             //  it might return with additional information that could be useful.
+
             UriBuilder builder = new UriBuilder(this.Uri);
-            builder.Path += "/negotiate";
+            if (builder.Path.EndsWith("/"))
+                builder.Path += "negotiate";
+            else
+                builder.Path += "/negotiate";
 
             var request = new HTTPRequest(builder.Uri, HTTPMethods.Post, OnNegotiationRequestFinished);
             if (this.AuthenticationProvider != null)
                 this.AuthenticationProvider.PrepareRequest(request);
+
             request.Send();
         }
         
@@ -227,7 +255,7 @@ namespace BestHTTP.SignalRCore
 
         private bool IsTransportSupported(string transportName)
         {
-            // https://github.com/aspnet/SignalR/blob/dev/specs/TransportProtocols.md#post-endpoint-basenegotiate-request
+            // https://github.com/aspnet/SignalR/blob/release/2.2/specs/TransportProtocols.md#post-endpoint-basenegotiate-request
             // If the negotiation response contains only the url and accessToken, no 'availableTransports' list is sent
             if (this.NegotiationResult.SupportedTransports == null)
                 return true;
@@ -258,14 +286,43 @@ namespace BestHTTP.SignalRCore
                         HTTPManager.Logger.Information("HubConnection", "Negotiation Request Finished Successfully! Response: " + resp.DataAsText);
 
                         // Parse negotiation
-                        this.NegotiationResult = NegotiationResult.Parse(resp.DataAsText, out errorReason);
+                        this.NegotiationResult = NegotiationResult.Parse(resp.DataAsText, out errorReason, this);
 
                         // TODO: check validity of the negotiation result:
                         //  If url and accessToken is present, the other two must be null.
                         //  https://github.com/aspnet/SignalR/blob/dev/specs/TransportProtocols.md#post-endpoint-basenegotiate-request
 
                         if (string.IsNullOrEmpty(errorReason))
-                            ConnectImpl();
+                        {
+                            if (this.NegotiationResult.Url != null)
+                            {
+                                this.SetState(ConnectionStates.Redirected);
+
+                                if (++this.RedirectCount >= this.Options.MaxRedirects)
+                                    errorReason = string.Format("MaxRedirects ({0:N0}) reached!", this.Options.MaxRedirects);
+                                else
+                                {
+                                    var oldUri = this.Uri;
+                                    this.Uri = this.NegotiationResult.Url;
+
+                                    if (this.OnRedirected != null)
+                                    {
+                                        try
+                                        {
+                                            this.OnRedirected(this, oldUri, Uri);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            HTTPManager.Logger.Exception("HubConnection", "OnNegotiationRequestFinished - OnRedirected", ex);
+                                        }
+                                    }
+
+                                    StartConnect();
+                                }
+                            }
+                            else
+                                ConnectImpl();
+                        }
                     }
                     else // Internal server error?
                         errorReason = string.Format("Negotiation Request Finished Successfully, but the server sent an error. Status Code: {0}-{1} Message: {2}",
@@ -342,12 +399,12 @@ namespace BestHTTP.SignalRCore
                                             var container = future.value;
 
                                             // While completion message must not contain any result, this should be future-proof
-                                            //if (!container.IsCanceled && message.Result != null)
-                                            //{
-                                            //    TResult[] results = (TResult[])this.Protocol.ConvertTo(typeof(TResult[]), message.Result);
-                                            //
-                                            //    container.AddItems(results);
-                                            //}
+                                            if (!container.IsCanceled && message.result != null)
+                                            {
+                                                TResult result = (TResult)this.Protocol.ConvertTo(typeof(TResult), message.result);
+
+                                                container.AddItem(result);
+                                            }
 
                                             future.Assign(container);
                                         }
@@ -415,7 +472,7 @@ namespace BestHTTP.SignalRCore
         private long InvokeImp(string target, object[] args, Action<Message> callback, bool isStreamingInvocation = false)
         {
             if (this.State != ConnectionStates.Connected)
-                throw new Exception("Not connected yet!");
+                return -1;
 
             long invocationId = System.Threading.Interlocked.Increment(ref this.lastInvocationId);
             var message = new Message
@@ -435,12 +492,121 @@ namespace BestHTTP.SignalRCore
             return invocationId;
         }
 
-        private void SendMessage(Message message)
+        internal void SendMessage(Message message)
         {
             byte[] encoded = this.Protocol.EncodeMessage(message);
             this.Transport.Send(encoded);
 
             this.lastMessageSent = DateTime.UtcNow;
+        }
+
+        internal UploadItemController<StreamItemContainer<TResult>> UploadStreamWithDownStream<TResult>(string target, int paramCount)
+        {
+            Future<StreamItemContainer<TResult>> future = new Future<StreamItemContainer<TResult>>();
+
+            Action<Message> callback = (Message message) => {
+                switch (message.type)
+                {
+                    // StreamItem message contains only one item.
+                    case MessageTypes.StreamItem:
+                        {
+                            StreamItemContainer<TResult> container = future.value;
+
+                            if (container.IsCanceled)
+                                break;
+
+                            container.AddItem((TResult)this.Protocol.ConvertTo(typeof(TResult), message.item));
+
+                            // (re)assign the container to raise OnItem event
+                            future.AssignItem(container);
+                            break;
+                        }
+
+                    case MessageTypes.Completion:
+                        {
+                            bool isSuccess = string.IsNullOrEmpty(message.error);
+                            if (isSuccess)
+                            {
+                                StreamItemContainer<TResult> container = future.value;
+
+                                // While completion message must not contain any result, this should be future-proof
+                                if (!container.IsCanceled && message.result != null)
+                                {
+                                    TResult result = (TResult)this.Protocol.ConvertTo(typeof(TResult), message.result);
+
+                                    container.AddItem(result);
+                                }
+
+                                future.Assign(container);
+                            }
+                            else
+                                future.Fail(new Exception(message.error));
+                            break;
+                        }
+                }
+            };
+
+            long invocationId = System.Threading.Interlocked.Increment(ref this.lastInvocationId);
+
+            int[] streamIds = new int[paramCount];
+            for (int i = 0; i < paramCount; i++)
+                streamIds[i] = System.Threading.Interlocked.Increment(ref this.lastStreamId);
+
+            var controller = new UploadItemController<StreamItemContainer<TResult>>(this, invocationId, streamIds, future);
+
+            var messageToSend = new Message
+            {
+                type = MessageTypes.StreamInvocation,
+                invocationId = invocationId.ToString(),
+                target = target,
+                arguments = new object[0],
+                streamIds = streamIds,
+                nonblocking = false,
+            };
+
+            SendMessage(messageToSend);
+
+            this.invocations.Add(invocationId, callback);
+
+            future.BeginProcess(new StreamItemContainer<TResult>(invocationId));
+            return controller;
+        }
+
+        internal UploadItemController<TResult> Upload<TResult>(string target, int paramCount)
+        {
+            Future<TResult> future = new Future<TResult>();
+
+            Action<Message> callback = (Message message) => {
+                bool isSuccess = string.IsNullOrEmpty(message.error);
+                if (isSuccess)
+                    future.Assign((TResult)this.Protocol.ConvertTo(typeof(TResult), message.result));
+                else
+                    future.Fail(new Exception(message.error));
+            };
+
+            long invocationId = System.Threading.Interlocked.Increment(ref this.lastInvocationId);
+
+            int[] streamIds = new int[paramCount];
+            for (int i = 0; i < paramCount; i++)
+                streamIds[i] = System.Threading.Interlocked.Increment(ref this.lastStreamId);
+
+            var controller = new UploadItemController<TResult>(this, invocationId, streamIds, future);
+
+            var messageToSend = new Message
+            {
+                type = MessageTypes.Invocation,
+                invocationId = invocationId.ToString(),
+                target = target,
+                arguments = new object[0],
+                streamIds = streamIds,
+                nonblocking = false,
+            };
+
+            SendMessage(messageToSend);
+
+            this.invocations.Add(invocationId, callback);
+
+            return controller;
         }
 
         public void On(string methodName, Action callback)
@@ -606,10 +772,14 @@ namespace BestHTTP.SignalRCore
 
         private void SetState(ConnectionStates state, string errorReason = null)
         {
-            HTTPManager.Logger.Information("HubConnection", "SetState - from State: " + this.State.ToString() + " to State: " + state.ToString() + " errorReason: " + errorReason ?? string.Empty);
+            if (string.IsNullOrEmpty(errorReason))
+                HTTPManager.Logger.Information("HubConnection", "SetState - from State: '" + this.State.ToString() + "' to State: '" + state.ToString() + "'");
+            else
+                HTTPManager.Logger.Information("HubConnection", "SetState - from State: '" + this.State.ToString() + "' to State: '" + state.ToString() + "' errorReason: '" + errorReason + "'");
 
             if (this.State == state)
                 return;
+
 
             this.State = state;
 

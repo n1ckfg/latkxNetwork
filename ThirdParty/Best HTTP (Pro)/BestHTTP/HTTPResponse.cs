@@ -11,15 +11,17 @@ using UnityEngine;
 
 namespace BestHTTP
 {
-    #if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+    #if !BESTHTTP_DISABLE_CACHING
         using BestHTTP.Caching;
     #endif
 
     using BestHTTP.Extensions;
 
-    #if !BESTHTTP_DISABLE_COOKIES //&& (!UNITY_WEBGL || UNITY_EDITOR)
+    #if !BESTHTTP_DISABLE_COOKIES
         using BestHTTP.Cookies;
     #endif
+    
+    using System.Threading;
 
     public interface IProtocol
     {
@@ -67,7 +69,7 @@ namespace BestHTTP
         /// </summary>
         public bool IsStreamingFinished { get; internal set; }
 
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
         /// <summary>
         /// Indicates that the response body is read from the cache.
         /// </summary>
@@ -100,7 +102,7 @@ namespace BestHTTP
         /// </summary>
         public bool IsUpgraded { get; protected set; }
 
-#if !BESTHTTP_DISABLE_COOKIES //&& (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_COOKIES
         /// <summary>
         /// The cookies that the server sent to the client.
         /// </summary>
@@ -172,11 +174,11 @@ namespace BestHTTP
         protected Stream Stream;
 
         protected List<byte[]> streamedFragments;
-        protected object SyncRoot = new object();
+        private ReaderWriterLockSlim rwLock;
 
         protected byte[] fragmentBuffer;
         protected int fragmentBufferDataLength;
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
         protected Stream cacheStream;
 #endif
         protected int allFragmentSize;
@@ -186,9 +188,12 @@ namespace BestHTTP
         public HTTPResponse(HTTPRequest request, Stream stream, bool isStreamed, bool isFromCache)
         {
             this.baseRequest = request;
-            this.Stream = stream;
+            this.Stream = /*new ReadOnlyBufferedStream*/(stream);
             this.IsStreamed = isStreamed;
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+            if (this.IsStreamed)
+                this.rwLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+
+#if !BESTHTTP_DISABLE_CACHING
             this.IsFromCache = isFromCache;
             this.IsCacheOnly = request.CacheOnly;
 #endif
@@ -284,7 +289,7 @@ namespace BestHTTP
             // Reading from an already unpacked stream (eq. From a file cache)
             if (forceReadRawContentLength != -1)
             {
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
                 this.IsFromCache = true;
 #endif
                 ReadRaw(Stream, forceReadRawContentLength);
@@ -336,7 +341,7 @@ namespace BestHTTP
 
         protected void ReadHeaders(Stream stream)
         {
-            string headerName = ReadTo(stream, (byte)':', LF).Trim();
+            string headerName = ReadTo(stream, (byte)':', LF)/*.Trim()*/;
             while (headerName != string.Empty)
             {
                 string value = ReadTo(stream, LF);
@@ -350,7 +355,7 @@ namespace BestHTTP
             }
         }
 
-        protected void AddHeader(string name, string value)
+        public void AddHeader(string name, string value)
         {
             name = name.ToLower();
 
@@ -470,46 +475,95 @@ namespace BestHTTP
 
         public static string ReadTo(Stream stream, byte blocker)
         {
-            using (var ms = new MemoryStream())
+            byte[] readBuf = VariableSizedBufferPool.Get(1024, true);
+            try
             {
+                int bufpos = 0;
+
                 int ch = stream.ReadByte();
                 while (ch != blocker && ch != -1)
                 {
-                    ms.WriteByte((byte)ch);
+                    if (ch > 0x7f) //replaces asciitostring
+                        ch = '?';
+
+                    //make buffer larger if too short
+                    if (readBuf.Length <= bufpos)
+                        VariableSizedBufferPool.Resize(ref readBuf, readBuf.Length * 2, true);
+
+                    if (bufpos > 0 || !char.IsWhiteSpace((char)ch)) //trimstart
+                        readBuf[bufpos++] = (byte)ch;
                     ch = stream.ReadByte();
                 }
 
-                return ms.ToArray().AsciiToString().Trim();
+                while (bufpos > 0 && char.IsWhiteSpace((char)readBuf[bufpos - 1]))
+                    bufpos--;
+
+                return System.Text.Encoding.UTF8.GetString(readBuf, 0, bufpos);
+            }
+            finally
+            {
+                VariableSizedBufferPool.Release(readBuf);
             }
         }
 
         public static string ReadTo(Stream stream, byte blocker1, byte blocker2)
         {
-            using (var ms = new MemoryStream())
-            {
+            byte[] readBuf = VariableSizedBufferPool.Get(1024, true);
+            try {
+                int bufpos = 0;
+
                 int ch = stream.ReadByte();
                 while (ch != blocker1 && ch != blocker2 && ch != -1)
                 {
-                    ms.WriteByte((byte)ch);
+                    if (ch > 0x7f) //replaces asciitostring
+                        ch = '?';
+
+                    //make buffer larger if too short
+                    if (readBuf.Length <= bufpos)
+                        VariableSizedBufferPool.Resize(ref readBuf, readBuf.Length * 2, true);
+
+                    if (bufpos > 0 || !char.IsWhiteSpace((char)ch)) //trimstart
+                        readBuf[bufpos++] = (byte)ch;
                     ch = stream.ReadByte();
                 }
 
-                return ms.ToArray().AsciiToString().Trim();
+                while (bufpos > 0 && char.IsWhiteSpace((char)readBuf[bufpos - 1]))
+                    bufpos--;
+
+                return System.Text.Encoding.UTF8.GetString(readBuf, 0, bufpos);
+            }
+            finally
+            {
+                VariableSizedBufferPool.Release(readBuf);
             }
         }
 
         public static string NoTrimReadTo(Stream stream, byte blocker1, byte blocker2)
         {
-            using (var ms = new MemoryStream())
-            {
+            byte[] readBuf = VariableSizedBufferPool.Get(1024, true);
+            try {
+                int bufpos = 0;
+
                 int ch = stream.ReadByte();
                 while (ch != blocker1 && ch != blocker2 && ch != -1)
                 {
-                    ms.WriteByte((byte)ch);
+                    if (ch > 0x7f) //replaces asciitostring
+                        ch = '?';
+
+                    //make buffer larger if too short
+                    if (readBuf.Length <= bufpos)
+                        VariableSizedBufferPool.Resize(ref readBuf, readBuf.Length * 2, true);
+
+                    if (bufpos > 0 || !char.IsWhiteSpace((char)ch)) //trimstart
+                        readBuf[bufpos++] = (byte)ch;
                     ch = stream.ReadByte();
                 }
 
-                return ms.ToArray().AsciiToString();
+                return System.Text.Encoding.UTF8.GetString(readBuf, 0, bufpos);
+            }
+            finally
+            {
+                VariableSizedBufferPool.Release(readBuf);
             }
         }
 
@@ -545,27 +599,27 @@ namespace BestHTTP
             if (HTTPManager.Logger.Level == Logger.Loglevels.All)
                 VerboseLogging(string.Format("ReadChunked - hasContentLengthHeader: {0}, contentLengthHeader: {1} realLength: {2:N0}", hasContentLengthHeader.ToString(), contentLengthHeader, realLength));
 
-            using (var output = new MemoryStream())
+            using (var output = new BufferPoolMemoryStream())
             {
                 int chunkLength = ReadChunkLength(stream);
 
                 if (HTTPManager.Logger.Level == Logger.Loglevels.All)
                     VerboseLogging(string.Format("chunkLength: {0:N0}", chunkLength));
 
-                byte[] buffer = new byte[chunkLength];
+                byte[] buffer = VariableSizedBufferPool.Get(Mathf.NextPowerOfTwo(chunkLength), true);
 
                 int contentLength = 0;
 
                 // Progress report:
                 baseRequest.DownloadLength = hasContentLengthHeader ? realLength : chunkLength;
                 baseRequest.DownloadProgressChanged = this.IsSuccess
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
                     || this.IsFromCache
 #endif
                     ;
 
                 string encoding =
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
                 IsFromCache ? null :
 #endif
                 GetFirstHeaderValue("content-encoding");
@@ -575,7 +629,7 @@ namespace BestHTTP
                 {
                     // To avoid more GC garbage we use only one buffer, and resize only if the next chunk doesn't fit.
                     if (buffer.Length < chunkLength)
-                        Array.Resize<byte>(ref buffer, chunkLength);
+                        VariableSizedBufferPool.Resize(ref buffer, chunkLength, true);
 
                     int readBytes = 0;
 
@@ -592,7 +646,7 @@ namespace BestHTTP
                         // Placing reporting inside this cycle will report progress much more frequent
                         baseRequest.Downloaded += bytes;
                         baseRequest.DownloadProgressChanged = this.IsSuccess
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
                         || this.IsFromCache
 #endif
                         ;
@@ -601,9 +655,6 @@ namespace BestHTTP
 
                     if (baseRequest.UseStreaming)
                     {
-                        // If reading from cache, we don't want to read too much data to memory. So we will wait until the loaded fragment processed.
-                        WaitWhileHasFragments();
-
                         if (gzipped)
                         {
                             var decompressed = Decompress(buffer, 0, readBytes);
@@ -630,11 +681,13 @@ namespace BestHTTP
                     if (!hasContentLengthHeader)
                         baseRequest.DownloadLength += chunkLength;
                     baseRequest.DownloadProgressChanged = this.IsSuccess
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
                         || this.IsFromCache
 #endif
                         ;
                 }
+
+                VariableSizedBufferPool.Release(buffer);
 
                 if (baseRequest.UseStreaming)
                 {
@@ -660,6 +713,8 @@ namespace BestHTTP
                 if (!baseRequest.UseStreaming)
                     this.Data = DecodeStream(output);
             }
+
+            CloseDecompressors();
         }
 
         #endregion
@@ -674,7 +729,7 @@ namespace BestHTTP
             // Progress report:
             baseRequest.DownloadLength = contentLength;
             baseRequest.DownloadProgressChanged = this.IsSuccess
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
                 || this.IsFromCache
 #endif
                 ;
@@ -683,7 +738,7 @@ namespace BestHTTP
                 VerboseLogging(string.Format("ReadRaw - contentLength: {0:N0}", contentLength));
 
             string encoding =
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
                 IsFromCache ? null :
 #endif
                 GetFirstHeaderValue("content-encoding");
@@ -693,9 +748,9 @@ namespace BestHTTP
                 throw new OverflowException("You have to use STREAMING to download files bigger than 2GB!");
             }
 
-            using (var output = new MemoryStream(baseRequest.UseStreaming ? 0 : (int)contentLength))
+            using (var output = new BufferPoolMemoryStream(baseRequest.UseStreaming ? 0 : (int)contentLength))
             {
-                byte[] buffer = new byte[Math.Max(baseRequest.StreamFragmentSize, MinBufferSize)];
+                byte[] buffer = VariableSizedBufferPool.Get(Math.Max(baseRequest.StreamFragmentSize, MinBufferSize), true);
                 int readBytes = 0;
 
                 while (contentLength > 0)
@@ -704,8 +759,11 @@ namespace BestHTTP
 
                     do
                     {
-                        int readbuffer = (int)Math.Min(2147483646, (uint)contentLength);
-                        int bytes = stream.Read(buffer, readBytes, Math.Min(readbuffer, buffer.Length - readBytes));
+                        // tryToReadCount contain how much bytes we want to read in once. We try to read the buffer fully in once, 
+                        //  but with a limit of the remaining contentLength.
+                        int tryToReadCount = (int)Math.Min(Math.Min(int.MaxValue, contentLength), buffer.Length - readBytes);
+						
+                        int bytes = stream.Read(buffer, readBytes, tryToReadCount);
 
                         if (bytes <= 0)
                             throw ExceptionHelper.ServerClosedTCPStream();
@@ -716,7 +774,7 @@ namespace BestHTTP
                         // Progress report:
                         baseRequest.Downloaded += bytes;
                         baseRequest.DownloadProgressChanged = this.IsSuccess
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
                             || this.IsFromCache
 #endif
                             ;
@@ -725,9 +783,6 @@ namespace BestHTTP
 
                     if (baseRequest.UseStreaming)
                     {
-                        // If reading from cache, we don't want to read too much data to memory. So we will wait until the loaded fragment processed.
-                        WaitWhileHasFragments();
-
                         if (gzipped)
                         {
                             var decompressed = Decompress(buffer, 0, readBytes);
@@ -740,6 +795,8 @@ namespace BestHTTP
                     else
                         output.Write(buffer, 0, readBytes);
                 };
+
+                VariableSizedBufferPool.Release(buffer);
 
                 if (baseRequest.UseStreaming)
                 {
@@ -756,6 +813,8 @@ namespace BestHTTP
                 if (!baseRequest.UseStreaming)
                     this.Data = DecodeStream(output);
             }
+
+            CloseDecompressors();
         }
 
         #endregion
@@ -765,15 +824,15 @@ namespace BestHTTP
         protected void ReadUnknownSize(Stream stream)
         {
             string encoding =
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
                 IsFromCache ? null :
 #endif
                 GetFirstHeaderValue("content-encoding");
             bool gzipped = !string.IsNullOrEmpty(encoding) && encoding == "gzip";
 
-            using (var output = new MemoryStream())
+            using (var output = new BufferPoolMemoryStream())
             {
-                byte[] buffer = new byte[Math.Max(baseRequest.StreamFragmentSize, MinBufferSize)];
+                byte[] buffer = VariableSizedBufferPool.Get(Math.Max(baseRequest.StreamFragmentSize, MinBufferSize), false);
 
                 if (HTTPManager.Logger.Level == Logger.Loglevels.All)
                     VerboseLogging(string.Format("ReadUnknownSize - buffer size: {0:N0}", buffer.Length));
@@ -788,7 +847,7 @@ namespace BestHTTP
                     {
                         bytes = 0;
 
-#if (!NETFX_CORE && !UNITY_WP8) || UNITY_EDITOR
+#if !NETFX_CORE || UNITY_EDITOR
                         NetworkStream networkStream = stream as NetworkStream;
                         // If we have the good-old NetworkStream, than we can use the DataAvailable property. On WP8 platforms, these are omitted... :/
                         if (networkStream != null && baseRequest.EnableSafeReadOnUnknownContentLength)
@@ -817,7 +876,7 @@ namespace BestHTTP
                         baseRequest.Downloaded += bytes;
                         baseRequest.DownloadLength = baseRequest.Downloaded;
                         baseRequest.DownloadProgressChanged = this.IsSuccess
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
                             || this.IsFromCache
 #endif
                             ;
@@ -826,9 +885,6 @@ namespace BestHTTP
 
                     if (baseRequest.UseStreaming)
                     {
-                        // If reading from cache, we don't want to read too much data to memory. So we will wait until the loaded fragment processed.
-                        WaitWhileHasFragments();
-
                         if (gzipped)
                         {
                             var decompressed = Decompress(buffer, 0, readBytes);
@@ -842,6 +898,8 @@ namespace BestHTTP
                         output.Write(buffer, 0, readBytes);
 
                 } while (bytes > 0);
+
+                VariableSizedBufferPool.Release(buffer);
 
                 if (baseRequest.UseStreaming)
                 {
@@ -858,19 +916,21 @@ namespace BestHTTP
                 if (!baseRequest.UseStreaming)
                     this.Data = DecodeStream(output);
             }
+
+            CloseDecompressors();
         }
 
         #endregion
 
         #region Stream Decoding
 
-        protected byte[] DecodeStream(MemoryStream streamToDecode)
+        protected byte[] DecodeStream(BufferPoolMemoryStream streamToDecode)
         {
             streamToDecode.Seek(0, SeekOrigin.Begin);
 
             // The cache stores the decoded data
             var encoding =
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
                 IsFromCache ? null :
 #endif
                 GetHeaderValues("content-encoding");
@@ -898,14 +958,17 @@ namespace BestHTTP
             }
 
 #if !UNITY_WEBGL || UNITY_EDITOR
-            using (var ms = new MemoryStream((int)streamToDecode.Length))
+            using (var ms = new BufferPoolMemoryStream((int)streamToDecode.Length))
             {
-                var buf = new byte[1024];
+                var buf = VariableSizedBufferPool.Get(1024, true);
                 int byteCount = 0;
 
                 while ((byteCount = decoderStream.Read(buf, 0, buf.Length)) > 0)
                     ms.Write(buf, 0, byteCount);
 
+                VariableSizedBufferPool.Release(buf);
+
+                decoderStream.Dispose();
                 return ms.ToArray();
             }
 #endif
@@ -915,17 +978,31 @@ namespace BestHTTP
 
         #region Streaming Fragments Support
 
-        private System.IO.MemoryStream decompressorInputStream;
-        private System.IO.MemoryStream decompressorOutputStream;
+        private BufferPoolMemoryStream decompressorInputStream;
+        private BufferPoolMemoryStream decompressorOutputStream;
         private Decompression.Zlib.GZipStream decompressorGZipStream;
-        private byte[] copyBuffer;
 
         const int MinLengthToDecompress = 256;
+
+        private void CloseDecompressors()
+        {
+            if (decompressorGZipStream != null)
+                decompressorGZipStream.Dispose();
+            decompressorGZipStream = null;
+
+            if (decompressorInputStream != null)
+                decompressorInputStream.Dispose();
+            decompressorInputStream = null;
+
+            if (decompressorOutputStream != null)
+                decompressorOutputStream.Dispose();
+            decompressorOutputStream = null;
+        }
 
         private byte[] Decompress(byte[] data, int offset, int count, bool forceDecompress = false)
         {
             if (decompressorInputStream == null)
-                decompressorInputStream = new MemoryStream(count);
+                decompressorInputStream = new BufferPoolMemoryStream(count);
 
             if (data != null)
                 decompressorInputStream.Write(data, offset, count);
@@ -945,18 +1022,20 @@ namespace BestHTTP
             }
 
             if (decompressorOutputStream == null)
-                decompressorOutputStream = new System.IO.MemoryStream();
+                decompressorOutputStream = new BufferPoolMemoryStream();
             decompressorOutputStream.SetLength(0);
 
-            if (copyBuffer == null)
-                copyBuffer = new byte[1024];
+            byte[] copyBuffer = VariableSizedBufferPool.Get(1024, true);
 
             int readCount;
             while ((readCount = decompressorGZipStream.Read(copyBuffer, 0, copyBuffer.Length)) != 0)
                 decompressorOutputStream.Write(copyBuffer, 0, readCount);
 
+            VariableSizedBufferPool.Release(copyBuffer);
+
             decompressorGZipStream.SetLength(0);
 
+            // TODO: be able to use a larger array
             byte[] result = decompressorOutputStream.ToArray();
             
             return result;
@@ -964,7 +1043,7 @@ namespace BestHTTP
 
         protected void BeginReceiveStreamFragments()
         {
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
             if (!baseRequest.DisableCache && baseRequest.UseStreaming)
             {
                 // If caching is enabled and the response not from cache and it's cacheble we will cache the downloaded data.
@@ -986,9 +1065,12 @@ namespace BestHTTP
             if (buffer == null || length == 0)
                 return;
 
+            // If reading from cache, we don't want to read too much data to memory. So we will wait until the loaded fragment processed.
+            WaitWhileFragmentQueueIsFull();
+
             if (fragmentBuffer == null)
             {
-                fragmentBuffer = new byte[baseRequest.StreamFragmentSize];
+                fragmentBuffer = VariableSizedBufferPool.Get(baseRequest.StreamFragmentSize, false);
                 fragmentBufferDataLength = 0;
             }
 
@@ -1017,14 +1099,14 @@ namespace BestHTTP
         {
             if (fragmentBuffer != null)
             {
-                Array.Resize<byte>(ref fragmentBuffer, fragmentBufferDataLength);
+                VariableSizedBufferPool.Resize(ref fragmentBuffer, fragmentBufferDataLength, false);
 
                 AddStreamedFragment(fragmentBuffer);
                 fragmentBuffer = null;
                 fragmentBufferDataLength = 0;
             }
 
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
             if (cacheStream != null)
             {
                 cacheStream.Dispose();
@@ -1033,13 +1115,18 @@ namespace BestHTTP
                 HTTPCacheService.SetBodyLength(baseRequest.CurrentUri, allFragmentSize);
             }
 #endif
+            var tmp = fragmentWaitEvent;
+            fragmentWaitEvent = null;
+            if (tmp != null)
+                (tmp as IDisposable).Dispose();
         }
 
         protected void AddStreamedFragment(byte[] buffer)
         {
-            lock (SyncRoot)
+            rwLock.EnterWriteLock();
+            try
             {
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
                 if (!IsCacheOnly)
 #endif
                 {
@@ -1049,11 +1136,10 @@ namespace BestHTTP
                     streamedFragments.Add(buffer);
                 }
 
-
                 if (HTTPManager.Logger.Level == Logger.Loglevels.All && buffer != null && streamedFragments != null)
                     VerboseLogging(string.Format("AddStreamedFragment buffer length: {0:N0} streamedFragments: {1:N0}", buffer.Length, streamedFragments.Count));
 
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+#if !BESTHTTP_DISABLE_CACHING
                 if (cacheStream != null)
                 {
                     cacheStream.Write(buffer, 0, buffer.Length);
@@ -1061,37 +1147,48 @@ namespace BestHTTP
                 }
 #endif
             }
+            finally
+            {
+                rwLock.ExitWriteLock();
+            }
         }
 
+        private volatile System.Threading.AutoResetEvent fragmentWaitEvent;
+#pragma warning disable 1998
         protected
 #if NETFX_CORE
             async
 #endif
-            void WaitWhileHasFragments()
+            void WaitWhileFragmentQueueIsFull()
         {
-            VerboseLogging("WaitWhileHasFragments");
-
 #if !UNITY_WEBGL || UNITY_EDITOR
-            while (baseRequest.UseStreaming && HasFragmentsInQueue())
+            while (this.baseRequest.State == HTTPRequestStates.Processing && baseRequest.UseStreaming && FragmentQueueIsFull())
             {
-                #if NETFX_CORE
-                    await System.Threading.Tasks.Task.Delay(16);
-                #else
-                    System.Threading.Thread.Sleep(16);
-                #endif
+                VerboseLogging("WaitWhileFragmentQueueIsFull");
+                
+                if (fragmentWaitEvent == null)
+                    fragmentWaitEvent = new System.Threading.AutoResetEvent(false);
+                fragmentWaitEvent.WaitOne(16);
             }
 #endif
         }
 
-        bool HasFragmentsInQueue()
+#pragma warning restore 1998
+
+        bool FragmentQueueIsFull()
         {
-            lock (SyncRoot)
+            rwLock.EnterReadLock();
+            try
             {
                 bool result = streamedFragments != null && streamedFragments.Count >= baseRequest.MaxFragmentQueueLength;
                 if (result && HTTPManager.Logger.Level == Logger.Loglevels.All)
                     VerboseLogging(string.Format("HasFragmentsInQueue - {0} / {1}", streamedFragments.Count, baseRequest.MaxFragmentQueueLength));
 
                 return result;
+            }
+            finally
+            {
+                rwLock.ExitReadLock();
             }
         }
 
@@ -1102,7 +1199,8 @@ namespace BestHTTP
         /// <returns></returns>
         public List<byte[]> GetStreamedFragments()
         {
-            lock (SyncRoot)
+            rwLock.EnterWriteLock();
+            try
             {
                 if (streamedFragments == null || streamedFragments.Count == 0)
                 {
@@ -1114,17 +1212,31 @@ namespace BestHTTP
                 var result = new List<byte[]>(streamedFragments);
                 streamedFragments.Clear();
 
+                if (fragmentWaitEvent != null)
+                    fragmentWaitEvent.Set();
+
                 if (HTTPManager.Logger.Level == Logger.Loglevels.All)
                     VerboseLogging(string.Format("GetStreamedFragments - returning with {0:N0} fragments", result.Count.ToString()));
 
                 return result;
             }
+            finally
+            {
+                rwLock.ExitWriteLock();
+            }
         }
 
         internal bool HasStreamedFragments()
         {
-            lock (SyncRoot)
+            rwLock.EnterReadLock();
+            try
+            {
                 return streamedFragments != null && streamedFragments.Count >= baseRequest.MaxFragmentQueueLength;
+            }
+            finally
+            {
+                rwLock.ExitReadLock();
+            }
         }
 
         internal void FinishStreaming()
@@ -1149,13 +1261,21 @@ namespace BestHTTP
         /// </summary>
         public void Dispose()
         {
-#if !BESTHTTP_DISABLE_CACHING && (!UNITY_WEBGL || UNITY_EDITOR)
+            // Release resources in case we are using ReadOnlyBufferedStream, it will not close its inner stream.
+            // Otherwise, closing the (inner) Stream is the connection's responsibility
+            if (Stream != null && Stream is ReadOnlyBufferedStream)
+                (Stream as IDisposable).Dispose();
+            Stream = null;
+
+#if !BESTHTTP_DISABLE_CACHING
             if (cacheStream != null)
             {
                 cacheStream.Dispose();
                 cacheStream = null;
             }
 #endif
+
+            GC.SuppressFinalize(this);
         }
     }
 }

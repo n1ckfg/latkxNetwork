@@ -1,34 +1,24 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Parameters;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Engines
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Engines
 {
     /**
     * A class that provides a basic International Data Encryption Algorithm (IDEA) engine.
     * <p>
     * This implementation is based on the "HOWTO: INTERNATIONAL DATA ENCRYPTION ALGORITHM"
-    * implementation summary by Fauzan Mirza (F.U.Mirza@sheffield.ac.uk). (baring 1 typo at the
-    * end of the mulinv function!).
+    * implementation summary by Fauzan Mirza (F.U.Mirza@sheffield.ac.uk). (barring 1 typo at the
+    * end of the MulInv function!).
     * </p>
     * <p>
     * It can be found at ftp://ftp.funet.fi/pub/crypt/cryptography/symmetric/idea/
     * </p>
     * <p>
-    * Note 1: This algorithm is patented in the USA, Japan, and Europe including
-    * at least Austria, France, Germany, Italy, Netherlands, Spain, Sweden, Switzerland
-    * and the United Kingdom. Non-commercial use is free, however any commercial
-    * products are liable for royalties. Please see
-    * <a href="http://www.mediacrypt.com">www.mediacrypt.com</a> for
-    * further details. This announcement has been included at the request of
-    * the patent holders.
-    * </p>
-    * <p>
-    * Note 2: Due to the requests concerning the above, this algorithm is now only
-    * included in the extended assembly. It is not included in the default distributions.
+    * Note: This algorithm was patented in the USA, Japan and Europe. These patents expired in 2011/2012.
     * </p>
     */
     public class IdeaEngine
@@ -55,7 +45,7 @@ namespace Org.BouncyCastle.Crypto.Engines
             ICipherParameters	parameters)
         {
             if (!(parameters is KeyParameter))
-                throw new ArgumentException("invalid parameter passed to IDEA init - " + Org.BouncyCastle.Utilities.Platform.GetTypeName(parameters));
+                throw new ArgumentException("invalid parameter passed to IDEA init - " + BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.GetTypeName(parameters));
 
             workingKey = GenerateWorkingKey(forEncryption,
                 ((KeyParameter)parameters).GetKey());
@@ -332,5 +322,5 @@ namespace Org.BouncyCastle.Crypto.Engines
         }
     }
 }
-
+#pragma warning restore
 #endif

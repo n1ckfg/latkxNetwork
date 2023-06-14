@@ -1,9 +1,9 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.IO;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     public interface TlsCipher
     {
@@ -16,5 +16,5 @@ namespace Org.BouncyCastle.Crypto.Tls
         byte[] DecodeCiphertext(long seqNo, byte type, byte[] ciphertext, int offset, int len);
     }
 }
-
+#pragma warning restore
 #endif

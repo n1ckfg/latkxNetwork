@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !BESTHTTP_DISABLE_SIGNALR_CORE && !BESTHTTP_DISABLE_WEBSOCKET
+using System;
 using System.Collections.Generic;
 
 namespace BestHTTP.SignalRCore.Messages
@@ -48,7 +49,7 @@ namespace BestHTTP.SignalRCore.Messages
         /// </summary>
         public string AccessToken { get; private set; }
 
-        internal static NegotiationResult Parse(string json, out string error)
+        internal static NegotiationResult Parse(string json, out string error, HubConnection hub)
         {
             error = null;
 
@@ -101,10 +102,34 @@ namespace BestHTTP.SignalRCore.Messages
                 }
 
                 if (response.TryGetValue("url", out value))
-                    result.Url = new Uri(value.ToString());
+                {
+                    string uriStr = value.ToString();
+
+                    Uri redirectUri;
+
+                    // Here we will try to parse the received url. If TryCreate fails, we will throw an exception
+                    //  as it should be able to successfully parse whole (absolute) urls (like "https://server:url/path")
+                    //  and relative ones (like "/path").
+                    if (!Uri.TryCreate(uriStr, UriKind.RelativeOrAbsolute, out redirectUri))
+                        throw new Exception(string.Format("Couldn't parse url: '{0}'", uriStr));
+
+                    // If received a relative url we will use the hub's current url to append the new path to it.
+                    if (!redirectUri.IsAbsoluteUri)
+                    {
+                        Uri oldUri = hub.Uri;
+                        var builder = new UriBuilder(oldUri);
+                        builder.Path = uriStr;
+
+                        redirectUri = builder.Uri;
+                    }
+
+                    result.Url = redirectUri;
+                }
 
                 if (response.TryGetValue("accessToken", out value))
                     result.AccessToken = value.ToString();
+                else if (hub.NegotiationResult != null)
+                    result.AccessToken = hub.NegotiationResult.AccessToken;
 
                 return result;
             }
@@ -116,3 +141,4 @@ namespace BestHTTP.SignalRCore.Messages
         }
     }
 }
+#endif

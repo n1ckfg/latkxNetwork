@@ -1,15 +1,15 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 using System.Collections;
 using System.IO;
 
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Security.Certificates;
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X509;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Security.Certificates;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.X509.Extension
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.X509.Extension
 {
 	public class X509ExtensionUtilities
 	{
@@ -38,7 +38,7 @@ namespace Org.BouncyCastle.X509.Extension
 		private static ICollection GetAlternativeName(
 			Asn1OctetString extVal)
 		{
-			IList temp = Org.BouncyCastle.Utilities.Platform.CreateArrayList();
+			IList temp = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList();
 
 			if (extVal != null)
 			{
@@ -46,9 +46,11 @@ namespace Org.BouncyCastle.X509.Extension
 				{
 					Asn1Sequence seq = DerSequence.GetInstance(FromExtensionValue(extVal));
 
-					foreach (GeneralName genName in seq)
+					foreach (Asn1Encodable primName in seq)
 					{
-                        IList list = Org.BouncyCastle.Utilities.Platform.CreateArrayList();
+                        IList list = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateArrayList();
+                        GeneralName genName = GeneralName.GetInstance(primName);
+
 						list.Add(genName.TagNo);
 
 						switch (genName.TagNo)
@@ -89,5 +91,5 @@ namespace Org.BouncyCastle.X509.Extension
 		}
 	}
 }
-
+#pragma warning restore
 #endif

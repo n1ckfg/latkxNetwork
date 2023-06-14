@@ -1,9 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Asn1.X9
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.X9
 {
 	public class DHValidationParms
 		: Asn1Encodable
@@ -18,13 +19,13 @@ namespace Org.BouncyCastle.Asn1.X9
 
 		public static DHValidationParms GetInstance(object obj)
 		{
-			if (obj == null || obj is DHDomainParameters)
+			if (obj == null || obj is DHValidationParms)
 				return (DHValidationParms)obj;
 
 			if (obj is Asn1Sequence)
 				return new DHValidationParms((Asn1Sequence)obj);
 
-			throw new ArgumentException("Invalid DHValidationParms: " + Org.BouncyCastle.Utilities.Platform.GetTypeName(obj), "obj");
+			throw new ArgumentException("Invalid DHValidationParms: " + BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.GetTypeName(obj), "obj");
 		}
 		
 		public DHValidationParms(DerBitString seed, DerInteger pgenCounter)
@@ -63,5 +64,5 @@ namespace Org.BouncyCastle.Asn1.X9
 		}
 	}
 }
-
+#pragma warning restore
 #endif

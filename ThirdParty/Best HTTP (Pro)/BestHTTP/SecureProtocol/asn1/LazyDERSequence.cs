@@ -1,9 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.Collections;
 using System.Diagnostics;
 
-namespace Org.BouncyCastle.Asn1
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1
 {
 	internal class LazyDerSequence
 		: DerSequence
@@ -20,18 +21,20 @@ namespace Org.BouncyCastle.Asn1
 		{
 			lock (this)
 			{
-				if (encoded != null)
-				{
-					Asn1InputStream e = new LazyAsn1InputStream(encoded);
+                if (null != encoded)
+                {
+                    Asn1EncodableVector v = new Asn1EncodableVector();
+                    Asn1InputStream e = new LazyAsn1InputStream(encoded);
 
-					Asn1Object o;
-					while ((o = e.ReadObject()) != null)
-					{
-						AddObject(o);
-					}
+                    Asn1Object o;
+                    while ((o = e.ReadObject()) != null)
+                    {
+                        v.Add(o);
+                    }
 
-					encoded = null;
-				}
+                    this.elements = v.TakeElements();
+                    this.encoded = null;
+                }
 			}
 		}
 
@@ -79,5 +82,5 @@ namespace Org.BouncyCastle.Asn1
 		}
 	}
 }
-
+#pragma warning restore
 #endif

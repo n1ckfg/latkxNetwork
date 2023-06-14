@@ -1,10 +1,10 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
-
+#pragma warning disable
 using System;
 
-using Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
 
-namespace Org.BouncyCastle.Crypto.Tls
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Crypto.Tls
 {
     public class SecurityParameters
     {
@@ -54,7 +54,7 @@ namespace Org.BouncyCastle.Crypto.Tls
         /**
          * @return {@link CompressionMethod}
          */
-        public byte CompressionAlgorithm
+        public virtual byte CompressionAlgorithm
         {
             get { return compressionAlgorithm; }
         }
@@ -101,7 +101,12 @@ namespace Org.BouncyCastle.Crypto.Tls
         {
             get { return srpIdentity; }
         }
+
+        public virtual bool IsExtendedMasterSecret
+        {
+            get { return extendedMasterSecret; }
+        }
     }
 }
-
+#pragma warning restore
 #endif

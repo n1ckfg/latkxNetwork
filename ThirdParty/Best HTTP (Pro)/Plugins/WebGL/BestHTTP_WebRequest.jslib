@@ -23,7 +23,7 @@ var Lib_BEST_HTTP_WebGL_HTTP_Bridge =
 		var _method = Pointer_stringify(method);
 
 		if (wr.loglevel <= 1) /*information*/
-			console.log(wr.nextRequestId + ' XHR_Create ' + _method + ' ' + _url);
+			console.log(wr.nextRequestId + ' XHR_Create - withCredentials: ' + withCredentials + ' method: ' + _method + ' url: ' + _url);
 
 		var http = new XMLHttpRequest();
 
@@ -189,11 +189,14 @@ var Lib_BEST_HTTP_WebGL_HTTP_Bridge =
         for(var i = 0; i < cookies.length; ++i)
             headers += "Set-Cookie:" + cookies[i] + "\r\n";
 
-		headers +=  wr.requestInstances[request].getAllResponseHeaders().trim() + "\r\n";
-
-		if (wr.loglevel <= 1) { /*information*/
-			console.log('  "' + headers + '"');
+        var additionalHeaders = wr.requestInstances[request].getAllResponseHeaders().trim();
+        if (additionalHeaders.length > 0) {
+            headers += additionalHeaders;
+            headers += "\r\n";
         }
+
+		if (wr.loglevel <= 1) /*information*/
+			console.log('  "' + headers + '"');
 
 		var byteArray = new Uint8Array(headers.length);
 		for(var i=0,j=headers.length;i<j;++i){

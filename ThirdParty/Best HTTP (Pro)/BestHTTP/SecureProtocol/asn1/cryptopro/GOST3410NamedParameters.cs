@@ -1,13 +1,14 @@
 #if !BESTHTTP_DISABLE_ALTERNATE_SSL && (!UNITY_WEBGL || UNITY_EDITOR)
+#pragma warning disable
 using System;
 using System.Collections;
 
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Utilities;
-using Org.BouncyCastle.Utilities.Collections;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Math;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities;
+using BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Collections;
 
-namespace Org.BouncyCastle.Asn1.CryptoPro
+namespace BestHTTP.SecureProtocol.Org.BouncyCastle.Asn1.CryptoPro
 {
     /**
     * table of the available named parameters for GOST 3410-94.
@@ -18,8 +19,8 @@ namespace Org.BouncyCastle.Asn1.CryptoPro
 		{
 		}
 
-        private static readonly IDictionary objIds = Org.BouncyCastle.Utilities.Platform.CreateHashtable();
-        private static readonly IDictionary parameters = Org.BouncyCastle.Utilities.Platform.CreateHashtable();
+        private static readonly IDictionary objIds = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateHashtable();
+        private static readonly IDictionary parameters = BestHTTP.SecureProtocol.Org.BouncyCastle.Utilities.Platform.CreateHashtable();
 
         private static readonly Gost3410ParamSetParameters cryptoProA = new Gost3410ParamSetParameters(
             1024,
@@ -122,5 +123,5 @@ namespace Org.BouncyCastle.Asn1.CryptoPro
         }
     }
 }
-
+#pragma warning restore
 #endif
