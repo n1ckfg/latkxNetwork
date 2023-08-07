@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using SimpleJSON;
-using NativeWebSocket;
+using BestHTTP.WebSocket;
 using System.IO;
 
 public class LatkNetworkWs : MonoBehaviour {
@@ -21,8 +21,7 @@ public class LatkNetworkWs : MonoBehaviour {
         public float[] color;
         public WsPoint[] points;
     }
-
-
+    
     public LightningArtist latk;
     public LatkDrawing latkd;
     public enum ProtocolMode { WS, WSS };
@@ -30,19 +29,19 @@ public class LatkNetworkWs : MonoBehaviour {
     public string serverAddress = "vr.fox-gieg.com";
     public int serverPort = 8080;
     public bool doDebug = true;
-    public float scaler = 1f;
-    public bool streamToLatk = false;
-    public bool armRecordToLatk = false;
+    public float scaler = 10f;
+    //public bool streamToLatk = false;
+    //public bool armRecordToLatk = false;
 
-    private WebSocket socketManager;
+    private WebSocket socketMgr;
     private string socketAddress;
-    private bool connected = false;
+    //private bool connected = false;
     private List<int> oldIds = new List<int>();
     private int maxIds = 10;
 
-    public bool getConnectionStatus() {
-        return connected;
-    }
+    //public bool getConnectionStatus() {
+        //return connected;
+    //}
 
 	private void Start() {
         if (protocolMode == ProtocolMode.WSS) {
@@ -51,15 +50,11 @@ public class LatkNetworkWs : MonoBehaviour {
             socketAddress = "ws://";
         }
         socketAddress += serverAddress + ":" + serverPort; // + "/socket.io/:8443";
+
         initSocketManager(socketAddress);
     }
 
-    private void Update() {
-#if !UNITY_WEBGL || UNITY_EDITOR
-        socketManager.DispatchMessageQueue();
-#endif
-    }
-
+    /*
     private void LateUpdate() {
         if (streamToLatk && armRecordToLatk) { 
             latkd.recordToLatk();
@@ -70,59 +65,63 @@ public class LatkNetworkWs : MonoBehaviour {
             armRecordToLatk = false;
         }
     }
+    */
 
-    private async void initSocketManager(string url) {
+    private void initSocketManager(string url) {
         Debug.Log("Connecting to " + url);
 
-        socketManager = new WebSocket(url);
+        socketMgr = new WebSocket(new Uri(url));
 
-        socketManager.OnError += (e) => {
-            Debug.Log("Error! " + e);
-        };
+//#if !UNITY_WEBGL
+        //socketMgr.StartPingThread = true;
+//#endif
 
-        socketManager.OnOpen += () => {
-            Debug.Log("Connection open!");
-        };
+        socketMgr.OnOpen += OnOpen;
+        socketMgr.OnMessage += OnMessageReceived;
+        socketMgr.OnClosed += OnClosed;
+        socketMgr.OnError += OnError;
 
-        socketManager.OnClose += (e) => {
-            Debug.Log("Connection closed! " + e);
-        };
+        socketMgr.Open();
+    }
 
-        //socketManager.Socket.On("newFrameFromServer", receivedLocalSocketMessage);
-        socketManager.OnMessage += (bytes) => {
-            // Reading a plain text message
-            var message = System.Text.Encoding.UTF8.GetString(bytes);
-            //if (doDebug) {
-            //Debug.Log("Received (" + bytes.Length + " bytes) " + message);
-            //}
+    void OnOpen(WebSocket ws) {
+        Debug.Log(string.Format("-WebSocket Open!\n"));
+    }
 
-            JSONNode data = JSON.Parse(message);
+    void OnClosed(WebSocket ws, UInt16 code, string message) {
+        Debug.Log(string.Format("-WebSocket closed! Code: {0} Message: {1}\n", code, message));
+        socketMgr = null;
+    }
 
+    void OnError(WebSocket ws, Exception ex) {
+        string errorMsg = string.Empty;
+#if !UNITY_WEBGL || UNITY_EDITOR
+        if (ws.InternalRequest.Response != null) {
+            errorMsg = string.Format("Status Code from Server: {0} and Message: {1}", ws.InternalRequest.Response.StatusCode, ws.InternalRequest.Response.Message);
+        }
+#endif
 
-            //string eventName = data["eventname"];
+        Debug.Log(string.Format("-An error occured: {0}\n", (ex != null ? ex.Message : "Unknown Error " + errorMsg)));
 
-            //if (doDebug) {
-            //Debug.Log(DateTime.Now + " - " + "Local Socket Event Name: " + eventName);
-            //}
+        socketMgr = null;
+    }
 
+    void OnMessageReceived(WebSocket ws, string message) {
+        //if (!message.StartsWith("{") || !message.EndsWith("}")) {
+            //Debug.Log("Corrupted message.");
+            //return;
+        //}
 
-            //armRecordToLatk = true;
+        JSONNode data = JSON.Parse(message);
 
-            Color color = getColorFromJson(data["colors"]);
-            List<Vector3> points = getPointsFromJson(data["points"], scaler);
-            //latkd.makeCurve(points, latk.killStrokes, latk.strokeLife);
-            //latk.inputInstantiateStroke(color, points);
+        Color color = getColorFromJson(data["colors"]);
+        List<Vector3> points = getPointsFromJson(data["points"], scaler);
+        int index = data["index"].AsInt;
 
-            int index = data["index"].AsInt;
+        //latkd.makeCurve(points, latk.killStrokes, latk.strokeLife);
+        //latk.inputInstantiateStroke(color, points);
 
-            if (points.Count > 1) {
-                //StartCoroutine(doInstantiateStroke(index, color, points));
-            }
-        };
-
-        //InvokeRepeating("SendWebSocketMessage", 0.0f, 0.3f);
-
-        await socketManager.Connect();
+        StartCoroutine(doInstantiateStroke(index, color, points));
     }
 
     private IEnumerator doInstantiateStroke(int index, Color color, List<Vector3> points) {
@@ -142,7 +141,6 @@ public class LatkNetworkWs : MonoBehaviour {
             if (oldIds.Count > maxIds) oldIds.RemoveAt(0);
         }
 
-        //armReceiver = false;
         yield return null;
     }
 
@@ -155,17 +153,16 @@ public class LatkNetworkWs : MonoBehaviour {
 	private IEnumerator doSendStrokeData(List<Vector3> data) {
         blockSendStroke = true;
 		string s = setJsonFromPoints(data);
-        if (socketManager.State == WebSocketState.Open) socketManager.SendText(s);
-        //socketManager.SendText("clientStrokeToServer", s);
-		Debug.Log(s);
+        //socketMgr.Send("clientStrokeToServer", s);
+        socketMgr.Send(s);
+        Debug.Log(s);
 		yield return new WaitForSeconds(latk.frameInterval);
         blockSendStroke = false;
-	}
+    }
 
-    private async void OnApplicationQuit() {
-        await socketManager.Close();
-        if (doDebug) {
-            Debug.Log("Closed connection");
+    private void OnDestroy() {
+        if (socketMgr != null) {
+            socketMgr.Close();
         }
     }
 
@@ -229,14 +226,4 @@ public class LatkNetworkWs : MonoBehaviour {
         return JsonUtility.ToJson(stroke);
     }
 
-    async void SendWebSocketMessage() {
-        if (socketManager.State == WebSocketState.Open) {
-            
-            // Sending bytes
-            await socketManager.Send(new byte[] { 10, 20, 30 });
-
-            // Sending plain text
-            //await socketManager.SendText("plain text message");
-        }
-    }
 }

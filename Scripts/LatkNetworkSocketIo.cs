@@ -32,7 +32,7 @@ public class LatkNetworkSocketIo : MonoBehaviour {
     public bool streamToLatk = false;
     public bool armRecordToLatk = false;
 
-    private SocketManager socketManager;
+    private SocketManager socketMgr;
     private string socketAddress;
     private bool connected = false;
 
@@ -62,13 +62,13 @@ public class LatkNetworkSocketIo : MonoBehaviour {
     }
 
     private void initSocketManager(string uri) {
-        socketManager = new SocketManager(new Uri(uri));
-        socketManager.Socket.AutoDecodePayload = false;
-        socketManager.Socket.On("error", socketError);
-        socketManager.Socket.On("connect", socketConnected);
-        socketManager.Socket.On("reconnect", socketConnected);
+        socketMgr = new SocketManager(new Uri(uri));
+        socketMgr.Socket.AutoDecodePayload = false;
+        socketMgr.Socket.On("error", socketError);
+        socketMgr.Socket.On("connect", socketConnected);
+        socketMgr.Socket.On("reconnect", socketConnected);
 
-        socketManager.Socket.On("newFrameFromServer", receivedLocalSocketMessage);
+        socketMgr.Socket.On("newFrameFromServer", receivedLocalSocketMessage);
     }
 
     void socketConnected(Socket socket, Packet packet, params object[] args) {
@@ -148,14 +148,14 @@ public class LatkNetworkSocketIo : MonoBehaviour {
 	private IEnumerator doSendStrokeData(List<Vector3> data) {
         blockSendStroke = true;
 		string s = setJsonFromPoints(data);
-		socketManager.Socket.Emit("clientStrokeToServer", s);
+		socketMgr.Socket.Emit("clientStrokeToServer", s);
 		Debug.Log(s);
 		yield return new WaitForSeconds(latk.frameInterval);
         blockSendStroke = false;
 	}
 
     private void OnApplicationQuit() {
-        socketManager.Close();
+        socketMgr.Close();
         if (doDebug) {
             Debug.Log("Closed connection");
         }
