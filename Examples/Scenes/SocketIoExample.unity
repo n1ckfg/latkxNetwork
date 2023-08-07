@@ -147,18 +147,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 39638222}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 199f2e974f80101449f99efd6055fa27, type: 3}
+  m_Script: {fileID: 11500000, guid: 9c635e7ba30ffbc4aa6df5b252e74528, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   latk: {fileID: 1779766903}
   latkd: {fileID: 493996630}
   protocolMode: 0
-  serverAddress: nfg-rpi-4-2.local
-  serverPort: 7112
+  serverAddress: lightningloops.glitch.me
+  serverPort: 80
   doDebug: 1
   scaler: 1
   streamToLatk: 1
-  armRecordToLatk: 1
+  armRecordToLatk: 0
 --- !u!4 &39638224
 Transform:
   m_ObjectHideFlags: 0
@@ -399,7 +399,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   latk: {fileID: 1779766903}
-  latkNetwork: {fileID: 0}
+  latkNetwork: {fileID: 39638223}
   brushInputButtons: {fileID: 1500072623}
   zPos: 1
 --- !u!114 &1500072627

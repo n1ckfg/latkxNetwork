@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using SimpleJSON;
 using BestHTTP.SocketIO;
 
-public class LatkNetwork : MonoBehaviour {
+public class LatkNetworkSocketIo : MonoBehaviour {
 
     [System.Serializable]
     public struct WsPoint {

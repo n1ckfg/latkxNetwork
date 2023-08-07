@@ -28,7 +28,7 @@ using System.Text;
 using System.IO;
 using UnityOSC;
 
-public class ContourOscToLatk : MonoBehaviour
+public class LatkNetworkContourOsc : MonoBehaviour
 {
 
     public LightningArtist latk;
@@ -42,7 +42,7 @@ public class ContourOscToLatk : MonoBehaviour
 	public int inPort = 9998;
 	public int rxBufferSize = 1024000;//1024;
 
-    [HideInInspector] public bool armReceiver = false;
+    //[HideInInspector] public bool armReceiver = false;
 
 	private OSCServer myServer;
 	private int bufferSize = 100; // Buffer size of the application (stores 100 messages from different servers)
@@ -92,12 +92,13 @@ public class ContourOscToLatk : MonoBehaviour
 
 	// Process OSC message
 	private void receivedOSC(OSCPacket pckt) {
+        //Debug.Log("Message received");
 		if (pckt == null) {
 			Debug.Log("Empty packet");
 			return;
 		}
 
-		// format: string hostname, int index, byte[] color, byte[] points
+		// format: string uniqueid, string hostname, int index, byte[] color, byte[] points, int timestamp
 		int index = 0;
         //string id = "";
 		Color color = new Color(0f, 0f, 0f);
@@ -105,19 +106,22 @@ public class ContourOscToLatk : MonoBehaviour
 
 		switch (msgMode) {
 			case (MsgMode.P5):
-				index = (int)pckt.Data[1];
-				color = bytesToColor((byte[])pckt.Data[2]);
-				points = bytesToVec3s((byte[])pckt.Data[3]);
+				index = (int)pckt.Data[2];
+				color = bytesToColor((byte[])pckt.Data[3]);
+				points = bytesToVec3s((byte[])pckt.Data[4]);
 				break;
 			case (MsgMode.OF):
 				OSCMessage msg = pckt.Data[0] as UnityOSC.OSCMessage;
-                index = (int)msg.Data[1];
-				color = bytesToColor((byte[])msg.Data[2]);
-				points = bytesToVec3s((byte[])msg.Data[3]);
+
+                index = (int)msg.Data[2];
+				color = bytesToColor((byte[])msg.Data[3]);
+				points = bytesToVec3s((byte[])msg.Data[4]);
 				break;
 		}
 
-        if (armReceiver) {
+        //if (points.Count > 1) armReceiver = true;
+
+        if (points.Count > 1) {
             StartCoroutine(doInstantiateStroke(index, color, points));
         }
 	}
@@ -141,6 +145,7 @@ public class ContourOscToLatk : MonoBehaviour
             if (oldIds.Count > maxIds) oldIds.RemoveAt(0);
         }
 
+        //armReceiver = false;
         yield return null;
 	}
 

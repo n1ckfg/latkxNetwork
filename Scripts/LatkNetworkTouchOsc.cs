@@ -27,7 +27,7 @@ using System.Collections.Generic;
 using System.Text;
 using UnityOSC;
 
-public class TouchOscToLatk : MonoBehaviour
+public class LatkNetworkTouchOsc : MonoBehaviour
 {
     public LightningArtist latk;
     public float scaler = 10f;

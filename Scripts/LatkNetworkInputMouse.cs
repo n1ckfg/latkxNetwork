@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class LatkInputMouseNet : MonoBehaviour {
+public class LatkNetworkInputMouse : MonoBehaviour {
 
 	public LightningArtist latk;
-    public LatkNetwork latkNetwork;
+    public LatkNetworkSocketIo latkNetwork;
 	public LatkInputButtons brushInputButtons;
 	public float zPos = 1f;
 
