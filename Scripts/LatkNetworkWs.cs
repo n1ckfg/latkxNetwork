@@ -85,16 +85,16 @@ public class LatkNetworkWs : MonoBehaviour {
         };
 
         socketManager.OnClose += (e) => {
-            Debug.Log("Connection closed!");
+            Debug.Log("Connection closed! " + e);
         };
 
         //socketManager.Socket.On("newFrameFromServer", receivedLocalSocketMessage);
         socketManager.OnMessage += (bytes) => {
             // Reading a plain text message
             var message = System.Text.Encoding.UTF8.GetString(bytes);
-            if (doDebug) {
-                Debug.Log("Received (" + bytes.Length + " bytes) " + message);
-            }
+            //if (doDebug) {
+            //Debug.Log("Received (" + bytes.Length + " bytes) " + message);
+            //}
 
             JSONNode data = JSON.Parse(message);
 
@@ -116,9 +116,11 @@ public class LatkNetworkWs : MonoBehaviour {
             int index = data["index"].AsInt;
 
             if (points.Count > 1) {
-                StartCoroutine(doInstantiateStroke(index, color, points));
+                //StartCoroutine(doInstantiateStroke(index, color, points));
             }
         };
+
+        //InvokeRepeating("SendWebSocketMessage", 0.0f, 0.3f);
 
         await socketManager.Connect();
     }
@@ -191,7 +193,7 @@ public class LatkNetworkWs : MonoBehaviour {
         int len = (int)(bytes.Length / 12);
         for (int i = 0; i < len; i++) {
             Vector3 v = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()) / 500f;
-            returns.Add(new Vector3(v.x, v.y, v.z));
+            returns.Add(latkd.transform.TransformPoint(v));
         }
         return returns;
     }
@@ -227,4 +229,14 @@ public class LatkNetworkWs : MonoBehaviour {
         return JsonUtility.ToJson(stroke);
     }
 
+    async void SendWebSocketMessage() {
+        if (socketManager.State == WebSocketState.Open) {
+            
+            // Sending bytes
+            await socketManager.Send(new byte[] { 10, 20, 30 });
+
+            // Sending plain text
+            //await socketManager.SendText("plain text message");
+        }
+    }
 }
