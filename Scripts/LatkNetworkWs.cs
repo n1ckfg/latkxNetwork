@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using SimpleJSON;
 using NativeWebSocket;
+using System.IO;
 
 public class LatkNetworkWs : MonoBehaviour {
 
@@ -36,6 +37,8 @@ public class LatkNetworkWs : MonoBehaviour {
     private WebSocket socketManager;
     private string socketAddress;
     private bool connected = false;
+    private List<int> oldIds = new List<int>();
+    private int maxIds = 10;
 
     public bool getConnectionStatus() {
         return connected;
@@ -89,44 +92,57 @@ public class LatkNetworkWs : MonoBehaviour {
         socketManager.OnMessage += (bytes) => {
             // Reading a plain text message
             var message = System.Text.Encoding.UTF8.GetString(bytes);
-            Debug.Log("Received OnMessage! (" + bytes.Length + " bytes) " + message);
-        };
-        /*
-        socketManager.OnMessage += (bytes) => {
-            Debug.Log("!!!");
-            // Reading a plain text message
-            var message = System.Text.Encoding.UTF8.GetString(bytes);
-
             if (doDebug) {
-                Debug.Log("Received OnMessage! (" + bytes.Length + " bytes) " + message);
+                Debug.Log("Received (" + bytes.Length + " bytes) " + message);
             }
 
             JSONNode data = JSON.Parse(message);
 
-            string eventName = data["eventname"];
 
-            if (doDebug) {
-                Debug.Log(DateTime.Now + " - " + "Local Socket Event Name: " + eventName);
-            }
+            //string eventName = data["eventname"];
 
-            switch (eventName) {
-                case "newFrameFromServer":
-                    armRecordToLatk = true;
-                    if (doDebug) Debug.Log("Receiving new frame " + data[0]["index"] + " with " + data.Count + " strokes.");
+            //if (doDebug) {
+            //Debug.Log(DateTime.Now + " - " + "Local Socket Event Name: " + eventName);
+            //}
 
-                    for (var i = 0; i < data.Count; i++) {
-                        List<Vector3> points = getPointsFromJson(data[i]["points"], scaler);
-                        latkd.makeCurve(points, latk.killStrokes, latk.strokeLife);
-                    }
 
-                    int index = data[0]["index"].AsInt;
-                    break;
+            //armRecordToLatk = true;
+
+            Color color = getColorFromJson(data["colors"]);
+            List<Vector3> points = getPointsFromJson(data["points"], scaler);
+            //latkd.makeCurve(points, latk.killStrokes, latk.strokeLife);
+            //latk.inputInstantiateStroke(color, points);
+
+            int index = data["index"].AsInt;
+
+            if (points.Count > 1) {
+                StartCoroutine(doInstantiateStroke(index, color, points));
             }
         };
-        */
+
         await socketManager.Connect();
     }
 
+    private IEnumerator doInstantiateStroke(int index, Color color, List<Vector3> points) {
+        bool newStroke = true;
+        for (int i = 0; i < oldIds.Count; i++) {
+            if (index == oldIds[i]) {
+                newStroke = false;
+                break;
+            }
+        }
+
+        if (newStroke) {
+            latkd.color = color;
+            latkd.makeCurve(points, latk.killStrokes, latk.strokeLife);
+            //latk.inputInstantiateStroke(color, points);
+            oldIds.Add(index);
+            if (oldIds.Count > maxIds) oldIds.RemoveAt(0);
+        }
+
+        //armReceiver = false;
+        yield return null;
+    }
 
     public void sendStrokeData(List<Vector3> data) {
 		if (!blockSendStroke) StartCoroutine(doSendStrokeData(data));
@@ -151,17 +167,36 @@ public class LatkNetworkWs : MonoBehaviour {
         }
     }
 
-    public List<Vector3> getPointsFromJson(JSONNode ptJson, float scaler) {
-        List<Vector3> returns = new List<Vector3>();
-        for (int i = 0; i < ptJson.Count; i++) {
-            var co = ptJson[i]["co"];
+    public Color getColorFromJson(JSONNode colorJson) {
+        return bytesToColor(Convert.FromBase64String(colorJson));
+    }
 
-            returns.Add(new Vector3(co[0].AsFloat, co[1].AsFloat, co[2].AsFloat) * scaler);
+    public List<Vector3> getPointsFromJson(JSONNode pointsJson, float scaler) {
+        return bytesToVec3s(Convert.FromBase64String(pointsJson));
+    }
+
+    Color bytesToColor(byte[] bytes) {
+        MemoryStream stream = new MemoryStream(bytes);
+        BinaryReader br = new BinaryReader(stream);
+        Vector3 v = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()) / 255f;
+
+        return new Color(v.x, v.y, v.z);
+    }
+
+    List<Vector3> bytesToVec3s(byte[] bytes) {
+        List<Vector3> returns = new List<Vector3>();
+
+        MemoryStream stream = new MemoryStream(bytes);
+        BinaryReader br = new BinaryReader(stream);
+        int len = (int)(bytes.Length / 12);
+        for (int i = 0; i < len; i++) {
+            Vector3 v = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()) / 500f;
+            returns.Add(new Vector3(v.x, v.y, v.z));
         }
         return returns;
     }
 
-	public long getUnixTime() {
+    public long getUnixTime() {
 		System.DateTime epochStart = new System.DateTime(1970, 1, 1, 0, 0, 0, System.DateTimeKind.Utc);
 		return (long)(System.DateTime.UtcNow - epochStart).TotalMilliseconds;
 	}

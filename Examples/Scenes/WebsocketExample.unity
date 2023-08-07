@@ -157,8 +157,8 @@ MonoBehaviour:
   serverPort: 7112
   doDebug: 1
   scaler: 1
-  streamToLatk: 1
-  armRecordToLatk: 1
+  streamToLatk: 0
+  armRecordToLatk: 0
 --- !u!4 &39638224
 Transform:
   m_ObjectHideFlags: 0
@@ -204,9 +204,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   latk: {fileID: 1779766903}
   brushPrefab: {fileID: 11487128, guid: beb8a1e04a58a4494ae8870cdc802e88, type: 3}
-  brushMode: 0
+  brushMode: 2
   brushMat:
   - {fileID: 2100000, guid: 7ff5f226683f27a4f8e5be4f5a466cba, type: 2}
+  - {fileID: 2100000, guid: 20f8c860059c3cf4c80536b089551ae8, type: 2}
+  - {fileID: 2100000, guid: d505a115c8f8a8b44bd355bcd030e3e4, type: 2}
   color: {r: 1, g: 0.3001756, b: 0, a: 1}
   brushSize: 0.05
   minDistance: 0
@@ -393,7 +395,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1500072622}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0580419617841aa42ab33247a5cdbf00, type: 3}
   m_Name: 
@@ -490,6 +492,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1622029521}
     - target: {fileID: 11437508, guid: bd6b520ae512fe14284192c59b70f0f3, type: 3}
+      propertyPath: brushMode
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 11437508, guid: bd6b520ae512fe14284192c59b70f0f3, type: 3}
       propertyPath: strokeLife
       value: 0.1
       objectReference: {fileID: 0}
@@ -497,7 +503,20 @@ PrefabInstance:
       propertyPath: killStrokes
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 11437508, guid: bd6b520ae512fe14284192c59b70f0f3, type: 3}
+      propertyPath: brushMat.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 11437508, guid: bd6b520ae512fe14284192c59b70f0f3, type: 3}
+      propertyPath: brushMat.Array.data[2]
+      value: 
+      objectReference: {fileID: 2100000, guid: d505a115c8f8a8b44bd355bcd030e3e4, type: 2}
     - target: {fileID: 114160889968000614, guid: bd6b520ae512fe14284192c59b70f0f3,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114569288820653972, guid: bd6b520ae512fe14284192c59b70f0f3,
         type: 3}
       propertyPath: m_Enabled
       value: 0
