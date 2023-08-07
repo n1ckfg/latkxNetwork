@@ -22,14 +22,17 @@ public class LatkNetworkWs : MonoBehaviour {
         public WsPoint[] points;
     }
     
-    public LightningArtist latk;
+    //public LightningArtist latk;
     public LatkDrawing latkd;
     public enum ProtocolMode { WS, WSS };
     public ProtocolMode protocolMode = ProtocolMode.WS;
     public string serverAddress = "vr.fox-gieg.com";
     public int serverPort = 8080;
     public bool doDebug = true;
-    public float scaler = 10f;
+    public Vector3 scaler = new Vector3(0.01f, 0.01f, 0.1f);
+    public bool killStrokes = true;
+    public float strokeLife = 0.1f;
+    public int minPoints = 3;
     //public bool streamToLatk = false;
     //public bool armRecordToLatk = false;
 
@@ -121,7 +124,9 @@ public class LatkNetworkWs : MonoBehaviour {
         //latkd.makeCurve(points, latk.killStrokes, latk.strokeLife);
         //latk.inputInstantiateStroke(color, points);
 
-        StartCoroutine(doInstantiateStroke(index, color, points));
+        if (points.Count >= minPoints) {
+            StartCoroutine(doInstantiateStroke(index, color, points));
+        }
     }
 
     private IEnumerator doInstantiateStroke(int index, Color color, List<Vector3> points) {
@@ -135,7 +140,7 @@ public class LatkNetworkWs : MonoBehaviour {
 
         if (newStroke) {
             latkd.color = color;
-            latkd.makeCurve(points, latk.killStrokes, latk.strokeLife);
+            latkd.makeCurve(points, killStrokes, strokeLife);
             //latk.inputInstantiateStroke(color, points);
             oldIds.Add(index);
             if (oldIds.Count > maxIds) oldIds.RemoveAt(0);
@@ -144,13 +149,16 @@ public class LatkNetworkWs : MonoBehaviour {
         yield return null;
     }
 
+    /*
     public void sendStrokeData(List<Vector3> data) {
 		if (!blockSendStroke) StartCoroutine(doSendStrokeData(data));
 	}
+    */
 
     private bool blockSendStroke = false;
 
-	private IEnumerator doSendStrokeData(List<Vector3> data) {
+	/*
+    private IEnumerator doSendStrokeData(List<Vector3> data) {
         blockSendStroke = true;
 		string s = setJsonFromPoints(data);
         //socketMgr.Send("clientStrokeToServer", s);
@@ -159,6 +167,7 @@ public class LatkNetworkWs : MonoBehaviour {
 		yield return new WaitForSeconds(latk.frameInterval);
         blockSendStroke = false;
     }
+    */
 
     private void OnDestroy() {
         if (socketMgr != null) {
@@ -170,8 +179,8 @@ public class LatkNetworkWs : MonoBehaviour {
         return bytesToColor(Convert.FromBase64String(colorJson));
     }
 
-    public List<Vector3> getPointsFromJson(JSONNode pointsJson, float scaler) {
-        return bytesToVec3s(Convert.FromBase64String(pointsJson));
+    public List<Vector3> getPointsFromJson(JSONNode pointsJson, Vector3 scaler) {
+        return bytesToVec3s(Convert.FromBase64String(pointsJson), scaler);
     }
 
     Color bytesToColor(byte[] bytes) {
@@ -182,14 +191,14 @@ public class LatkNetworkWs : MonoBehaviour {
         return new Color(v.x, v.y, v.z);
     }
 
-    List<Vector3> bytesToVec3s(byte[] bytes) {
+    List<Vector3> bytesToVec3s(byte[] bytes, Vector3 scaler) {
         List<Vector3> returns = new List<Vector3>();
 
         MemoryStream stream = new MemoryStream(bytes);
         BinaryReader br = new BinaryReader(stream);
         int len = (int)(bytes.Length / 12);
         for (int i = 0; i < len; i++) {
-            Vector3 v = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()) / 500f;
+            Vector3 v = Vector3.Scale(new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()), scaler);
             returns.Add(latkd.transform.TransformPoint(v));
         }
         return returns;
@@ -200,6 +209,7 @@ public class LatkNetworkWs : MonoBehaviour {
 		return (long)(System.DateTime.UtcNow - epochStart).TotalMilliseconds;
 	}
 
+    /*
     public string setJsonFromPoints(List<Vector3> points) {
 
         WsStroke stroke = new WsStroke();
@@ -225,5 +235,6 @@ public class LatkNetworkWs : MonoBehaviour {
 
         return JsonUtility.ToJson(stroke);
     }
+    */
 
 }
