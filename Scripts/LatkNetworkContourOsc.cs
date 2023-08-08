@@ -29,10 +29,15 @@ using System.IO;
 using UnityOSC;
 
 public class LatkNetworkContourOsc : MonoBehaviour
-{
+{   
+    [System.Serializable]
+    public struct Receiver {
+        public LatkDrawing latkd;
+        public string name;
+    }
 
-    public LightningArtist latk;
-	public float scaler = 10f;
+    public List<Receiver> receivers;
+    public Vector3 scaler = new Vector3(1f, 1f, 1f);
 	public enum OscMode { SEND, RECEIVE, SEND_RECEIVE };
 	public OscMode oscMode = OscMode.RECEIVE;
 	public enum MsgMode { P5, OF };
@@ -41,13 +46,15 @@ public class LatkNetworkContourOsc : MonoBehaviour
 	public int outPort = 9999;
 	public int inPort = 9998;
 	public int rxBufferSize = 1024000;//1024;
+    public bool killStrokes = true;
+    public float strokeLife = 0.1f;
+    public int minPoints = 3;
 
     //[HideInInspector] public bool armReceiver = false;
 
-	private OSCServer myServer;
+    private OSCServer myServer;
 	private int bufferSize = 100; // Buffer size of the application (stores 100 messages from different servers)
     private int sleepMs = 10;
-    private List<int> oldIds = new List<int>();
     private int maxIds = 10;
 
     // Script initialization
@@ -98,53 +105,49 @@ public class LatkNetworkContourOsc : MonoBehaviour
 			return;
 		}
 
-		// format: string uniqueid, string hostname, int index, byte[] color, byte[] points, int timestamp
-		int index = 0;
-        //string id = "";
-		Color color = new Color(0f, 0f, 0f);
-		List<Vector3> points = new List<Vector3>();
+            // format: string hostname, string uniqueid, int index, byte[] color, byte[] points, int timestamp
+            string name = "";
+            int index = 0;
+            Color color = new Color(0f, 0f, 0f);
+            List<Vector3> points = new List<Vector3>();
 
-		switch (msgMode) {
-			case (MsgMode.P5):
-				index = (int)pckt.Data[2];
-				color = bytesToColor((byte[])pckt.Data[3]);
-				points = bytesToVec3s((byte[])pckt.Data[4]);
-				break;
-			case (MsgMode.OF):
-				OSCMessage msg = pckt.Data[0] as UnityOSC.OSCMessage;
+            switch (msgMode) {
+                case (MsgMode.P5):
+                    name = (string)pckt.Data[0];
+                    break;
+                case (MsgMode.OF):
+                    OSCMessage msg = pckt.Data[0] as UnityOSC.OSCMessage;
+                    name = (string)msg.Data[0];
+                    break;
+            }
 
-                index = (int)msg.Data[2];
-				color = bytesToColor((byte[])msg.Data[3]);
-				points = bytesToVec3s((byte[])msg.Data[4]);
-				break;
-		}
+        for (int i = 0; i < receivers.Count; i++) {
+            if (receivers[i].name == name) {
+                switch (msgMode) {
+                    case (MsgMode.P5):
+                        index = (int)pckt.Data[2];
+                        color = bytesToColor((byte[])pckt.Data[3]);
+                        points = bytesToVec3s((byte[])pckt.Data[4], receivers[i].latkd);
+                        break;
+                    case (MsgMode.OF):
+                        OSCMessage msg = pckt.Data[0] as UnityOSC.OSCMessage;
+                        index = (int)msg.Data[2];
+                        color = bytesToColor((byte[])msg.Data[3]);
+                        points = bytesToVec3s((byte[])msg.Data[4], receivers[i].latkd);
+                        break;
+                }
 
-        //if (points.Count > 1) armReceiver = true;
-
-        if (points.Count > 1) {
-            StartCoroutine(doInstantiateStroke(index, color, points));
+                if (points.Count >= minPoints) {
+                    Debug.Log("here");
+                    StartCoroutine(doInstantiateStroke(i, name, index, color, points));
+                }
+            }
         }
 	}
 
-    public void clearList() {
-        oldIds = new List<int>();
-    }
-
-	private IEnumerator doInstantiateStroke(int index, Color color, List<Vector3> points) {
-        bool newStroke = true;
-        for (int i = 0; i<oldIds.Count; i++) {
-            if (index == oldIds[i]) {
-                newStroke = false;
-                break;
-            }
-        }
-
-        if (newStroke) {
-            latk.inputInstantiateStroke(color, points);
-            oldIds.Add(index);
-            if (oldIds.Count > maxIds) oldIds.RemoveAt(0);
-        }
-
+	private IEnumerator doInstantiateStroke(int receiverIndex, string name, int index, Color color, List<Vector3> points) {
+        receivers[receiverIndex].latkd.color = color;
+        receivers[receiverIndex].latkd.makeCurve(points, killStrokes, strokeLife);
         //armReceiver = false;
         yield return null;
 	}
@@ -169,7 +172,7 @@ public class LatkNetworkContourOsc : MonoBehaviour
 			float x = BitConverter.ToSingle(xBytes, 0);
 			float y = BitConverter.ToSingle(yBytes, 0);
 			float z = BitConverter.ToSingle(zBytes, 0);
-			returns.Add(new Vector3(x, y, z));
+            returns.Add(new Vector3(x, y, z));
 		}
 
 		return returns;
@@ -205,15 +208,15 @@ public class LatkNetworkContourOsc : MonoBehaviour
 		return new Color(v.x, v.y, v.z);		
 	}
 
-	List<Vector3> bytesToVec3s(byte[] bytes) {
+	List<Vector3> bytesToVec3s(byte[] bytes, LatkDrawing latkd) {
 		List<Vector3> returns = new List<Vector3>();
 
 		MemoryStream stream = new MemoryStream(bytes);
 		BinaryReader br = new BinaryReader(stream);
 		int len = (int)(bytes.Length / 12);
 		for (int i = 0; i < len; i++) {
-			Vector3 v = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()) / 500f;
-			returns.Add(new Vector3(v.x, v.y, v.z));
+			Vector3 v = Vector3.Scale(new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle()), scaler);
+			returns.Add(latkd.transform.TransformPoint(v));
 		}
 		return returns;
 	}
