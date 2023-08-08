@@ -122,6 +122,7 @@ public class LatkNetworkContourOsc : MonoBehaviour
             }
 
         for (int i = 0; i < receivers.Count; i++) {
+            //Debug.Log(name + " " + receivers[i].name);
             if (receivers[i].name == name) {
                 switch (msgMode) {
                     case (MsgMode.P5):
@@ -138,9 +139,10 @@ public class LatkNetworkContourOsc : MonoBehaviour
                 }
 
                 if (points.Count >= minPoints) {
-                    Debug.Log("here");
                     StartCoroutine(doInstantiateStroke(i, name, index, color, points));
                 }
+
+                break;
             }
         }
 	}
@@ -148,7 +150,6 @@ public class LatkNetworkContourOsc : MonoBehaviour
 	private IEnumerator doInstantiateStroke(int receiverIndex, string name, int index, Color color, List<Vector3> points) {
         receivers[receiverIndex].latkd.color = color;
         receivers[receiverIndex].latkd.makeCurve(points, killStrokes, strokeLife);
-        //armReceiver = false;
         yield return null;
 	}
 
